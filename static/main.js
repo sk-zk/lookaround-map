@@ -78,7 +78,7 @@ L.control.layers(baseLayers, overlays).addTo(map);
 function updateUrlParameters() {
   const center = map.getCenter();
   const zoom = map.getZoom();
-  window.location.hash = `#c=${center.lat.toFixed(5)}/${center.lng.toFixed(5)}/${zoom}`;
+  window.location.hash = `#c=${zoom}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}`;
 }
 
 map.on('moveend', (e) => {
