@@ -1,6 +1,6 @@
 const TILE_SIZE = 256.0;
 
-function wgs84ToTileCoord(lat, lon, zoom) {
+export function wgs84ToTileCoord(lat, lon, zoom) {
   let scale = 1 << zoom;
   let worldCoord = wgs84ToMercator(lat, lon);
   return {
@@ -60,6 +60,7 @@ L.GridLayer.Coverage = L.GridLayer.extend({
 
     return tile;
   },
+
 });
 
 L.gridLayer.coverage = function (opts) {

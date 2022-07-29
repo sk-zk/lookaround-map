@@ -1,14 +1,30 @@
 from flask import Flask, jsonify, render_template, send_file
 import io
+import math
 import mimetypes
 import requests
 import sys
 
 sys.path.append("./lookaround")
 from lookaround.auth import Authenticator
+from lookaround.geo import wgs84_to_tile_coord
 from lookaround import get_coverage_tile
 
 from util import CustomJSONEncoder
+
+def haversine_distance(lat1, lon1, lat2, lon2):
+    # via https://www.movable-type.co.uk/scripts/latlong.html
+    # MIT
+    R = 6371e3
+    phi1 = lat1 * math.pi / 180
+    phi2 = lat2 * math.pi / 180
+    delta_phi = (lat2-lat1) * math.pi / 180
+    delta_lambda = (lon2-lon1) * math.pi / 180
+    a = math.sin(delta_phi/2) * math.sin(delta_phi/2) + \
+          math.cos(phi1) * math.cos(phi2) * \
+          math.sin(delta_lambda/2) * math.sin(delta_lambda/2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    return R * c;
 
 
 def create_app():
@@ -49,5 +65,22 @@ def create_app():
             io.BytesIO(response.content),
             mimetype='image/png'
         )
+    
+    @app.route("/closest/<float:lat>/<float:lon>/")
+    def closest_pano_to_coord(lat, lon):
+        x, y = wgs84_to_tile_coord(lat, lon, 17)
+        panos = get_coverage_tile(x, y)
+        if len(panos) == 0:
+            return jsonify(None)
+
+        smallest_distance = 9999999
+        closest = None
+        for pano in panos:
+            distance = haversine_distance(lat, lon, pano.lat, pano.lon)
+            if distance < smallest_distance:
+                smallest_distance = distance
+                closest = pano
+        print(closest.panoid)
+        return jsonify(closest)
 
     return app

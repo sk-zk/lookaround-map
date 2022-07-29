@@ -87,3 +87,19 @@ map.on('moveend', (e) => {
 map.on('zoomend', (e) => {
   updateUrlParameters();
 });
+map.on("click", async (e) => {
+  const response = await fetch(`/closest/${e.latlng.lat}/${e.latlng.lng}/`);
+  const pano = await response.json();
+  console.log(pano);
+  if (pano) {
+    const popup = L.popup();
+    popup
+      .setLatLng(L.latLng(pano.lat, pano.lon))
+      .setContent(`
+        <strong>${pano.panoid}</strong>/${pano.region_id}<br>
+        ${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)}<br>
+        ${pano.date}
+      `)
+      .openOn(map);
+  }
+});
