@@ -1,0 +1,19 @@
+* {
+  font-family: "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+#map {
+  height: 100vh;
+  width: 100vw;
+  z-index: 1;
+}
+
+.multiline-checkbox-label {
+  display: inline-block;
+  vertical-align: top;
+}
