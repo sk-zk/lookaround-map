@@ -12,6 +12,7 @@ from lookaround import get_coverage_tile
 
 from util import CustomJSONEncoder
 
+
 def haversine_distance(lat1, lon1, lat2, lon2):
     # via https://www.movable-type.co.uk/scripts/latlong.html
     # MIT
@@ -47,8 +48,7 @@ def create_app():
         panos = get_coverage_tile(x, y)
         return jsonify(panos)
 
-    # Map tiles are passed through this server because I currently don't feel like
-    # translating the auth code to JS
+    # TODO: Port the auth code to JS so the client can request tiles directly
     @app.route("/tiles/road/<tint>/<int:z>/<int:x>/<int:y>/")
     def relay_road_tile(tint, z, x, y):
         if tint == "l":
