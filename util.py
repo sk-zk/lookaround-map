@@ -6,8 +6,8 @@ class CustomJSONEncoder(JSONEncoder):
     def default(self, o):
         if isinstance(o, LookaroundPanorama):
             return {
-                "panoid": o.panoid,
-                "region_id": o.region_id,
+                "panoid": str(o.panoid),
+                "region_id": str(o.region_id),
                 "lat": o.lat,
                 "lon": o.lon,
                 "date": o.date
