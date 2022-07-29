@@ -15,10 +15,10 @@ let map = L.map("map", {
   zoomControl: true,
 });
 
-const appleRoadLightTiles = L.tileLayer("/tiles/road/l/{z}/{x}/{y}", {
+const appleRoadLightTiles = L.tileLayer("/tiles/road/l/{z}/{x}/{y}/", {
   maxZoom: 19,
 }).addTo(map);
-const appleRoadDarkTiles = L.tileLayer("/tiles/road/d/{z}/{x}/{y}", {
+const appleRoadDarkTiles = L.tileLayer("/tiles/road/d/{z}/{x}/{y}/", {
   maxZoom: 19,
 });
 

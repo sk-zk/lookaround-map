@@ -42,14 +42,14 @@ def create_app():
         return render_template('index.html')
 
     # Coverage tiles are passed through this server because of CORS
-    @app.route("/tiles/coverage/<int:x>/<int:y>")
+    @app.route("/tiles/coverage/<int:x>/<int:y>/")
     def relay_coverage_tile(x, y):
         panos = get_coverage_tile(x, y)
         return jsonify(panos)
 
     # Map tiles are passed through this server because I currently don't feel like
     # translating the auth code to JS
-    @app.route("/tiles/road/<tint>/<int:z>/<int:x>/<int:y>")
+    @app.route("/tiles/road/<tint>/<int:z>/<int:x>/<int:y>/")
     def relay_road_tile(tint, z, x, y):
         if tint == "l":
             tint_param = "light"
@@ -80,7 +80,6 @@ def create_app():
             if distance < smallest_distance:
                 smallest_distance = distance
                 closest = pano
-        print(closest.panoid)
         return jsonify(closest)
 
     return app

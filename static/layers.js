@@ -43,7 +43,7 @@ L.GridLayer.Coverage = L.GridLayer.extend({
     ctx.strokeStyle = "rgba(0, 150, 170, 0.8)";
     ctx.lineWidth = 2;
 
-    fetch(`/tiles/coverage/${coords.x}/${coords.y}`)
+    fetch(`/tiles/coverage/${coords.x}/${coords.y}/`)
       .then((response) => response.json())
       .then((data) => {
         for (let pano of data) {
