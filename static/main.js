@@ -90,7 +90,6 @@ map.on('zoomend', (e) => {
 map.on("click", async (e) => {
   const response = await fetch(`/closest/${e.latlng.lat}/${e.latlng.lng}/`);
   const pano = await response.json();
-  console.log(pano);
   if (pano) {
     const popup = L.popup();
     popup
