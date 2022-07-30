@@ -1,4 +1,6 @@
 Flask==1.1.2
+Pillow==9.2.0
+pillow_heif==0.5.0
 protobuf==4.21.4
 pycryptodome==3.15.0
 requests==2.26.0

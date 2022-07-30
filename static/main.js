@@ -100,6 +100,18 @@ map.on("click", async (e) => {
         ${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)}<br>
         ${pano.date}
       `)
+      .on("remove", (e) => {
+        const imgContainer = document.getElementById("pano"); 
+        imgContainer.innerHTML = "";
+      })
       .openOn(map);
+    
+    const imgContainer = document.getElementById("pano"); 
+    imgContainer.innerHTML = "";
+    for (let i = 0; i < 4; i++) { // ignore top/bottom faces for now
+      const img = document.createElement("img");
+      img.src = `/pano/${pano.panoid}/${pano.region_id}/${i}/3/`;
+        imgContainer.appendChild(img);
+    }
   }
 });

@@ -8,9 +8,28 @@ body {
 }
 
 #map {
-  height: 100vh;
   width: 100vw;
+  height: 100vh;
   z-index: 1;
+}
+
+#pano {
+  position: absolute;
+  display: block;
+  height: 300px;
+  width: auto;
+  z-index: 99;
+  background-color: white;
+  overflow: hidden;
+  white-space: nowrap;
+  bottom: 10px;
+  left: 50%;
+  transform: translate(-50%, 0);
+}
+
+#pano img {
+  display: inline-block;
+  height: inherit;
 }
 
 .multiline-checkbox-label {

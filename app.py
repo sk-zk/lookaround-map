@@ -2,13 +2,15 @@ from flask import Flask, jsonify, render_template, send_file
 import io
 import math
 import mimetypes
+from PIL import Image
+import pillow_heif
 import requests
 import sys
 
 sys.path.append("./lookaround")
 from lookaround.auth import Authenticator
 from lookaround.geo import wgs84_to_tile_coord
-from lookaround import get_coverage_tile
+from lookaround import get_coverage_tile, fetch_pano_segment
 
 from util import CustomJSONEncoder
 
@@ -35,7 +37,7 @@ def create_app():
     app.json_encoder = CustomJSONEncoder
     
     mimetypes.add_type('text/javascript', '.js')
-
+    pillow_heif.register_heif_opener()
     auth = Authenticator()
 
     @app.route("/")
@@ -81,5 +83,17 @@ def create_app():
                 smallest_distance = distance
                 closest = pano
         return jsonify(closest)
+
+    @app.route("/pano/<int:panoid>/<int:region_id>/<int:segment>/<int:zoom>/")
+    def relay_pano_segment(panoid, region_id, segment, zoom):
+        heic_bytes = fetch_pano_segment(panoid, region_id, segment, zoom, auth)
+        with Image.open(io.BytesIO(heic_bytes)) as image:
+            with io.BytesIO() as output:
+                image.save(output, format='jpeg')
+                jpeg_bytes = output.getvalue()
+        return send_file(
+            io.BytesIO(jpeg_bytes),
+            mimetype='image/jpeg'
+        )
 
     return app
