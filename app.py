@@ -68,7 +68,7 @@ def create_app():
             mimetype='image/png'
         )
     
-    @app.route("/closest/<float:lat>/<float:lon>/")
+    @app.route("/closest/<float(signed=True):lat>/<float(signed=True):lon>/")
     def closest_pano_to_coord(lat, lon):
         x, y = wgs84_to_tile_coord(lat, lon, 17)
         panos = get_coverage_tile(x, y)
