@@ -107,10 +107,13 @@ map.on("click", async (e) => {
     
     const imgContainer = document.getElementById("pano"); 
     imgContainer.innerHTML = "";
-    for (let i = 0; i < 4; i++) { // ignore top/bottom faces for now
-      const img = document.createElement("img");
-      img.src = `/pano/${pano.panoid}/${pano.region_id}/${i}/3/`;
-        imgContainer.appendChild(img);
-    }
+    const img = document.createElement("img");
+    img.src = `/pano/${pano.panoid}/${pano.region_id}/4/`;
+    imgContainer.appendChild(img);
+    // for (let i = 0; i < 4; i++) { // ignore top/bottom faces for now
+    //   const img = document.createElement("img");
+    //   img.src = `/pano/${pano.panoid}/${pano.region_id}/${i}/3/`;
+    //     imgContainer.appendChild(img);
+    // }
   }
 });
