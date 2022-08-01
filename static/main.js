@@ -112,7 +112,7 @@ map.on("click", async (e) => {
     document.querySelector('#pano').style.display = 'block';
     const viewer = new PhotoSphereViewer.Viewer({
       container: document.querySelector('#pano'),
-      panorama: `/pano/${pano.panoid}/${pano.region_id}/3/`,
+      panorama: `/pano/${pano.panoid}/${pano.region_id}/7/`,
       panoData: {
         fullWidth: 16384,
         fullHeight: 8192,
@@ -124,9 +124,13 @@ map.on("click", async (e) => {
       minFov: 10,
       maxFov: 70,
     });
+    viewer.config.showLoader = false;
+    viewer.on('ready', () => {
+      viewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/3/`, viewer.config);
+    });
     viewer.on('zoom-updated', (e, zoom_level) => {
       if (parseInt(viewer.config.panorama.slice(-2)[0]) != 0 && zoom_level >= 70) {
-        viewer.config.showLoader = false
+        viewer.config.showLoader = false;
         viewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/0/`, viewer.config);
         // lmk if there's a more faster and/or convenient way of improving the resolution
       }
