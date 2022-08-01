@@ -105,14 +105,14 @@ map.on("click", async (e) => {
       .on("remove", (e) => {
         const imgContainer = document.getElementById("pano"); 
         imgContainer.innerHTML = "";
+        imgContainer.style.display = 'none';
       })
       .openOn(map);
-    
-    // const pano = new Image().src = `/pano/${pano.panoid}/${pano.region_id}/0/`;
+  
     document.querySelector('#pano').style.display = 'block';
     const viewer = new PhotoSphereViewer.Viewer({
       container: document.querySelector('#pano'),
-      panorama: `/pano/${pano.panoid}/${pano.region_id}/2/`,
+      panorama: `/pano/${pano.panoid}/${pano.region_id}/3/`,
       panoData: {
         fullWidth: 16384,
         fullHeight: 8192,
@@ -120,8 +120,18 @@ map.on("click", async (e) => {
         croppedHeight: 4352,
         croppedX: 0,
         croppedY: 1280,
+      },
+      minFov: 10,
+      maxFov: 70,
+    });
+    viewer.on('zoom-updated', (e, zoom_level) => {
+      if (parseInt(viewer.config.panorama.slice(-2)[0]) != 0 && zoom_level >= 70) {
+        viewer.config.showLoader = false
+        viewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/0/`, viewer.config);
+        // lmk if there's a more faster and/or convenient way of improving the resolution
       }
     });
+
     // const imgContainer = document.getElementById("pano"); 
     // imgContainer.innerHTML = "";
     // const img = document.createElement("img");
