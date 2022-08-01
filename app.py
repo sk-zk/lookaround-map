@@ -93,7 +93,7 @@ def create_app():
                 heic_array.append(image)
 
         TILE_SIZE = round(heic_array[0].width * (256 / 5632))
-        WIDTH_SIZE = round(heic_array[0].width * ((768+256) / 5632))
+        WIDTH_SIZE = round(heic_array[0].width * (1024 / 5632))
         widths, heights = zip(*(i.size for i in heic_array))
         total_width, max_height = (sum(widths)-WIDTH_SIZE), max(heights)
         heic_pano = Image.new('RGB', (total_width, max_height))
