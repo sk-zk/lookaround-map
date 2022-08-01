@@ -103,14 +103,14 @@ map.on("click", async (e) => {
         ${pano.date}
       `)
       .on("remove", (e) => {
-        const imgContainer = document.getElementById("pano"); 
-        imgContainer.innerHTML = "";
-        imgContainer.style.display = 'none';
+        const pano_container = document.getElementById("pano"); 
+        pano_container.photoSphereViewer.destroy();
+        pano_container.style.display = 'none';
       })
       .openOn(map);
   
     document.querySelector('#pano').style.display = 'block';
-    const viewer = new PhotoSphereViewer.Viewer({
+    const pano_viewer = new PhotoSphereViewer.Viewer({
       container: document.querySelector('#pano'),
       panorama: `/pano/${pano.panoid}/${pano.region_id}/3/`,
       panoData: {
@@ -125,25 +125,14 @@ map.on("click", async (e) => {
       maxFov: 70,
       defaultZoomLvl: 10
     });
-    viewer.config.showLoader = false;
-    viewer.on('zoom-updated', (e, zoom_level) => {
-      console.log(zoom_level)
-      if (parseInt(viewer.config.panorama.slice(-2)[0]) != 0 && zoom_level >= 40) {
-        viewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/0/`, viewer.config);
-        // lmk if there's a more faster and/or convenient way of improving the resolution
+    pano_viewer.on('zoom-updated', (e, zoom_level) => {
+      if (parseInt(pano_viewer.config.panorama.slice(-2)[0]) != 0 && zoom_level >= 40) {
+        pano_viewer.config.showLoader = false;
+        pano_viewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/0/`, pano_viewer.config);
+        pano_viewer.config.showLoader = true;
+        // p sure theres a better way of improving the resolution,
+        // but this does the job *for now*
       }
     });
-
-    // const imgContainer = document.getElementById("pano"); 
-    // imgContainer.innerHTML = "";
-    // const img = document.createElement("img");
-    // img.src = `/pano/${pano.panoid}/${pano.region_id}/4/`;
-    // imgContainer.appendChild(img);
-
-    // for (let i = 0; i < 4; i++) { // ignore top/bottom faces for now
-    //   const img = document.createElement("img");
-    //   img.src = `/pano/${pano.panoid}/${pano.region_id}/${i}/3/`;
-    //     imgContainer.appendChild(img);
-    // }
   }
 });
