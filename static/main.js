@@ -123,10 +123,12 @@ map.on("click", async (e) => {
       },
       minFov: 10,
       maxFov: 70,
+      defaultZoomLvl: 10
     });
     viewer.config.showLoader = false;
     viewer.on('zoom-updated', (e, zoom_level) => {
-      if (parseInt(viewer.config.panorama.slice(-2)[0]) != 0 && zoom_level >= 70) {
+      console.log(zoom_level)
+      if (parseInt(viewer.config.panorama.slice(-2)[0]) != 0 && zoom_level >= 40) {
         viewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/0/`, viewer.config);
         // lmk if there's a more faster and/or convenient way of improving the resolution
       }
