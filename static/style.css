@@ -8,28 +8,56 @@ body {
 }
 
 #map {
+  position: relative;
   width: 100vw;
   height: 100vh;
-  z-index: 1;
+  z-index: 2;
+}
+
+#map.pano-overlay {
+  position: absolute !important;
+  width: 250px !important;
+  height: 250px !important;
+  left: 10px;
+  bottom: 10px;
 }
 
 #pano {
   position: absolute;
-  display: block;
-  height: 300px;
-  width: auto;
-  z-index: 99;
-  background-color: white;
-  overflow: hidden;
-  white-space: nowrap;
-  bottom: 10px;
-  left: 50%;
-  transform: translate(-50%, 0);
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  top: 0;
+  left: 0;
 }
 
-#pano img {
-  display: inline-block;
-  height: inherit;
+#close-pano {
+  position: absolute;
+  display: none; /* flex */
+  align-items: center;
+  justify-content: center;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  background-color: rgba(50, 50, 50, 0.6);
+  color: white;
+  text-align: center;
+  font-size: 16pt;
+  border: 0;
+  cursor: pointer;
+}
+
+#pano-info {
+  position: absolute;
+  display: none;
+  top:10px;
+  left:10px;
+  background-color: rgba(50, 50, 50, 0.6);
+  z-index: 2;
+  padding: 10px;
+  color: white;
 }
 
 .multiline-checkbox-label {

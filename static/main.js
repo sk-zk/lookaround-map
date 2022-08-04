@@ -6,7 +6,7 @@ import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-vie
 let params = new URLSearchParams(window.location.hash.substring(1));
 
 let center = params.has("c") // center
-  ? params.get("c").split("/") 
+  ? params.get("c").split("/")
   : [3, 20, 0]; // zoom, lat, lon
 
 let map = L.map("map", {
@@ -90,27 +90,26 @@ map.on('moveend', (e) => {
 map.on('zoomend', (e) => {
   updateUrlParameters();
 });
+
+let selectedPanoMarker = null;
 map.on("click", async (e) => {
   const response = await fetch(`/closest/${e.latlng.lat}/${e.latlng.lng}/`);
   const pano = await response.json();
   if (pano) {
-    const popup = L.popup();
-    popup
-      .setLatLng(L.latLng(pano.lat, pano.lon))
-      .setContent(`
-        <strong>${pano.panoid}</strong>/${pano.region_id}<br>
-        ${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)}<br>
-        ${pano.date}
-      `)
-      .on("remove", (e) => {
-        const pano_container = document.getElementById("pano"); 
-        pano_container.photoSphereViewer.destroy();
-        pano_container.style.display = 'none';
-      })
-      .openOn(map);
-  
+    if (selectedPanoMarker) {
+      map.removeLayer(selectedPanoMarker);
+    }
+    selectedPanoMarker = L.marker(L.latLng(pano.lat, pano.lon)).addTo(map);
+    destroyExistingPanoViewer();
+    displayPano(pano);
+  }
+
+  document.querySelector("#close-pano").addEventListener("click", (e) => { closePano(); });
+
+  function displayPano(pano) {
     document.querySelector('#pano').style.display = 'block';
-    const pano_viewer = new PhotoSphereViewer.Viewer({
+    document.querySelector('#pano').style.width = '100vw';
+    const panoViewer = new PhotoSphereViewer.Viewer({
       container: document.querySelector('#pano'),
       panorama: `/pano/${pano.panoid}/${pano.region_id}/3/`,
       panoData: {
@@ -123,16 +122,56 @@ map.on("click", async (e) => {
       },
       minFov: 10,
       maxFov: 70,
-      defaultZoomLvl: 10
+      defaultZoomLvl: 10,
+      navbar: null,
     });
-    pano_viewer.on('zoom-updated', (e, zoom_level) => {
-      if (parseInt(pano_viewer.config.panorama.slice(-2)[0]) != 0 && zoom_level >= 40) {
-        pano_viewer.config.showLoader = false;
-        pano_viewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/0/`, pano_viewer.config);
-        pano_viewer.config.showLoader = true;
+
+    document.querySelector('#map').classList.add("pano-overlay");
+    document.querySelector(".leaflet-control-zoom").style.display = "none";
+    document.querySelector(".leaflet-control-layers").style.display = "none";
+    map.invalidateSize();
+    map.setView(L.latLng(pano.lat, pano.lon));
+
+    document.querySelector("#close-pano").style.display = "flex";
+    const panoInfo = document.querySelector("#pano-info");
+    panoInfo.style.display = "block";
+    panoInfo.innerHTML = `
+      <strong>${pano.panoid}</strong>/${pano.region_id}<br>
+      <small>${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)} |
+      ${pano.date}</small>
+    `;
+
+    panoViewer.on('zoom-updated', (e, zoom_level) => {
+      if (parseInt(panoViewer.config.panorama.slice(-2)[0]) != 0 && zoom_level >= 40) {
+        panoViewer.config.showLoader = false;
+        panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/0/`, panoViewer.config);
+        panoViewer.config.showLoader = true;
         // p sure theres a better way of improving the resolution,
         // but this does the job *for now*
       }
     });
+  }
+
+  function destroyExistingPanoViewer() {
+    const panoContainer = document.querySelector("#pano");
+    if (panoContainer.photoSphereViewer) {
+      panoContainer.photoSphereViewer.destroy();
+      panoContainer.style.display = 'none';
+    }
+  }
+
+  function closePano() {
+    destroyExistingPanoViewer();
+
+    document.querySelector('#map').classList.remove("pano-overlay");
+    map.invalidateSize();  
+    if (selectedPanoMarker) {
+      map.removeLayer(selectedPanoMarker);
+    }
+    document.querySelector(".leaflet-control-zoom").style.display = "absolute";
+    document.querySelector(".leaflet-control-layers").style.display = "absolute";
+
+    document.querySelector("#close-pano").style.display = "none";
+    document.querySelector("#pano-info").style.display = "none";
   }
 });
