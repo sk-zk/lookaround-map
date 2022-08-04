@@ -108,73 +108,73 @@ map.on("click", async (e) => {
   }
 
   document.querySelector("#close-pano").addEventListener("click", (e) => { closePano(); });
-
-  function displayPano(pano) {
-    document.querySelector('#pano').style.display = 'block';
-    document.querySelector('#pano').style.width = '100vw';
-    const panoViewer = new PhotoSphereViewer.Viewer({
-      container: document.querySelector('#pano'),
-      panorama: `/pano/${pano.panoid}/${pano.region_id}/3/`,
-      panoData: {
-        fullWidth: 16384,
-        fullHeight: 8192,
-        croppedWidth: 16384,
-        croppedHeight: 4352,
-        croppedX: 0,
-        croppedY: 1280,
-      },
-      minFov: 10,
-      maxFov: 70,
-      defaultZoomLvl: 10,
-      navbar: null,
-    });
-
-    document.querySelector('#map').classList.add("pano-overlay");
-    document.querySelector(".leaflet-control-zoom").style.display = "none";
-    document.querySelector(".leaflet-control-layers").style.display = "none";
-    map.invalidateSize();
-    map.setView(L.latLng(pano.lat, pano.lon));
-
-    document.querySelector("#close-pano").style.display = "flex";
-    const panoInfo = document.querySelector("#pano-info");
-    panoInfo.style.display = "block";
-    panoInfo.innerHTML = `
-      <strong>${pano.panoid}</strong>/${pano.region_id}<br>
-      <small>${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)} |
-      ${pano.date}</small>
-    `;
-
-    panoViewer.on('zoom-updated', (e, zoom_level) => {
-      if (parseInt(panoViewer.config.panorama.slice(-2)[0]) != 0 && zoom_level >= 40) {
-        panoViewer.config.showLoader = false;
-        panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/0/`, panoViewer.config);
-        panoViewer.config.showLoader = true;
-        // p sure theres a better way of improving the resolution,
-        // but this does the job *for now*
-      }
-    });
-  }
-
-  function destroyExistingPanoViewer() {
-    const panoContainer = document.querySelector("#pano");
-    if (panoContainer.photoSphereViewer) {
-      panoContainer.photoSphereViewer.destroy();
-      panoContainer.style.display = 'none';
-    }
-  }
-
-  function closePano() {
-    destroyExistingPanoViewer();
-
-    document.querySelector('#map').classList.remove("pano-overlay");
-    map.invalidateSize();  
-    if (selectedPanoMarker) {
-      map.removeLayer(selectedPanoMarker);
-    }
-    document.querySelector(".leaflet-control-zoom").style.display = "absolute";
-    document.querySelector(".leaflet-control-layers").style.display = "absolute";
-
-    document.querySelector("#close-pano").style.display = "none";
-    document.querySelector("#pano-info").style.display = "none";
-  }
 });
+
+function displayPano(pano) {
+  document.querySelector('#pano').style.display = 'block';
+  document.querySelector('#pano').style.width = '100vw';
+  const panoViewer = new PhotoSphereViewer.Viewer({
+    container: document.querySelector('#pano'),
+    panorama: `/pano/${pano.panoid}/${pano.region_id}/3/`,
+    panoData: {
+      fullWidth: 16384,
+      fullHeight: 8192,
+      croppedWidth: 16384,
+      croppedHeight: 4352,
+      croppedX: 0,
+      croppedY: 1280,
+    },
+    minFov: 10,
+    maxFov: 70,
+    defaultZoomLvl: 10,
+    navbar: null,
+  });
+
+  document.querySelector('#map').classList.add("pano-overlay");
+  document.querySelector(".leaflet-control-zoom").style.display = "none";
+  document.querySelector(".leaflet-control-layers").style.display = "none";
+  map.invalidateSize();
+  map.setView(L.latLng(pano.lat, pano.lon));
+
+  document.querySelector("#close-pano").style.display = "flex";
+  const panoInfo = document.querySelector("#pano-info");
+  panoInfo.style.display = "block";
+  panoInfo.innerHTML = `
+    <strong>${pano.panoid}</strong>/${pano.region_id}<br>
+    <small>${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)} |
+    ${pano.date}</small>
+  `;
+
+  panoViewer.on('zoom-updated', (e, zoom_level) => {
+    if (parseInt(panoViewer.config.panorama.slice(-2)[0]) != 0 && zoom_level >= 40) {
+      panoViewer.config.showLoader = false;
+      panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/0/`, panoViewer.config);
+      panoViewer.config.showLoader = true;
+      // p sure theres a better way of improving the resolution,
+      // but this does the job *for now*
+    }
+  });
+}
+
+function destroyExistingPanoViewer() {
+  const panoContainer = document.querySelector("#pano");
+  if (panoContainer.photoSphereViewer) {
+    panoContainer.photoSphereViewer.destroy();
+    panoContainer.style.display = 'none';
+  }
+}
+
+function closePano() {
+  destroyExistingPanoViewer();
+
+  document.querySelector('#map').classList.remove("pano-overlay");
+  map.invalidateSize();  
+  if (selectedPanoMarker) {
+    map.removeLayer(selectedPanoMarker);
+  }
+  document.querySelector(".leaflet-control-zoom").style.display = "absolute";
+  document.querySelector(".leaflet-control-layers").style.display = "absolute";
+
+  document.querySelector("#close-pano").style.display = "none";
+  document.querySelector("#pano-info").style.display = "none";
+}
