@@ -18,12 +18,29 @@ let map = L.map("map", {
   zoomControl: true,
 });
 
-const appleRoadLightTiles = L.tileLayer("/tiles/road/l/{z}/{x}/{y}/", {
+let accessKey = null
+async function getToken() {
+  const resp = await fetch('/generate_token')
+  const respJson = await resp.json()
+  return respJson.accessKey;
+} setInterval(
+  await getToken().then(resp => {
+    accessKey = encodeURIComponent(resp);
+  }), 1800 * 1000); // access key changes every 30 minutes - 
+                    // weirdly enough setInterval() does not repeat 
+                    // on the established time based on my testings so i'll leave you on that
+const appleRoadLightTiles = L.tileLayer(
+  "https://cdn3.apple-mapkit.com/ti/tile?style=0&size=1&x={x}&y={y}&z={z}&scale=1&lang=en&poi=1&tint=light&emphasis=standard&accessKey={token}", 
+  {
   maxZoom: 19,
+  token: accessKey,
   attribution: '© Apple',
 }).addTo(map);
-const appleRoadDarkTiles = L.tileLayer("/tiles/road/d/{z}/{x}/{y}/", {
+const appleRoadDarkTiles = L.tileLayer(
+  "https://cdn3.apple-mapkit.com/ti/tile?style=0&size=1&x={x}&y={y}&z={z}&scale=1&lang=en&poi=1&tint=dark&emphasis=standard&accessKey={token}", 
+  {
   maxZoom: 19,
+  token: accessKey,
   attribution: '© Apple',
 });
 
