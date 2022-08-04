@@ -20,16 +20,19 @@ let map = L.map("map", {
 
 const appleRoadLightTiles = L.tileLayer("/tiles/road/l/{z}/{x}/{y}/", {
   maxZoom: 19,
+  attribution: '© Apple',
 }).addTo(map);
 const appleRoadDarkTiles = L.tileLayer("/tiles/road/d/{z}/{x}/{y}/", {
   maxZoom: 19,
+  attribution: '© Apple',
 });
 
 const googleRoadTiles = L.tileLayer(
   "https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m8!1e0!2ssvv!4m2!1scb_client!2sapiv3!4m2!1scc!2s*211m3*211e2*212b1*213e2!3m3!3sUS!12m1!1e1!4e0",
   {
     maxZoom: 19,
-  }
+    attribution: '© Google',
+  }  
 );
 
 const debugCoords = L.gridLayer.debugCoords();
