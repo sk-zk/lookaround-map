@@ -84,6 +84,32 @@ def create_app():
                 closest = pano
         return jsonify(closest)
 
+    @app.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/")
+    def relay_full_pano(panoid, region_id, zoom):
+        heic_array = []
+        for i in range(4):
+            heic_bytes = fetch_pano_segment(panoid, region_id, i, zoom, auth)
+            with Image.open(io.BytesIO(heic_bytes)) as image:
+                heic_array.append(image)
+
+        TILE_SIZE = round(heic_array[0].width * (256 / 5632))
+        WIDTH_SIZE = round(heic_array[0].width * (1024 / 5632))
+        widths, heights = zip(*(i.size for i in heic_array))
+        total_width, max_height = (sum(widths)-WIDTH_SIZE), max(heights)
+        heic_pano = Image.new('RGB', (total_width, max_height))
+        heic_pano.paste(heic_array[0], (0,0))
+        heic_pano.paste(heic_array[1], (heic_array[0].width-TILE_SIZE, 0))
+        heic_pano.paste(heic_array[2], ((heic_array[0].width+heic_array[1].width)-(TILE_SIZE*2), 0))
+        heic_pano.paste(heic_array[3], ((heic_array[0].width+heic_array[1].width+heic_array[2].width)-(TILE_SIZE*3), 0))
+        
+        with io.BytesIO() as output:
+            heic_pano.save(output, format="jpeg")
+            jpeg_bytes = output.getvalue()
+        return send_file(
+            io.BytesIO(jpeg_bytes),
+            mimetype='image/jpeg'
+        )
+
     @app.route("/pano/<int:panoid>/<int:region_id>/<int:segment>/<int:zoom>/")
     def relay_pano_segment(panoid, region_id, segment, zoom):
         heic_bytes = fetch_pano_segment(panoid, region_id, segment, zoom, auth)

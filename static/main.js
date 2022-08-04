@@ -1,4 +1,7 @@
 import "/static/layers.js";
+import "https://cdn.jsdelivr.net/npm/three/build/three.min.js";
+import "https://cdn.jsdelivr.net/npm/uevent@2/browser.min.js";
+import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.js";
 
 let params = new URLSearchParams(window.location.hash.substring(1));
 
@@ -100,17 +103,36 @@ map.on("click", async (e) => {
         ${pano.date}
       `)
       .on("remove", (e) => {
-        const imgContainer = document.getElementById("pano"); 
-        imgContainer.innerHTML = "";
+        const pano_container = document.getElementById("pano"); 
+        pano_container.photoSphereViewer.destroy();
+        pano_container.style.display = 'none';
       })
       .openOn(map);
-    
-    const imgContainer = document.getElementById("pano"); 
-    imgContainer.innerHTML = "";
-    for (let i = 0; i < 4; i++) { // ignore top/bottom faces for now
-      const img = document.createElement("img");
-      img.src = `/pano/${pano.panoid}/${pano.region_id}/${i}/3/`;
-        imgContainer.appendChild(img);
-    }
+  
+    document.querySelector('#pano').style.display = 'block';
+    const pano_viewer = new PhotoSphereViewer.Viewer({
+      container: document.querySelector('#pano'),
+      panorama: `/pano/${pano.panoid}/${pano.region_id}/3/`,
+      panoData: {
+        fullWidth: 16384,
+        fullHeight: 8192,
+        croppedWidth: 16384,
+        croppedHeight: 4352,
+        croppedX: 0,
+        croppedY: 1280,
+      },
+      minFov: 10,
+      maxFov: 70,
+      defaultZoomLvl: 10
+    });
+    pano_viewer.on('zoom-updated', (e, zoom_level) => {
+      if (parseInt(pano_viewer.config.panorama.slice(-2)[0]) != 0 && zoom_level >= 40) {
+        pano_viewer.config.showLoader = false;
+        pano_viewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/0/`, pano_viewer.config);
+        pano_viewer.config.showLoader = true;
+        // p sure theres a better way of improving the resolution,
+        // but this does the job *for now*
+      }
+    });
   }
 });
