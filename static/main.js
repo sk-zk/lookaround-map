@@ -173,8 +173,8 @@ function closePano() {
   if (selectedPanoMarker) {
     map.removeLayer(selectedPanoMarker);
   }
-  document.querySelector(".leaflet-control-zoom").style.display = "absolute";
-  document.querySelector(".leaflet-control-layers").style.display = "absolute";
+  document.querySelector(".leaflet-control-zoom").style.display = "block";
+  document.querySelector(".leaflet-control-layers").style.display = "block";
 
   document.querySelector("#close-pano").style.display = "none";
   document.querySelector("#pano-info").style.display = "none";
