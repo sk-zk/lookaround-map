@@ -34,6 +34,10 @@ const googleRoadTiles = L.tileLayer(
     attribution: '© Google',
   }  
 );
+const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+});
 
 const debugCoords = L.gridLayer.debugCoords();
 
@@ -74,6 +78,7 @@ const baseLayers = {
   "Apple Maps Road (Light)": appleRoadLightTiles,
   "Apple Maps Road (Dark)": appleRoadDarkTiles,
   "Google Maps Road": googleRoadTiles,
+  "OpenStreetMap": osmTiles,
 };
 const overlays = {
   '<div class="multiline-checkbox-label">Look Around coverage<br>(requires z=16 or higher)</div>': coverageGroup,
