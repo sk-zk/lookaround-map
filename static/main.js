@@ -1,8 +1,6 @@
 import "/static/layers.js";
+import { LookaroundAdapter } from "/static/adapter.js";
 import { parseAnchorParams } from "/static/util.js";
-import "https://cdn.jsdelivr.net/npm/three/build/three.min.js";
-import "https://cdn.jsdelivr.net/npm/uevent@2/browser.min.js";
-import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.js";
 
 function initMap() {
   let map = L.map("map", {
@@ -128,7 +126,16 @@ function displayPano(pano) {
   document.querySelector('#pano').style.width = '100vw';
   const panoViewer = new PhotoSphereViewer.Viewer({
     container: document.querySelector('#pano'),
+    adapter: LookaroundAdapter,
     panorama: `/pano/${pano.panoid}/${pano.region_id}/3/`,
+    panorama: [
+      `/pano/${pano.panoid}/${pano.region_id}/0/3/`,
+      `/pano/${pano.panoid}/${pano.region_id}/1/3/`,
+      `/pano/${pano.panoid}/${pano.region_id}/2/3/`,
+      `/pano/${pano.panoid}/${pano.region_id}/3/3/`,
+      `/pano/${pano.panoid}/${pano.region_id}/4/3/`,
+      `/pano/${pano.panoid}/${pano.region_id}/5/3/`,
+  ],
     panoData: {
       fullWidth: 16384,
       fullHeight: 8192,
@@ -156,15 +163,9 @@ function displayPano(pano) {
     ${pano.date}</small>
   `;
 
-  panoViewer.on('zoom-updated', (e, zoom_level) => {
-    if (parseInt(panoViewer.config.panorama.slice(-2)[0]) != 0 && zoom_level >= 40) {
-      panoViewer.config.showLoader = false;
-      panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/0/`, panoViewer.config);
-      panoViewer.config.showLoader = true;
-      // p sure theres a better way of improving the resolution,
-      // but this does the job *for now*
-    }
-  });
+  /*panoViewer.on('zoom-updated', (e, zoom_level) => {
+    // TODO
+    });*/
 }
 
 function switchMapToPanoLayout(pano) {

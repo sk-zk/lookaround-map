@@ -7,6 +7,7 @@ A web viewer for Apple Look Around, usable on any device.
 
 ### TODO:
 - [ ] Render top and bottom faces of panoramas
+- [ ] Load higher resolution faces when zooming in
 - [ ] Display a compass
 - [ ] Find a raster blue line layer if it exists, or decode the vector layer
 - [ ] Implement movement 
