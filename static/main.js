@@ -1,119 +1,127 @@
 import "/static/layers.js";
+import { parseAnchorParams } from "/static/util.js";
 import "https://cdn.jsdelivr.net/npm/three/build/three.min.js";
 import "https://cdn.jsdelivr.net/npm/uevent@2/browser.min.js";
 import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.js";
 
-let params = new URLSearchParams(window.location.hash.substring(1));
-
-let center = params.has("c") // center
-  ? params.get("c").split("/")
-  : [3, 20, 0]; // zoom, lat, lon
-
-let map = L.map("map", {
-  center: [center[1], center[2]],
-  minZoom: 3,
-  maxZoom: 19,
-  zoom: center[0],
-  preferCanvas: true,
-  zoomControl: true,
-});
-
-const appleRoadLightTiles = L.tileLayer("/tiles/road/l/{z}/{x}/{y}/", {
-  maxZoom: 19,
-  attribution: '© Apple',
-}).addTo(map);
-const appleRoadDarkTiles = L.tileLayer("/tiles/road/d/{z}/{x}/{y}/", {
-  maxZoom: 19,
-  attribution: '© Apple',
-});
-
-const googleRoadTiles = L.tileLayer(
-  "https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m8!1e0!2ssvv!4m2!1scb_client!2sapiv3!4m2!1scc!2s*211m3*211e2*212b1*213e2!3m3!3sUS!12m1!1e1!4e0",
-  {
+function initMap() {
+  let map = L.map("map", {
+    center: [params.center[1], params.center[2]],
+    minZoom: 3,
     maxZoom: 19,
-    attribution: '© Google',
-  }  
-);
-const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    zoom: params.center[0],
+    preferCanvas: true,
+    zoomControl: true,
+  });
+
+  const appleRoadLightTiles = L.tileLayer("/tiles/road/l/{z}/{x}/{y}/", {
+    maxZoom: 19,
+    attribution: '© Apple',
+  }).addTo(map);
+  const appleRoadDarkTiles = L.tileLayer("/tiles/road/d/{z}/{x}/{y}/", {
+    maxZoom: 19,
+    attribution: '© Apple',
+  });
+
+  const googleRoadTiles = L.tileLayer(
+    "https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m8!1e0!2ssvv!4m2!1scb_client!2sapiv3!4m2!1scc!2s*211m3*211e2*212b1*213e2!3m3!3sUS!12m1!1e1!4e0",
+    {
+      maxZoom: 19,
+      attribution: '© Google',
+    }
+  );
+  const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap'
-});
+  });
 
-const debugCoords = L.gridLayer.debugCoords();
+  const debugCoords = L.gridLayer.debugCoords();
 
-const coverageLayerNormal = L.gridLayer.coverage({
-  minZoom: 17,
-  maxZoom: 17,
-  tileSize: 256,
-});
-const coverageLayer18 = L.gridLayer.coverage({
-  minZoom: 18,
-  maxZoom: 18,
-  tileSize: 512,
-});
-const coverageLayer19 = L.gridLayer.coverage({
-  minZoom: 19,
-  maxZoom: 19,
-  tileSize: 1024,
-});
-const coverageLayer16 = L.gridLayer.coverage({
-  minZoom: 16,
-  maxZoom: 16,
-  tileSize: 128,
-});
-/* too slow
-const coverageLayer15 = L.gridLayer.coverage({
-  minZoom: 15,
-  maxZoom: 15,
-  tileSize: 64,
-}); */
+  const coverageLayerNormal = L.gridLayer.coverage({
+    minZoom: 17,
+    maxZoom: 17,
+    tileSize: 256,
+  });
+  const coverageLayer18 = L.gridLayer.coverage({
+    minZoom: 18,
+    maxZoom: 18,
+    tileSize: 512,
+  });
+  const coverageLayer19 = L.gridLayer.coverage({
+    minZoom: 19,
+    maxZoom: 19,
+    tileSize: 1024,
+  });
+  const coverageLayer16 = L.gridLayer.coverage({
+    minZoom: 16,
+    maxZoom: 16,
+    tileSize: 128,
+  });
+  /* too slow
+  const coverageLayer15 = L.gridLayer.coverage({
+    minZoom: 15,
+    maxZoom: 15,
+    tileSize: 64,
+  }); */
+  const coverageGroup = L.layerGroup([
+    coverageLayerNormal,
+    coverageLayer16,
+    coverageLayer18,
+    coverageLayer19,
+  ]).addTo(map);
+  const baseLayers = {
+    "Apple Maps Road (Light)": appleRoadLightTiles,
+    "Apple Maps Road (Dark)": appleRoadDarkTiles,
+    "Google Maps Road": googleRoadTiles,
+    "OpenStreetMap": osmTiles,
+  };
+  const overlays = {
+    '<div class="multiline-checkbox-label">Look Around coverage<br>(requires z=16 or higher)</div>': coverageGroup,
+    "Tile boundaries": debugCoords,
+  };
+  L.control.layers(baseLayers, overlays).addTo(map);
 
-const coverageGroup = L.layerGroup([
-  coverageLayerNormal,
-  coverageLayer16,
-  coverageLayer18,
-  coverageLayer19,
-]).addTo(map);
-const baseLayers = {
-  "Apple Maps Road (Light)": appleRoadLightTiles,
-  "Apple Maps Road (Dark)": appleRoadDarkTiles,
-  "Google Maps Road": googleRoadTiles,
-  "OpenStreetMap": osmTiles,
-};
-const overlays = {
-  '<div class="multiline-checkbox-label">Look Around coverage<br>(requires z=16 or higher)</div>': coverageGroup,
-  "Tile boundaries": debugCoords,
-};
-L.control.layers(baseLayers, overlays).addTo(map);
+  map.on('moveend', (e) => {
+    updateUrlParameters();
+  });
+  map.on('zoomend', (e) => {
+    updateUrlParameters();
+  });
+  
+  map.on("click", async (e) => {
+    await fetchAndDisplayPanoAt(e.latlng.lat, e.latlng.lng);
+  });
+
+  return map;
+}
 
 function updateUrlParameters() {
   const center = map.getCenter();
   const zoom = map.getZoom();
-  window.location.hash = `#c=${zoom}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}`;
+  window.location.hash =
+    `#c=${zoom}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}`;
+  if (selectedPano) {
+    // there's no API call known to me which will return metadata for a 
+    // specific panoid like there is with streetview. this means that to fetch 
+    // pano metadata, its location must also be known, so I've decided to use
+    // that for permalinks rather than panoids until I have a better solution
+    window.location.hash += `&p=${selectedPano.lat.toFixed(5)}/${selectedPano.lon.toFixed(5)}`;
+  }
 }
 
-map.on('moveend', (e) => {
-  updateUrlParameters();
-});
-map.on('zoomend', (e) => {
-  updateUrlParameters();
-});
-
-let selectedPanoMarker = null;
-map.on("click", async (e) => {
-  const response = await fetch(`/closest/${e.latlng.lat}/${e.latlng.lng}/`);
+async function fetchAndDisplayPanoAt(lat, lon) {
+  const response = await fetch(`/closest/${lat}/${lon}/`);
   const pano = await response.json();
   if (pano) {
     if (selectedPanoMarker) {
       map.removeLayer(selectedPanoMarker);
     }
+    selectedPano = pano;
     selectedPanoMarker = L.marker(L.latLng(pano.lat, pano.lon)).addTo(map);
     destroyExistingPanoViewer();
     displayPano(pano);
   }
-
-  document.querySelector("#close-pano").addEventListener("click", (e) => { closePano(); });
-});
+}
 
 function displayPano(pano) {
   document.querySelector('#pano').style.display = 'block';
@@ -171,6 +179,7 @@ function destroyExistingPanoViewer() {
 }
 
 function closePano() {
+  selectedPano = null;
   destroyExistingPanoViewer();
 
   document.querySelector('#map').classList.remove("pano-overlay");
@@ -183,4 +192,16 @@ function closePano() {
 
   document.querySelector("#close-pano").style.display = "none";
   document.querySelector("#pano-info").style.display = "none";
+}
+
+
+let selectedPano = null;
+let selectedPanoMarker = null;
+document.querySelector("#close-pano").addEventListener("click", (e) => { closePano(); });
+const params = parseAnchorParams();
+
+let map = initMap();
+
+if (params.startPano) {
+  await fetchAndDisplayPanoAt(params.startPano[0], params.startPano[1]);
 }
