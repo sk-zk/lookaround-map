@@ -9,7 +9,7 @@ function degToRad(deg) {
 }
 
 /**
- * @summary Adapter for equirectangular panoramas
+ * @summary Adapter for Look Around panoramas
  * @memberof PSV.adapters
  * @extends PSV.adapters.AbstractAdapter
  */
