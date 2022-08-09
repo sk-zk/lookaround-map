@@ -144,11 +144,8 @@ function displayPano(pano) {
     navbar: null,
   });
 
-  document.querySelector('#map').classList.add("pano-overlay");
-  document.querySelector(".leaflet-control-zoom").style.display = "none";
-  document.querySelector(".leaflet-control-layers").style.display = "none";
-  map.invalidateSize();
-  map.setView(L.latLng(pano.lat, pano.lon));
+  switchMapToPanoLayout(pano);
+  hideMapControls();
 
   document.querySelector("#close-pano").style.display = "flex";
   const panoInfo = document.querySelector("#pano-info");
@@ -168,6 +165,19 @@ function displayPano(pano) {
       // but this does the job *for now*
     }
   });
+}
+
+function switchMapToPanoLayout(pano) {
+  document.querySelector('#map').classList.add("pano-overlay");
+  if (map) {
+    map.invalidateSize();
+    map.setView(L.latLng(pano.lat, pano.lon));
+  }
+}
+
+function hideMapControls() {
+  document.querySelector(".leaflet-control-zoom").style.display = "none";
+  document.querySelector(".leaflet-control-layers").style.display = "none";
 }
 
 function destroyExistingPanoViewer() {
@@ -200,8 +210,12 @@ let selectedPanoMarker = null;
 document.querySelector("#close-pano").addEventListener("click", (e) => { closePano(); });
 const params = parseAnchorParams();
 
-let map = initMap();
-
+let map = null;
 if (params.startPano) {
+  switchMapToPanoLayout();
+  map = initMap();
   await fetchAndDisplayPanoAt(params.startPano[0], params.startPano[1]);
+}
+else {
+  map = initMap();
 }
