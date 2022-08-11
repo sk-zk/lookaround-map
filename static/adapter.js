@@ -60,14 +60,23 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
           this.psv.loader.setProgress(PhotoSphereViewer.utils.sum(progress) / 6);
         })
           .then(img => {
+            // TODO handle overlap with UVs rather than cropping the image
+            if (i < 4) {
+              // TODO do this in a less idiotic way
+              const zoom = panorama[i].split("/")[5];
+              const overlap = [256, 188, 100, 71, 50, 36, 25, 18][zoom];
+
             const buffer = document.createElement('canvas');
-            buffer.width = img.naturalWidth - 71; // todo
+              buffer.width = img.naturalWidth - overlap;
             buffer.height = img.naturalHeight;
 
             const ctx = buffer.getContext('2d');
             ctx.drawImage(img, 0, 0);
 
             return PhotoSphereViewer.utils.createTexture(buffer);
+            } else {
+              return PhotoSphereViewer.utils.createTexture(img);
+            }
           })
       );
     }
