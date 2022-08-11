@@ -127,7 +127,6 @@ function displayPano(pano) {
   const panoViewer = new PhotoSphereViewer.Viewer({
     container: document.querySelector('#pano'),
     adapter: LookaroundAdapter,
-    panorama: `/pano/${pano.panoid}/${pano.region_id}/3/`,
     panorama: [
       `/pano/${pano.panoid}/${pano.region_id}/0/3/`,
       `/pano/${pano.panoid}/${pano.region_id}/1/3/`,
