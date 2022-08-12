@@ -24,10 +24,10 @@ export class Authenticator {
 
         const tokenP3 = this.#generateTokenP3();
         const token = TOKEN_P1 + this.tokenP2 + tokenP3;
-        const timestamp = Date.now() + 4200;
+        const timestamp = Math.floor(Date.now() / 1000) + 4200;
         const separator = urlObj.search ? "&" : "?";
 
-        const urlPath = urlObj.pathname;
+        let urlPath = urlObj.pathname;
         if (urlObj.search) {
             urlPath += "?" + urlObj.search;
         }
