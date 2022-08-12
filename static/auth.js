@@ -56,7 +56,6 @@ export class Authenticator {
         // bc I didn't want to deal with protobuf right now
         const response = await fetch("/tokenp2/");
         this.tokenP2 = await response.json();
-        console.log(this.tokenP2);
         return null;
     }
 
