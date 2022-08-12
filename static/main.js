@@ -1,6 +1,8 @@
 import "/static/layers.js";
 import { LookaroundAdapter } from "/static/adapter.js";
 import { parseAnchorParams } from "/static/util.js";
+import { Authenticator } from "/static/auth.js";
+
 
 function initMap() {
   let map = L.map("map", {

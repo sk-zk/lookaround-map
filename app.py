@@ -107,5 +107,10 @@ def create_app():
             io.BytesIO(jpeg_bytes),
             mimetype='image/jpeg'
         )
+        
+    # TODO get the mainfest clientside as well
+    @app.route("/tokenp2/")
+    def get_token_p2():
+        return jsonify(auth.token_p2)
 
     return app
