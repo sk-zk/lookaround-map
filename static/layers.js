@@ -18,6 +18,7 @@ function wgs84ToMercator(lat, lon) {
   };
 }
 
+
 L.GridLayer.DebugCoords = L.GridLayer.extend({
   createTile: function (coords) {
     var tile = document.createElement("div");
@@ -30,6 +31,7 @@ L.GridLayer.DebugCoords = L.GridLayer.extend({
 L.gridLayer.debugCoords = function (opts) {
   return new L.GridLayer.DebugCoords(opts);
 };
+
 
 L.GridLayer.Coverage = L.GridLayer.extend({
   createTile: function (coords, done) {
@@ -60,9 +62,38 @@ L.GridLayer.Coverage = L.GridLayer.extend({
 
     return tile;
   },
-
 });
 
 L.gridLayer.coverage = function (opts) {
   return new L.GridLayer.Coverage(opts);
 };
+
+
+L.TileLayer.AppleMapsRoad = L.TileLayer.extend({
+  initialize: function (auth, opts) {
+    this.auth = auth;
+    L.setOptions(this, opts);
+  },
+  createTile: function (coords, done) {
+    var tile = document.createElement('img');
+    tile.alt = '';
+
+    L.DomEvent.on(tile, 'load', L.Util.bind(this._tileOnLoad, this, done, tile));
+		L.DomEvent.on(tile, 'error', L.Util.bind(this._tileOnError, this, done, tile));
+
+
+    this.auth.authenticateUrl(
+      `https://cdn3.apple-mapkit.com/ti/tile?` +
+      `style=0&size=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&scale=1` +
+      `&lang=en&poi=1&tint=${this.options.tint}&emphasis=standard`)
+      .then(url => {
+        tile.src = url;
+      });
+    done(null, tile);
+    return tile;
+  }
+});
+
+L.tileLayer.appleMapsRoad = function (auth, opts) {
+  return new L.TileLayer.AppleMapsRoad(auth, opts);
+}

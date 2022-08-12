@@ -3,7 +3,6 @@ import { LookaroundAdapter } from "/static/adapter.js";
 import { parseAnchorParams } from "/static/util.js";
 import { Authenticator } from "/static/auth.js";
 
-
 function initMap() {
   let map = L.map("map", {
     center: [params.center[1], params.center[2]],
@@ -14,12 +13,14 @@ function initMap() {
     zoomControl: true,
   });
 
-  const appleRoadLightTiles = L.tileLayer("/tiles/road/l/{z}/{x}/{y}/", {
+  const appleRoadLightTiles = L.tileLayer.appleMapsRoad(auth, {
     maxZoom: 19,
+    tint: 'light',
     attribution: '© Apple',
   }).addTo(map);
-  const appleRoadDarkTiles = L.tileLayer("/tiles/road/d/{z}/{x}/{y}/", {
+  const appleRoadDarkTiles = L.tileLayer.appleMapsRoad(auth, {
     maxZoom: 19,
+    tint: 'dark',
     attribution: '© Apple',
   });
 
@@ -206,6 +207,9 @@ function closePano() {
   document.querySelector("#pano-info").style.display = "none";
 }
 
+
+const auth = new Authenticator();
+await auth.init();
 
 let selectedPano = null;
 let selectedPanoMarker = null;
