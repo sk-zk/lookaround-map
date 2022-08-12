@@ -29,7 +29,7 @@ export class Authenticator {
 
         let urlPath = urlObj.pathname;
         if (urlObj.search) {
-            urlPath += "?" + urlObj.search;
+            urlPath += urlObj.search;
         }
         const plaintext = `${urlPath}${separator}sid=${this.sessionId}${timestamp}${tokenP3}`;
         const plaintextBytes = new TextEncoder().encode(plaintext);
