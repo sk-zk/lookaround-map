@@ -137,15 +137,7 @@ function displayPano(pano) {
       `/pano/${pano.panoid}/${pano.region_id}/2/3/`,
       `/pano/${pano.panoid}/${pano.region_id}/2/4/`,
       `/pano/${pano.panoid}/${pano.region_id}/2/5/`,
-  ],
-    panoData: {
-      fullWidth: 16384,
-      fullHeight: 8192,
-      croppedWidth: 16384,
-      croppedHeight: 4352,
-      croppedX: 0,
-      croppedY: 1280,
-    },
+    ],
     minFov: 10,
     maxFov: 70,
     defaultLong: -0.523598776, // 60° (the center of the first face) minus 90°
