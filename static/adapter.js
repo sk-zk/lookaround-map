@@ -63,7 +63,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
             // TODO handle overlap with UVs rather than cropping the image
             if (i < 4) {
               // TODO do this in a less idiotic way
-              const zoom = panorama[i].split("/")[5];
+              const zoom = panorama[i].split("/")[4];
               const overlap = [256, 188, 100, 71, 50, 36, 25, 18][zoom];
 
             const buffer = document.createElement('canvas');

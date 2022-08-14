@@ -81,9 +81,9 @@ def create_app():
         gc.collect()
         return response
 
-    @app.route("/pano/<int:panoid>/<int:region_id>/<int:segment>/<int:zoom>/")
-    def relay_pano_segment(panoid, region_id, segment, zoom):
-        heic_bytes = get_pano_face(panoid, region_id, segment, zoom, auth)
+    @app.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/<int:face>/")
+    def relay_pano_segment(panoid, region_id, zoom, face):
+        heic_bytes = get_pano_face(panoid, region_id, face, zoom, auth)
         with Image.open(io.BytesIO(heic_bytes)) as image:
             with io.BytesIO() as output:
                 image.save(output, format='jpeg')
