@@ -35,12 +35,12 @@ function initMap() {
     "https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m8!1e0!2ssvv!4m2!1scb_client!2sapiv3!4m2!1scc!2s*211m3*211e2*212b1*213e2!3m3!3sUS!12m1!1e1!4e0",
     {
       maxZoom: 19,
-      attribution: '© Google',
+      attribution: "© Google",
     }
   );
-  const osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  const osmTiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
-    attribution: '© OpenStreetMap'
+    attribution: "© OpenStreetMap"
   });
 
   const debugCoords = L.gridLayer.debugCoords();
@@ -90,10 +90,10 @@ function initMap() {
   };
   L.control.layers(baseLayers, overlays).addTo(map);
 
-  map.on('moveend', (e) => {
+  map.on("moveend", (e) => {
     updateUrlParameters();
   });
-  map.on('zoomend', (e) => {
+  map.on("zoomend", (e) => {
     updateUrlParameters();
   });
   
@@ -133,10 +133,10 @@ async function fetchAndDisplayPanoAt(lat, lon) {
 }
 
 function displayPano(pano) {
-  document.querySelector('#pano').style.display = 'block';
-  document.querySelector('#pano').style.width = '100vw';
+  document.querySelector("#pano").style.display = "block";
+  document.querySelector("#pano").style.width = "100vw";
   const panoViewer = new PhotoSphereViewer.Viewer({
-    container: document.querySelector('#pano'),
+    container: document.querySelector("#pano"),
     adapter: LookaroundAdapter,
     panorama: `/pano/${pano.panoid}/${pano.region_id}/`,
     minFov: 10,
@@ -160,7 +160,7 @@ function displayPano(pano) {
 }
 
 function switchMapToPanoLayout(pano) {
-  document.querySelector('#map').classList.add("pano-overlay");
+  document.querySelector("#map").classList.add("pano-overlay");
   if (map) {
     map.invalidateSize();
     map.setView(L.latLng(pano.lat, pano.lon));
@@ -176,7 +176,7 @@ function destroyExistingPanoViewer() {
   const panoContainer = document.querySelector("#pano");
   if (panoContainer.photoSphereViewer) {
     panoContainer.photoSphereViewer.destroy();
-    panoContainer.style.display = 'none';
+    panoContainer.style.display = "none";
   }
 }
 
@@ -184,7 +184,7 @@ function closePano() {
   selectedPano = null;
   destroyExistingPanoViewer();
 
-  document.querySelector('#map').classList.remove("pano-overlay");
+  document.querySelector("#map").classList.remove("pano-overlay");
   map.invalidateSize();  
   if (selectedPanoMarker) {
     map.removeLayer(selectedPanoMarker);

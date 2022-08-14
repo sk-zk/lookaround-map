@@ -75,12 +75,12 @@ L.TileLayer.AppleMapsTiles = L.TileLayer.extend({
     L.setOptions(this, opts);
   },
   createTile: function (coords, done) {
-    var tile = document.createElement('img');
+    var tile = document.createElement("img");
     "https://sat-cdn1.apple-mapkit.com/tile?style=7&size=1&scale=1&z=14&x=8713&y=5686&v=9312";
-    tile.alt = '';
+    tile.alt = "";
 
-    L.DomEvent.on(tile, 'load', L.Util.bind(this._tileOnLoad, this, done, tile));
-		L.DomEvent.on(tile, 'error', L.Util.bind(this._tileOnError, this, done, tile));
+    L.DomEvent.on(tile, "load", L.Util.bind(this._tileOnLoad, this, done, tile));
+		L.DomEvent.on(tile, "error", L.Util.bind(this._tileOnError, this, done, tile));
 
     const url = this.options.type == "satellite" 
       ? `https://sat-cdn1.apple-mapkit.com/tile?` +
