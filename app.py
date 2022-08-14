@@ -59,7 +59,7 @@ def create_app():
         heic_bytes = get_pano_face(panoid, region_id, face, zoom, auth)
         with Image.open(io.BytesIO(heic_bytes)) as image:
             with io.BytesIO() as output:
-                image.save(output, format='jpeg')
+                image.save(output, format='jpeg', quality=85)
                 jpeg_bytes = output.getvalue()
         response = send_file(
             io.BytesIO(jpeg_bytes),
@@ -87,7 +87,7 @@ def create_app():
         heic_pano.paste(heic_array[3], ((heic_array[0].width+heic_array[1].width+heic_array[2].width)-(TILE_SIZE*3), 0))
         
         with io.BytesIO() as output:
-            heic_pano.save(output, format="jpeg")
+            heic_pano.save(output, format="jpeg", quality=85)
             jpeg_bytes = output.getvalue()
         response = send_file(
             io.BytesIO(jpeg_bytes),
