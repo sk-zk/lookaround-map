@@ -2,11 +2,9 @@ from flask import Flask, jsonify, render_template, send_file
 from flask_cors import CORS
 import gc
 import io
-import math
 import mimetypes
 from PIL import Image
 import pillow_heif
-import requests
 import sys
 
 sys.path.append("./lookaround")
@@ -33,7 +31,7 @@ def create_app():
     def index():
         return render_template('index.html')
 
-    # Coverage tiles are passed through this server because of CORS
+    # Coverage tiles are passed through this server because of CORS.
     @app.route("/tiles/coverage/<int:x>/<int:y>/")
     def relay_coverage_tile(x, y):
         panos = get_coverage_tile(x, y)
@@ -54,6 +52,21 @@ def create_app():
                 smallest_distance = distance
                 closest = pano
         return jsonify(closest)
+
+    # Panorama faces are passed through this server because of CORS.
+    @app.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/<int:face>/")
+    def relay_pano_segment(panoid, region_id, zoom, face):
+        heic_bytes = get_pano_face(panoid, region_id, face, zoom, auth)
+        with Image.open(io.BytesIO(heic_bytes)) as image:
+            with io.BytesIO() as output:
+                image.save(output, format='jpeg')
+                jpeg_bytes = output.getvalue()
+        response = send_file(
+            io.BytesIO(jpeg_bytes),
+            mimetype='image/jpeg'
+        )
+        gc.collect()
+        return response
 
     @app.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/")
     def relay_full_pano(panoid, region_id, zoom):
@@ -76,20 +89,6 @@ def create_app():
         with io.BytesIO() as output:
             heic_pano.save(output, format="jpeg")
             jpeg_bytes = output.getvalue()
-        response = send_file(
-            io.BytesIO(jpeg_bytes),
-            mimetype='image/jpeg'
-        )
-        gc.collect()
-        return response
-
-    @app.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/<int:face>/")
-    def relay_pano_segment(panoid, region_id, zoom, face):
-        heic_bytes = get_pano_face(panoid, region_id, face, zoom, auth)
-        with Image.open(io.BytesIO(heic_bytes)) as image:
-            with io.BytesIO() as output:
-                image.save(output, format='jpeg')
-                jpeg_bytes = output.getvalue()
         response = send_file(
             io.BytesIO(jpeg_bytes),
             mimetype='image/jpeg'
