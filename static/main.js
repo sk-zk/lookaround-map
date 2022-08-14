@@ -130,14 +130,7 @@ function displayPano(pano) {
   const panoViewer = new PhotoSphereViewer.Viewer({
     container: document.querySelector('#pano'),
     adapter: LookaroundAdapter,
-    panorama: [
-      `/pano/${pano.panoid}/${pano.region_id}/2/0/`,
-      `/pano/${pano.panoid}/${pano.region_id}/2/1/`,
-      `/pano/${pano.panoid}/${pano.region_id}/2/2/`,
-      `/pano/${pano.panoid}/${pano.region_id}/2/3/`,
-      `/pano/${pano.panoid}/${pano.region_id}/2/4/`,
-      `/pano/${pano.panoid}/${pano.region_id}/2/5/`,
-    ],
+    panorama: `/pano/${pano.panoid}/${pano.region_id}/`,
     minFov: 10,
     maxFov: 70,
     defaultLong: -0.523598776, // 60° (the center of the first face) minus 90°
@@ -156,10 +149,6 @@ function displayPano(pano) {
     <small>${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)} |
     ${pano.date}</small>
   `;
-
-  /*panoViewer.on('zoom-updated', (e, zoom_level) => {
-    // TODO
-    });*/
 }
 
 function switchMapToPanoLayout(pano) {
