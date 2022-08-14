@@ -13,15 +13,22 @@ function initMap() {
     zoomControl: true,
   });
 
-  const appleRoadLightTiles = L.tileLayer.appleMapsRoad(auth, {
+  const appleRoadLightTiles = L.tileLayer.appleMapsTiles(auth, {
     maxZoom: 19,
-    tint: 'light',
+    type: "road",
+    tint: "light",
     attribution: '© Apple',
   }).addTo(map);
-  const appleRoadDarkTiles = L.tileLayer.appleMapsRoad(auth, {
+  const appleRoadDarkTiles = L.tileLayer.appleMapsTiles(auth, {
     maxZoom: 19,
-    tint: 'dark',
-    attribution: '© Apple',
+    type: "road",
+    tint: "dark",
+    attribution: "© Apple",
+  });
+  const appleSatelliteTiles = L.tileLayer.appleMapsTiles(auth, {
+    maxZoom: 19,
+    type: "satellite",
+    attribution: "© Apple",
   });
 
   const googleRoadTiles = L.tileLayer(
@@ -73,6 +80,7 @@ function initMap() {
   const baseLayers = {
     "Apple Maps Road (Light)": appleRoadLightTiles,
     "Apple Maps Road (Dark)": appleRoadDarkTiles,
+    "Apple Maps Satellite": appleSatelliteTiles,
     "Google Maps Road": googleRoadTiles,
     "OpenStreetMap": osmTiles,
   };

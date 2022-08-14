@@ -69,31 +69,33 @@ L.gridLayer.coverage = function (opts) {
 };
 
 
-L.TileLayer.AppleMapsRoad = L.TileLayer.extend({
+L.TileLayer.AppleMapsTiles = L.TileLayer.extend({
   initialize: function (auth, opts) {
     this.auth = auth;
     L.setOptions(this, opts);
   },
   createTile: function (coords, done) {
     var tile = document.createElement('img');
+    "https://sat-cdn1.apple-mapkit.com/tile?style=7&size=1&scale=1&z=14&x=8713&y=5686&v=9312";
     tile.alt = '';
 
     L.DomEvent.on(tile, 'load', L.Util.bind(this._tileOnLoad, this, done, tile));
 		L.DomEvent.on(tile, 'error', L.Util.bind(this._tileOnError, this, done, tile));
 
+    const url = this.options.type == "satellite" 
+      ? `https://sat-cdn1.apple-mapkit.com/tile?` +
+        `style=7&size=2&scale=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&v=9312`
+      : `https://cdn3.apple-mapkit.com/ti/tile?` +
+        `style=0&size=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&scale=1` +
+        `&lang=en&poi=1&tint=${this.options.tint}&emphasis=standard`;
 
-    this.auth.authenticateUrl(
-      `https://cdn3.apple-mapkit.com/ti/tile?` +
-      `style=0&size=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&scale=1` +
-      `&lang=en&poi=1&tint=${this.options.tint}&emphasis=standard`)
-      .then(url => {
-        tile.src = url;
-      });
+    this.auth.authenticateUrl(url)
+      .then((url) => { tile.src = url; });
     done(null, tile);
     return tile;
   }
 });
 
-L.tileLayer.appleMapsRoad = function (auth, opts) {
-  return new L.TileLayer.AppleMapsRoad(auth, opts);
+L.tileLayer.appleMapsTiles = function (auth, opts) {
+  return new L.TileLayer.AppleMapsTiles(auth, opts);
 }
