@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, render_template, send_file
+from flask_cors import CORS
 import gc
 import io
 import math
@@ -19,6 +20,7 @@ from geo import haversine_distance
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)
 
     app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
     app.json_encoder = CustomJSONEncoder
