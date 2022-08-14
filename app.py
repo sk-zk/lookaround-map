@@ -10,7 +10,7 @@ import sys
 sys.path.append("./lookaround")
 from lookaround.auth import Authenticator
 from lookaround.geo import wgs84_to_tile_coord
-from lookaround import get_coverage_tile, fetch_pano_segment
+from lookaround import get_coverage_tile, get_pano_face
 
 from util import CustomJSONEncoder
 from geo import haversine_distance
@@ -56,7 +56,7 @@ def create_app():
     def relay_full_pano(panoid, region_id, zoom):
         heic_array = []
         for i in range(4):
-            heic_bytes = fetch_pano_segment(panoid, region_id, i, zoom, auth)
+            heic_bytes = get_pano_face(panoid, region_id, i, zoom, auth)
             with Image.open(io.BytesIO(heic_bytes)) as image:
                 heic_array.append(image)
 
@@ -80,7 +80,7 @@ def create_app():
 
     @app.route("/pano/<int:panoid>/<int:region_id>/<int:segment>/<int:zoom>/")
     def relay_pano_segment(panoid, region_id, segment, zoom):
-        heic_bytes = fetch_pano_segment(panoid, region_id, segment, zoom, auth)
+        heic_bytes = get_pano_face(panoid, region_id, segment, zoom, auth)
         with Image.open(io.BytesIO(heic_bytes)) as image:
             with io.BytesIO() as output:
                 image.save(output, format='jpeg')
