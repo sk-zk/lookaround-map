@@ -148,7 +148,7 @@ function displayPano(pano) {
     },
     minFov: 10,
     maxFov: 70,
-    defaultLong: 1.079922474, // 61.875°, the center of the first face
+    defaultLong: -0.523598776, // 60° (the center of the first face) minus 90°
     defaultZoomLvl: 10,
     navbar: null,
   });
