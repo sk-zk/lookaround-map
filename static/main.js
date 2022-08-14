@@ -131,12 +131,12 @@ function displayPano(pano) {
     container: document.querySelector('#pano'),
     adapter: LookaroundAdapter,
     panorama: [
-      `/pano/${pano.panoid}/${pano.region_id}/0/3/`,
-      `/pano/${pano.panoid}/${pano.region_id}/1/3/`,
-      `/pano/${pano.panoid}/${pano.region_id}/2/3/`,
-      `/pano/${pano.panoid}/${pano.region_id}/3/3/`,
-      `/pano/${pano.panoid}/${pano.region_id}/4/3/`,
-      `/pano/${pano.panoid}/${pano.region_id}/5/3/`,
+      `/pano/${pano.panoid}/${pano.region_id}/0/2/`,
+      `/pano/${pano.panoid}/${pano.region_id}/1/2/`,
+      `/pano/${pano.panoid}/${pano.region_id}/2/2/`,
+      `/pano/${pano.panoid}/${pano.region_id}/3/2/`,
+      `/pano/${pano.panoid}/${pano.region_id}/4/2/`,
+      `/pano/${pano.panoid}/${pano.region_id}/5/2/`,
   ],
     panoData: {
       fullWidth: 16384,
