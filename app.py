@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, render_template, send_file
+import gc
 import io
 import math
 import mimetypes
@@ -73,10 +74,12 @@ def create_app():
         with io.BytesIO() as output:
             heic_pano.save(output, format="jpeg")
             jpeg_bytes = output.getvalue()
-        return send_file(
+        response = send_file(
             io.BytesIO(jpeg_bytes),
             mimetype='image/jpeg'
         )
+        gc.collect()
+        return response
 
     @app.route("/pano/<int:panoid>/<int:region_id>/<int:segment>/<int:zoom>/")
     def relay_pano_segment(panoid, region_id, segment, zoom):
@@ -85,10 +88,12 @@ def create_app():
             with io.BytesIO() as output:
                 image.save(output, format='jpeg')
                 jpeg_bytes = output.getvalue()
-        return send_file(
+        response = send_file(
             io.BytesIO(jpeg_bytes),
             mimetype='image/jpeg'
         )
+        gc.collect()
+        return response
         
     # TODO get the mainfest clientside as well
     @app.route("/tokenp2/")
