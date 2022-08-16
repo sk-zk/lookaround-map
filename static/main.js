@@ -148,8 +148,9 @@ function displayPano(pano) {
     panorama: `/pano/${pano.panoid}/${pano.region_id}/`,
     minFov: 10,
     maxFov: 70,
-    defaultLong: -0.523598776, // 60° (the center of the first face) minus 90°
-    defaultZoomLvl: 10,
+    defaultLat: previousPosition?.latitude ?? 0,
+    defaultLong: previousPosition?.longitude ?? -0.523598776, // 60° (the center of the first face) minus 90°
+    defaultZoomLvl: previousZoomLevel ?? 10,
     navbar: null,
   });
 
@@ -164,6 +165,14 @@ function displayPano(pano) {
     <small>${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)} |
     ${pano.date}</small>
   `;
+
+  panoViewer.on('position-updated', (e, position) => {
+    previousPosition = position;
+    console.log(position);
+  });
+  panoViewer.on('zoom-updated', (e, level) => {
+    previousZoomLevel = level;
+  });
 }
 
 function switchMapToPanoLayout(pano) {
@@ -209,7 +218,12 @@ await auth.init();
 
 let selectedPano = null;
 let selectedPanoMarker = null;
+// caches the angle of the viewer; workaround until I've changed it such that
+// I don't reinstantiate the viewer for every pano
+let previousPosition = null;
+let previousZoomLevel = null;
 document.querySelector("#close-pano").addEventListener("click", (e) => { closePano(); });
+
 const params = parseAnchorParams();
 
 let map = null;
