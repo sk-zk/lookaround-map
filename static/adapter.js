@@ -1,16 +1,13 @@
 import "/static/BufferGeometryUtils.js";
 
+const FACES = 6;
+
 function degToRad(deg) {
   return (deg * Math.PI) / 180;
 }
 
-const Mesh = THREE.Mesh;
-const MeshBasicMaterial = THREE.MeshBasicMaterial;
-const SphereGeometry = THREE.SphereGeometry;
-
 const frustum = new THREE.Frustum();
 const projScreenMatrix = new THREE.Matrix4();
-const vertexPosition = new THREE.Vector3();
 
 /**
  * @summary Adapter for Look Around panoramas
@@ -19,7 +16,7 @@ const vertexPosition = new THREE.Vector3();
  */
 export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
   static id = "lookaround";
-  static supportsDownload = true;
+  static supportsDownload = false;
 
   /**
    * @param {PSV.Viewer} psv
@@ -31,12 +28,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     // gets set in loadTexture().
     this.url = null;
 
-    this.config = {
-      resolution: 64,
-    };
-
-    this.SPHERE_SEGMENTS = this.config.resolution;
-    this.SPHERE_HORIZONTAL_SEGMENTS = this.SPHERE_SEGMENTS / 2;
+    this.SPHERE_HORIZONTAL_SEGMENTS = 32;
 
     this.psv.on(PhotoSphereViewer.CONSTANTS.EVENTS.POSITION_UPDATED, this);
     this.psv.on(PhotoSphereViewer.CONSTANTS.EVENTS.ZOOM_UPDATED, this);
@@ -69,7 +61,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     const progress = [0, 0, 0, 0, 0, 0];
     const startZoom = 4;
     this.url = panorama;
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < FACES; i++) {
       promises.push(this.__loadOneTexture(startZoom, i, progress));
     }
     return Promise.all(promises).then((texture) => ({ panorama, texture }));
@@ -82,7 +74,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         if (progress) {
           progress[faceIdx] = p;
           this.psv.loader.setProgress(
-            PhotoSphereViewer.utils.sum(progress) / 6
+            PhotoSphereViewer.utils.sum(progress) / FACES
           );
         }
       })
@@ -117,14 +109,13 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
    * @override
    */
   createMesh(scale = 1) {
-    // TODO set the correct width/height segments value to get a uniform sphere
-    // rather than just using the same val for every face
+    const radius = PhotoSphereViewer.CONSTANTS.SPHERE_RADIUS * scale;
     const faces = [
       // radius, widthSegments, heightSegments,
       // phiStart, phiLength, thetaStart, thetaLength
       [
-        PhotoSphereViewer.CONSTANTS.SPHERE_RADIUS * scale,
-        this.SPHERE_SEGMENTS,
+        radius,
+        12 * 2,
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(0),
         degToRad(120),
@@ -132,8 +123,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         degToRad(92.5),
       ],
       [
-        PhotoSphereViewer.CONSTANTS.SPHERE_RADIUS * scale,
-        this.SPHERE_SEGMENTS,
+        radius,
+        6 * 2,
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(120),
         degToRad(60),
@@ -141,8 +132,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         degToRad(92.5),
       ],
       [
-        PhotoSphereViewer.CONSTANTS.SPHERE_RADIUS * scale,
-        this.SPHERE_SEGMENTS,
+        radius,
+        12 * 2,
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(180),
         degToRad(120),
@@ -150,32 +141,50 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         degToRad(92.5),
       ],
       [
-        PhotoSphereViewer.CONSTANTS.SPHERE_RADIUS * scale,
-        this.SPHERE_SEGMENTS,
+        radius,
+        6 * 2,
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(300),
         degToRad(60),
         degToRad(28),
         degToRad(92.5),
       ],
-      //[PhotoSphereViewer.CONSTANTS.SPHERE_RADIUS * scale, this.SPHERE_SEGMENTS, this.SPHERE_HORIZONTAL_SEGMENTS, degToRad(0), degToRad(360), degToRad(0), degToRad(28)],
-      //[PhotoSphereViewer.CONSTANTS.SPHERE_RADIUS * scale, this.SPHERE_SEGMENTS, this.SPHERE_HORIZONTAL_SEGMENTS, degToRad(0), degToRad(360), degToRad(28+92.5), degToRad(59.5)],
+      /*
+      [
+        radius,
+        36 * 2,
+        this.SPHERE_HORIZONTAL_SEGMENTS,
+        degToRad(0),
+        degToRad(360),
+        degToRad(0),
+        degToRad(28),
+      ],
+      [
+        radius,
+        36 * 2,
+        this.SPHERE_HORIZONTAL_SEGMENTS,
+        degToRad(0),
+        degToRad(360),
+        degToRad(28 + 92.5),
+        degToRad(59.5),
+      ],
+      */
     ];
     const geometries = [];
     this.meshesForFrustum = [];
     for (let i = 0; i < faces.length; i++) {
-      const geom = new SphereGeometry(...faces[i]).scale(-1, 1, 1);
+      const geom = new THREE.SphereGeometry(...faces[i]).scale(-1, 1, 1);
       geometries.push(geom);
-      this.meshesForFrustum.push(new Mesh(geom, []));
+      this.meshesForFrustum.push(new THREE.Mesh(geom, []));
     }
 
     const mergedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(
       geometries,
       true
     );
-    const mesh = new Mesh(
+    const mesh = new THREE.Mesh(
       mergedGeometry,
-      Array(6).fill(new MeshBasicMaterial())
+      Array(FACES).fill(new THREE.MeshBasicMaterial())
     );
     this.mesh = mesh;
     return mesh;
@@ -185,8 +194,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
    * @override
    */
   setTexture(mesh, textureData) {
-    for (let i = 0; i < 6; i++) {
-      mesh.material[i] = new MeshBasicMaterial({ map: textureData.texture[i] });
+    for (let i = 0; i < FACES; i++) {
+      mesh.material[i] = new THREE.MeshBasicMaterial({ map: textureData.texture[i] });
     }
     this.__refresh(); // immediately replace the low quality tiles from intial load
   }
@@ -195,7 +204,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
    * @override
    */
   setTextureOpacity(mesh, opacity) {
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < FACES; i++) {
       mesh.material[i].opacity = opacity;
       mesh.material[i].transparent = opacity < 1;
     }
@@ -246,7 +255,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
           if (this.mesh.material[faceIdx].map.userData.url == oldUrl) {
             // ^ dumb temp fix to stop faces from loading in
             // after the user has already navigated to a different one
-            this.mesh.material[faceIdx] = new MeshBasicMaterial({
+            this.mesh.material[faceIdx] = new THREE.MeshBasicMaterial({
               map: texture,
             });
             this.mesh.material[faceIdx].map.userData.refreshing = false;
@@ -272,7 +281,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     for (let meshIdx = 0; meshIdx < this.meshesForFrustum.length; meshIdx++) {
       const mesh = this.meshesForFrustum[meshIdx];
       const position = mesh.geometry.getAttribute("position");
-      const step = 50;
+      const step = position.count / 20;
       for (let i = 0; i < position.count; i += step) {
         const point = new THREE.Vector3().fromBufferAttribute(position, i);
         if (frustum.containsPoint(point)) {
