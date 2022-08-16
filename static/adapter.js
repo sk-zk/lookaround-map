@@ -29,7 +29,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
 
     // base url of the panorama without face and zoom params, e.g. /pano/10310324438691663065/1086517344/.
     // gets set in loadTexture().
-    this.url = null; 
+    this.url = null;
 
     this.config = {
       resolution: 64,
@@ -63,7 +63,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
    */
   loadTexture(panorama) {
     // initial load of the pano with a low starting quality.
-    // higher resolution faces are loaded dynamically based on zoom level 
+    // higher resolution faces are loaded dynamically based on zoom level
     // and where the user is looking.
     const promises = [];
     const progress = [0, 0, 0, 0, 0, 0];
@@ -95,7 +95,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         } else {
           texture = PhotoSphereViewer.utils.createTexture(img);
         }
-        texture.userData = { zoom: zoom };
+        texture.userData = { zoom: zoom, url: this.url };
         return texture;
       });
   }
@@ -162,15 +162,21 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       //[PhotoSphereViewer.CONSTANTS.SPHERE_RADIUS * scale, this.SPHERE_SEGMENTS, this.SPHERE_HORIZONTAL_SEGMENTS, degToRad(0), degToRad(360), degToRad(28+92.5), degToRad(59.5)],
     ];
     const geometries = [];
-    this.meshesForFrustum = []; 
+    this.meshesForFrustum = [];
     for (let i = 0; i < faces.length; i++) {
       const geom = new SphereGeometry(...faces[i]).scale(-1, 1, 1);
       geometries.push(geom);
       this.meshesForFrustum.push(new Mesh(geom, []));
     }
 
-    const mergedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries, true);
-    const mesh = new Mesh(mergedGeometry, []);
+    const mergedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(
+      geometries,
+      true
+    );
+    const mesh = new Mesh(
+      mergedGeometry,
+      Array(6).fill(new MeshBasicMaterial())
+    );
     this.mesh = mesh;
     return mesh;
   }
@@ -180,9 +186,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
    */
   setTexture(mesh, textureData) {
     for (let i = 0; i < 6; i++) {
-      mesh.material.push(
-        new MeshBasicMaterial({ map: textureData.texture[i] })
-      );
+      mesh.material[i] = new MeshBasicMaterial({ map: textureData.texture[i] });
     }
     this.__refresh(); // immediately replace the low quality tiles from intial load
   }
@@ -222,7 +226,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
 
     const visibleFaces = this.__getVisibleFaces();
     // TODO finetune this
-    if (this.psv.renderer.prop.vFov < 60) {
+    if (this.psv.renderer.prop.vFov < 55) {
       this.__refreshFaces(visibleFaces, 0);
     } else {
       this.__refreshFaces(visibleFaces, 2);
@@ -232,14 +236,22 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
   __refreshFaces(faces, zoom) {
     for (let faceIdx of faces) {
       if (
+        this.mesh.material[faceIdx].map &&
         this.mesh.material[faceIdx].map.userData.zoom > zoom &&
         !this.mesh.material[faceIdx].map.userData.refreshing
       ) {
         this.mesh.material[faceIdx].map.userData.refreshing = true;
+        const oldUrl = this.mesh.material[faceIdx].map.userData.url;
         this.__loadOneTexture(zoom, faceIdx).then((texture) => {
-          this.mesh.material[faceIdx] = new MeshBasicMaterial({ map: texture });
-          this.mesh.material[faceIdx].map.userData.refreshing = false;
-          this.psv.needsUpdate();
+          if (this.mesh.material[faceIdx].map.userData.url == oldUrl) {
+            // ^ dumb temp fix to stop faces from loading in
+            // after the user has already navigated to a different one
+            this.mesh.material[faceIdx] = new MeshBasicMaterial({
+              map: texture,
+            });
+            this.mesh.material[faceIdx].map.userData.refreshing = false;
+            this.psv.needsUpdate();
+          }
         });
       }
     }
