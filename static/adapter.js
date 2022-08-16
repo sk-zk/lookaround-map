@@ -285,7 +285,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     for (let meshIdx = 0; meshIdx < this.meshesForFrustum.length; meshIdx++) {
       const mesh = this.meshesForFrustum[meshIdx];
       const position = mesh.geometry.getAttribute("position");
-      const step = position.count / 20;
+      const step = 20;
       for (let i = 0; i < position.count; i += step) {
         const point = new THREE.Vector3().fromBufferAttribute(position, i);
         if (frustum.containsPoint(point)) {
