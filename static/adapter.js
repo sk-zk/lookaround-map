@@ -79,30 +79,11 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         }
       })
       .then((img) => {
-        // TODO handle overlap with UVs rather than cropping the image
         let texture = null;
-        if (faceIdx < 4) {
-          const buffer = this.__cropSideFace(img, zoom);
-          texture = PhotoSphereViewer.utils.createTexture(buffer);
-        } else {
-          texture = PhotoSphereViewer.utils.createTexture(img);
-        }
+        texture = PhotoSphereViewer.utils.createTexture(img);
         texture.userData = { zoom: zoom, url: this.url };
         return texture;
       });
-  }
-
-  __cropSideFace(img, zoom) {
-    // TODO do this in a less idiotic way
-    const overlap = [256, 188, 100, 71, 50, 36, 25, 18][zoom];
-
-    const buffer = document.createElement("canvas");
-    buffer.width = img.naturalWidth - overlap;
-    buffer.height = img.naturalHeight;
-
-    const ctx = buffer.getContext("2d");
-    ctx.drawImage(img, 0, 0);
-    return buffer;
   }
 
   /**
@@ -174,6 +155,9 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     this.meshesForFrustum = [];
     for (let i = 0; i < faces.length; i++) {
       const geom = new THREE.SphereGeometry(...faces[i]).scale(-1, 1, 1);
+      if (i < 4) {
+        this.__setSideUV(geom, i);
+      }
       geometries.push(geom);
       this.meshesForFrustum.push(new THREE.Mesh(geom, []));
     }
@@ -191,11 +175,31 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
   }
 
   /**
+   * Sets the UVs for side faces such that the overlapping portion is removed
+   * without having to crop the texture beforehand every time.
+   */
+  __setSideUV(geom, faceIdx) {
+    const uv = geom.getAttribute("uv");
+    for (let i = 0; i < uv.count; i++) {
+      let u = uv.getX(i);
+      let v = uv.getY(i);
+      const overlap = (faceIdx % 2 === 0) 
+        ? 1 - 1/22  // 120° faces  
+        : 1 - 1/11; // 60° faces
+      u *= overlap;
+      uv.setXY(i, u, v);
+    }
+    uv.needsUpdate = true;
+  }
+
+  /**
    * @override
    */
   setTexture(mesh, textureData) {
     for (let i = 0; i < FACES; i++) {
-      mesh.material[i] = new THREE.MeshBasicMaterial({ map: textureData.texture[i] });
+      mesh.material[i] = new THREE.MeshBasicMaterial({
+        map: textureData.texture[i],
+      });
     }
     this.__refresh(); // immediately replace the low quality tiles from intial load
   }
