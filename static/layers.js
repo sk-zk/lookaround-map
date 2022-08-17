@@ -55,8 +55,8 @@ L.GridLayer.Coverage = L.GridLayer.extend({
     ctx.lineWidth = 2;
 
     if (coverageTileCache[[coords.x, coords.y]]) {
-      const data = coverageTileCache[[coords.x, coords.y]];
-      drawPanos(data, coords, tileSize, ctx);
+      const panos = coverageTileCache[[coords.x, coords.y]];
+      drawPanos(panos, coords, tileSize, ctx);
       // apparently I can't call done directly?
       setTimeout(function () {
         done(null, tile);
@@ -64,9 +64,9 @@ L.GridLayer.Coverage = L.GridLayer.extend({
     } else {
       fetch(`/tiles/coverage/${coords.x}/${coords.y}/`)
         .then((response) => response.json())
-        .then((data) => {
-          coverageTileCache[[coords.x, coords.y]] = data;
-          drawPanos(data, coords, tileSize, ctx);
+        .then((panos) => {
+          coverageTileCache[[coords.x, coords.y]] = panos;
+          drawPanos(panos, coords, tileSize, ctx);
           done(null, tile);
         });
     }
@@ -78,8 +78,8 @@ L.gridLayer.coverage = function (opts) {
   return new L.GridLayer.Coverage(opts);
 };
 
-function drawPanos(data, coords, tileSize, ctx) {
-  for (let pano of data) {
+function drawPanos(panos, coords, tileSize, ctx) {
+  for (let pano of panos) {
     const tileCoord = wgs84ToTileCoord(pano.lat, pano.lon, 17);
     const xOffset = (tileCoord.x - coords.x) * tileSize.x - 1;
     const yOffset = (tileCoord.y - coords.y) * tileSize.y - 1;
