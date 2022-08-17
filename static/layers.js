@@ -1,5 +1,7 @@
 const TILE_SIZE = 256.0;
 
+//////
+
 export function wgs84ToTileCoord(lat, lon, zoom) {
   let scale = 1 << zoom;
   let worldCoord = wgs84ToMercator(lat, lon);
@@ -18,6 +20,7 @@ function wgs84ToMercator(lat, lon) {
   };
 }
 
+////////
 
 L.GridLayer.DebugCoords = L.GridLayer.extend({
   createTile: function (coords) {
@@ -32,6 +35,12 @@ L.gridLayer.debugCoords = function (opts) {
   return new L.GridLayer.DebugCoords(opts);
 };
 
+////////
+
+// cache coverage tiles locally in the most primitive way possible
+// to stop leaflet from re-requesting everything every time the zoom level changes.
+// TODO write a proper cache that kicks out tiles that haven't been loaded in a while
+const coverageTileCache = {};
 
 L.GridLayer.Coverage = L.GridLayer.extend({
   createTile: function (coords, done) {
@@ -45,21 +54,22 @@ L.GridLayer.Coverage = L.GridLayer.extend({
     ctx.strokeStyle = "rgba(0, 150, 170, 0.8)";
     ctx.lineWidth = 2;
 
-    fetch(`/tiles/coverage/${coords.x}/${coords.y}/`)
-      .then((response) => response.json())
-      .then((data) => {
-        for (let pano of data) {
-          const tileCoord = wgs84ToTileCoord(pano.lat, pano.lon, 17);
-          const xOffset = (tileCoord.x - coords.x) * tileSize.x - 1;
-          const yOffset = (tileCoord.y - coords.y) * tileSize.y - 1;
-          ctx.beginPath();
-          ctx.arc(xOffset, yOffset, coords.z - 13.5, 0, 2 * Math.PI, false);
-          ctx.fill();
-          ctx.stroke();
-        }
+    if (coverageTileCache[[coords.x, coords.y]]) {
+      const data = coverageTileCache[[coords.x, coords.y]];
+      drawPanos(data, coords, tileSize, ctx);
+      // apparently I can't call done directly?
+      setTimeout(function () {
         done(null, tile);
-      });
-
+      }, 0);
+    } else {
+      fetch(`/tiles/coverage/${coords.x}/${coords.y}/`)
+        .then((response) => response.json())
+        .then((data) => {
+          coverageTileCache[[coords.x, coords.y]] = data;
+          drawPanos(data, coords, tileSize, ctx);
+          done(null, tile);
+        });
+    }
     return tile;
   },
 });
@@ -68,6 +78,19 @@ L.gridLayer.coverage = function (opts) {
   return new L.GridLayer.Coverage(opts);
 };
 
+function drawPanos(data, coords, tileSize, ctx) {
+  for (let pano of data) {
+    const tileCoord = wgs84ToTileCoord(pano.lat, pano.lon, 17);
+    const xOffset = (tileCoord.x - coords.x) * tileSize.x - 1;
+    const yOffset = (tileCoord.y - coords.y) * tileSize.y - 1;
+    ctx.beginPath();
+    ctx.arc(xOffset, yOffset, coords.z - 13.5, 0, 2 * Math.PI, false);
+    ctx.fill();
+    ctx.stroke();
+  }
+}
+
+////////
 
 L.TileLayer.AppleMapsTiles = L.TileLayer.extend({
   initialize: function (auth, opts) {
