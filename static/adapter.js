@@ -185,7 +185,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       let v = uv.getY(i);
       const overlap = (faceIdx % 2 === 0) 
         ? 1 - 1/22  // 120° faces  
-        : 1 - 1/11; // 60° faces
+        : 1 - 1/12; // 60° faces
       u *= overlap;
       uv.setXY(i, u, v);
     }
