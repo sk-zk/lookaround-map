@@ -3,7 +3,8 @@ import { LookaroundAdapter } from "/static/adapter.js";
 import { parseAnchorParams } from "/static/util.js";
 import { Authenticator } from "/static/auth.js";
 
-const LONGITUDE_OFFSET = 2.61799387799;
+const LONGITUDE_OFFSET = 2.61799387799 //60 + 90 degrees;
+const CAMERA_HEIGHT_METERS = 2.1 //the approximated height of the cameras that took the coverages
 
 function initMap() {
   let map = L.map("map", {
@@ -171,9 +172,16 @@ function displayPano(pano) {
   }
 
   panoViewer.on('click', async (e, data) => {
-    if (data.rightclick) {
+    if (data.rightclick) { //can't move with right click
       return;
     }
+
+    if (data.latitude >= 0.2) { //too high in the sky to move
+      return;
+    }
+
+
+    console.log(data.latitude)
 
     //get close coords
     const response1 = await fetch(`/closestTiles/${pano.lat}/${pano.lon}/`);
@@ -183,7 +191,16 @@ function displayPano(pano) {
     let x = Math.sin(lng_clicked - longitudeNorth)
     let y = Math.cos(lng_clicked - longitudeNorth)
 
-    let highestDotProduct = -2;
+
+    let latitudeClicked = data.latitude;
+    if (latitudeClicked >= -0.03) {
+      latitudeClicked = -0.03;
+    }
+
+    let distanceWanted = Math.cos(latitudeClicked * -1) * CAMERA_HEIGHT_METERS / Math.sin(latitudeClicked * -1)
+
+    let minDiffToDistanceWanted = 1000;
+    let distanceFound = 0;
     let newPano;
 
     for (let i = 0; i < coords.length; i++) {
@@ -191,19 +208,22 @@ function displayPano(pano) {
       let xVec = parseFloat(coords[i].lon) - parseFloat(pano.lon);
       let yVec = parseFloat(coords[i].lat) - parseFloat(pano.lat);
 
-      if (Math.abs(xVec) < 0.00000001 && Math.abs(yVec) < 0.000000001) {
+      if (coords[i].panoid === pano.panoid) {
         continue;
       }
 
-      let distance = getDistance(coords[i].lon, coords[i].lat, pano.lon, pano.lat)
+      let distance = getDistance(coords[i].lon, coords[i].lat, pano.lon, pano.lat) * 1000
 
       let dotProduct = (xVec * x + yVec * y) / (Math.sqrt(x * x + y * y) * Math.sqrt(xVec * xVec + yVec * yVec));
-      if (distance >= 0.025 && distance <= 0.05 && dotProduct > highestDotProduct && dotProduct >= 0.90) {
-        highestDotProduct = dotProduct;
+      if (Math.abs(distanceWanted - distance) < minDiffToDistanceWanted && dotProduct >= 0.90) {
+        minDiffToDistanceWanted = Math.abs(distanceWanted - distance)
+        distanceFound = distance;
         newPano = coords[i];
       }
     }
 
+    console.log(distanceWanted)
+    console.log(distanceFound)
 
     if (newPano) {
       selectedPano = newPano;
