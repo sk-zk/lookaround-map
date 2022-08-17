@@ -4,7 +4,7 @@ import { parseAnchorParams } from "/static/util.js";
 import { Authenticator } from "/static/auth.js";
 
 const LONGITUDE_OFFSET = 2.61799387799 //60 + 90 degrees;
-const CAMERA_HEIGHT_METERS = 2.1 //the approximated height of the cameras that took the coverages
+const CAMERA_HEIGHT_METERS = 2.4 //the approximated height of the cameras on the cars that took the coverage
 
 function initMap() {
   let map = L.map("map", {
@@ -141,6 +141,8 @@ async function fetchAndDisplayPanoAt(lat, lon) {
     if (selectedPanoMarker) {
       map.removeLayer(selectedPanoMarker);
     }
+    xDirectionMoved = null;
+    yDirectionMoved = null;
     selectedPano = pano;
     selectedPanoMarker = L.marker(L.latLng(pano.lat, pano.lon)).addTo(map);
     //destroyExistingPanoViewer();
@@ -155,7 +157,18 @@ function displayPano(pano) {
     panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
       showLoader: false,
     });
+
     panoViewer.off('click');
+
+    if (xDirectionMoved !== null && yDirectionMoved !== null) {
+      let angleWanted = Math.atan2(-yDirectionMoved, xDirectionMoved) + Math.PI / 2 + 2 * Math.PI;
+      angleWanted %= (2 * Math.PI)
+
+      panoViewer.rotate({
+        longitude: angleWanted + getNorth(pano),
+        latitude: 0
+      });
+    }
   } else {
     panoViewer = new PhotoSphereViewer.Viewer({
       container: document.querySelector("#pano"),
@@ -172,16 +185,13 @@ function displayPano(pano) {
   }
 
   panoViewer.on('click', async (e, data) => {
-    if (data.rightclick) { //can't move with right click
+    if (data.rightclick) { //move with right click not allowed (preferred only move with left click, but currently with mouse wheel possible)
       return;
     }
 
     if (data.latitude >= 0.2) { //too high in the sky to move
       return;
     }
-
-
-    console.log(data.latitude)
 
     //get close coords
     const response1 = await fetch(`/closestTiles/${pano.lat}/${pano.lon}/`);
@@ -191,6 +201,8 @@ function displayPano(pano) {
     let x = Math.sin(lng_clicked - longitudeNorth)
     let y = Math.cos(lng_clicked - longitudeNorth)
 
+    xDirectionMoved = x;
+    yDirectionMoved = y;
 
     let latitudeClicked = data.latitude;
     if (latitudeClicked >= -0.03) {
@@ -222,9 +234,6 @@ function displayPano(pano) {
       }
     }
 
-    console.log(distanceWanted)
-    console.log(distanceFound)
-
     if (newPano) {
       selectedPano = newPano;
       if (selectedPanoMarker) {
@@ -252,6 +261,7 @@ function displayPano(pano) {
     ${pano.date}</small>
   `;
 }
+
 
 
 function getNorth(pano) {
@@ -350,6 +360,8 @@ const auth = new Authenticator();
 await auth.init();
 
 let panoViewer = null;
+let xDirectionMoved = null;
+let yDirectionMoved = null;
 let selectedPano = null;
 let selectedPanoMarker = null;
 let longitudeNorth = 0.0;
