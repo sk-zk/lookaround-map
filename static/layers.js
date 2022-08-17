@@ -76,7 +76,6 @@ L.TileLayer.AppleMapsTiles = L.TileLayer.extend({
   },
   createTile: function (coords, done) {
     var tile = document.createElement("img");
-    "https://sat-cdn1.apple-mapkit.com/tile?style=7&size=1&scale=1&z=14&x=8713&y=5686&v=9312";
     tile.alt = "";
 
     L.DomEvent.on(tile, "load", L.Util.bind(this._tileOnLoad, this, done, tile));
