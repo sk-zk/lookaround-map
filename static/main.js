@@ -154,6 +154,7 @@ function displayPano(pano) {
     panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
       showLoader: false,
     });
+    panoViewer.off('click');
   } else {
     panoViewer = new PhotoSphereViewer.Viewer({
       container: document.querySelector("#pano"),
@@ -166,13 +167,58 @@ function displayPano(pano) {
       defaultZoomLvl: 10,
       navbar: null,
     });
+
   }
+
+  panoViewer.on('click', async (e, data) => {
+    if (data.rightclick) {
+      return;
+    }
+
+    //get close coords
+    const response1 = await fetch(`/closestTiles/${pano.lat}/${pano.lon}/`);
+    let coords = await response1.json();
+    let lng_clicked = data.longitude
+
+    let x = Math.sin(lng_clicked - longitudeNorth)
+    let y = Math.cos(lng_clicked - longitudeNorth)
+
+    let highestDotProduct = -2;
+    let newPano;
+
+    for (let i = 0; i < coords.length; i++) {
+
+      let xVec = parseFloat(coords[i].lon) - parseFloat(pano.lon);
+      let yVec = parseFloat(coords[i].lat) - parseFloat(pano.lat);
+
+      if (Math.abs(xVec) < 0.00000001 && Math.abs(yVec) < 0.000000001) {
+        continue;
+      }
+
+      let distance = getDistance(coords[i].lon, coords[i].lat, pano.lon, pano.lat)
+
+      let dotProduct = (xVec * x + yVec * y) / (Math.sqrt(x * x + y * y) * Math.sqrt(xVec * xVec + yVec * yVec));
+      if (distance >= 0.025 && distance <= 0.05 && dotProduct > highestDotProduct && dotProduct >= 0.90) {
+        highestDotProduct = dotProduct;
+        newPano = coords[i];
+      }
+    }
+
+
+    if (newPano) {
+      selectedPano = newPano;
+      if (selectedPanoMarker) {
+        map.removeLayer(selectedPanoMarker)
+      }
+      selectedPanoMarker = L.marker(L.latLng(newPano.lat, newPano.lon)).addTo(map);
+      //destroyViewer()
+      displayPano(newPano)
+    }
+  })
 
   longitudeNorth = getNorth(pano)
 
-  panoViewer.on('click', async (e, data) => {
-    console.log(data.longitude)
-  })
+
 
   switchMapToPanoLayout(pano);
   hideMapControls();
@@ -198,8 +244,6 @@ function getNorth(pano) {
   let unknown11 = pano.heading[3];
   let rad;
 
-  console.log(unknown10)
-  console.log(unknown11)
   if (unknown10 <= 10_000) {
     if (unknown10 > DEGREES90STEPS) {
       unknown10 = DEGREES90STEPS
@@ -221,15 +265,10 @@ function getNorth(pano) {
     }
   }
 
-  console.log(rad)
 
   let result = LONGITUDE_OFFSET - rad
   result += 2 * Math.PI
   result %= (2 * Math.PI)
-
-  //result = result * 360 / (2 * Math.PI)
-
-  console.log("north: " + result)
 
   return result
 }
