@@ -3,6 +3,8 @@ import { LookaroundAdapter } from "/static/adapter.js";
 import { parseAnchorParams } from "/static/util.js";
 import { Authenticator } from "/static/auth.js";
 
+const LONGITUDE_OFFSET = 2.61799387799;
+
 function initMap() {
   let map = L.map("map", {
     center: [params.center[1], params.center[2]],
@@ -19,7 +21,7 @@ function initMap() {
     tint: "light",
     keepBuffer: 6,
     attribution: '© Apple',
-  }).addTo(map);
+  });
   const appleRoadDarkTiles = L.tileLayer.appleMapsTiles(auth, {
     maxZoom: 19,
     type: "road",
@@ -49,7 +51,7 @@ function initMap() {
       keepBuffer: 6,
       attribution: "© Google",
     }
-  );
+  ).addTo(map);
   const osmTiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     keepBuffer: 6,
@@ -160,11 +162,17 @@ function displayPano(pano) {
       minFov: 10,
       maxFov: 70,
       defaultLat: 0,
-      defaultLong: -0.523598776, // 60° (the center of the first face) minus 90°
+      //defaultLong: -0.523598776, // 60° (the center of the first face) minus 90°
       defaultZoomLvl: 10,
       navbar: null,
     });
   }
+
+  longitudeNorth = getNorth(pano)
+
+  panoViewer.on('click', async (e, data) => {
+    console.log(data.longitude)
+  })
 
   switchMapToPanoLayout(pano);
   hideMapControls();
@@ -177,6 +185,65 @@ function displayPano(pano) {
     <small>${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)} |
     ${pano.date}</small>
   `;
+}
+
+
+function getNorth(pano) {
+
+  const MAX_UNKNOWN_10 = 16383;
+  const UNKNOWN_11_MID = 8192;
+  const DEGREES90STEPS = 2200;
+
+  let unknown10 = pano.heading[2];
+  let unknown11 = pano.heading[3];
+  let rad;
+
+  console.log(unknown10)
+  console.log(unknown11)
+  if (unknown10 <= 10_000) {
+    if (unknown10 > DEGREES90STEPS) {
+      unknown10 = DEGREES90STEPS
+    }
+
+    if (unknown11 < UNKNOWN_11_MID) {
+      rad = 0.5 * Math.PI  - (unknown10 / DEGREES90STEPS * (Math.PI / 2))
+    } else {
+      rad = 1.5 * Math.PI + (unknown10 / DEGREES90STEPS * (Math.PI / 2))
+    }
+  } else {
+    if (MAX_UNKNOWN_10 - unknown10 > DEGREES90STEPS) {
+      unknown10 = MAX_UNKNOWN_10 - DEGREES90STEPS;
+    }
+    if (unknown11 < 8192) {
+      rad = 0.5 * Math.PI + ((MAX_UNKNOWN_10 - unknown10) / DEGREES90STEPS * (Math.PI / 2))
+    } else {
+      rad = 1.5 * Math.PI - ((MAX_UNKNOWN_10 - unknown10) / DEGREES90STEPS * Math.PI / 2)
+    }
+  }
+
+  console.log(rad)
+
+  let result = LONGITUDE_OFFSET - rad
+  result += 2 * Math.PI
+  result %= (2 * Math.PI)
+
+  //result = result * 360 / (2 * Math.PI)
+
+  console.log("north: " + result)
+
+  return result
+}
+
+
+function getDistance(lat1, lon1, lat2, lon2) {
+  lon1 = lon1 * (2 * Math.PI) / 360
+  lon2 = lon2 * (2 * Math.PI) / 360
+  lat1 = lat1 * (2 * Math.PI) / 360
+  lat2 = lat2 * (2 * Math.PI) / 360
+
+  let x = (lon1 - lon2) * Math.cos((lat1 + lat2) / 2.0);
+  let y = lat1 - lat2;
+  return Math.sqrt(x * x + y * y) * 6371.0
 }
 
 function switchMapToPanoLayout(pano) {
@@ -226,6 +293,8 @@ await auth.init();
 let panoViewer = null;
 let selectedPano = null;
 let selectedPanoMarker = null;
+let longitudeNorth = 0.0;
+
 document.querySelector("#close-pano").addEventListener("click", (e) => { closePano(); });
 
 const params = parseAnchorParams();
