@@ -151,9 +151,16 @@ async function fetchAndDisplayPanoAt(lat, lon) {
 }
 
 function displayPano(pano) {
+
+
+
   document.querySelector("#pano").style.display = "block";
   document.querySelector("#pano").style.width = "100vw";
   if (panoViewer) {
+
+
+    let oldAngle = panoViewer.getPosition().longitude
+
     panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
       showLoader: false,
     });
@@ -161,13 +168,17 @@ function displayPano(pano) {
     panoViewer.off('click');
 
     if (xDirectionMoved !== null && yDirectionMoved !== null) {
-      let angleWanted = Math.atan2(-yDirectionMoved, xDirectionMoved) + Math.PI / 2 + 2 * Math.PI;
+      let angleWanted = Math.atan2(-yDirectionMoved, xDirectionMoved) + 2.5 * Math.PI + getNorth(pano);
       angleWanted %= (2 * Math.PI)
 
-      panoViewer.rotate({
-        longitude: angleWanted + getNorth(pano),
-        latitude: 0
-      });
+      if (Math.abs(angleWanted - oldAngle) > 0.2 && Math.abs(angleWanted - oldAngle) < 2 * Math.PI - 0.2) {
+        panoViewer.rotate({
+          longitude: angleWanted,
+          latitude: 0
+        });
+      }
+
+
     }
   } else {
     panoViewer = new PhotoSphereViewer.Viewer({
@@ -181,42 +192,43 @@ function displayPano(pano) {
       defaultZoomLvl: 10,
       navbar: null,
     });
-
   }
 
   panoViewer.on('click', async (e, data) => {
-    if (data.rightclick) { //move with right click not allowed (preferred only move with left click, but currently with mouse wheel possible)
+    if (data.rightclick) { //ignore right click for moving (preferred only move with left click, but currently with mouse wheel possible)
       return;
     }
 
-    if (data.latitude >= 0.2) { //too high in the sky to move
+    if (data.latitude >= 0.2) { //click was too high in the sky to move
       return;
     }
 
-    //get close coords
-    const response1 = await fetch(`/closestTiles/${pano.lat}/${pano.lon}/`);
-    let coords = await response1.json();
-    let lng_clicked = data.longitude
-
+    //direction-vector of the click where (0,1) is north and (1,0) is east
+    let lng_clicked = data.longitude;
     let x = Math.sin(lng_clicked - longitudeNorth)
     let y = Math.cos(lng_clicked - longitudeNorth)
 
     xDirectionMoved = x;
     yDirectionMoved = y;
 
+    //check how far up or down the user clicked and convert it into an approximate distance
     let latitudeClicked = data.latitude;
     if (latitudeClicked >= -0.03) {
       latitudeClicked = -0.03;
     }
-
     let distanceWanted = Math.cos(latitudeClicked * -1) * CAMERA_HEIGHT_METERS / Math.sin(latitudeClicked * -1)
 
     let minDiffToDistanceWanted = 1000;
+    let bestDotProduct = -2.0;
     let distanceFound = 0;
     let newPano;
 
-    for (let i = 0; i < coords.length; i++) {
+    //get coords on the current tile and on the neighboring tiles
+    const response1 = await fetch(`/closestTiles/${pano.lat}/${pano.lon}/`);
+    let coords = await response1.json();
 
+    //get the best pano to move to
+    for (let i = 0; i < coords.length; i++) {
       let xVec = parseFloat(coords[i].lon) - parseFloat(pano.lon);
       let yVec = parseFloat(coords[i].lat) - parseFloat(pano.lat);
 
@@ -227,27 +239,28 @@ function displayPano(pano) {
       let distance = getDistance(coords[i].lon, coords[i].lat, pano.lon, pano.lat) * 1000
 
       let dotProduct = (xVec * x + yVec * y) / (Math.sqrt(x * x + y * y) * Math.sqrt(xVec * xVec + yVec * yVec));
-      if (Math.abs(distanceWanted - distance) < minDiffToDistanceWanted && dotProduct >= 0.90) {
+
+      bestDotProduct = Math.max(dotProduct, bestDotProduct)
+
+      if (Math.abs(distanceWanted - distance) < minDiffToDistanceWanted && dotProduct >= 0.97) {
         minDiffToDistanceWanted = Math.abs(distanceWanted - distance)
         distanceFound = distance;
         newPano = coords[i];
       }
     }
 
+    //show the new pano, if one was found
     if (newPano) {
       selectedPano = newPano;
       if (selectedPanoMarker) {
         map.removeLayer(selectedPanoMarker)
       }
       selectedPanoMarker = L.marker(L.latLng(newPano.lat, newPano.lon)).addTo(map);
-      //destroyViewer()
       displayPano(newPano)
     }
   })
 
   longitudeNorth = getNorth(pano)
-
-
 
   switchMapToPanoLayout(pano);
   hideMapControls();
@@ -262,45 +275,23 @@ function displayPano(pano) {
   `;
 }
 
-
-
 function getNorth(pano) {
-
-  const MAX_UNKNOWN_10 = 16383;
+  const MAX_UNKNOWN_10 = 16384;
   const UNKNOWN_11_MID = 8192;
-  const DEGREES90STEPS = 2200;
 
   let unknown10 = pano.heading[2];
   let unknown11 = pano.heading[3];
-  let rad;
 
-  if (unknown10 <= 10_000) {
-    if (unknown10 > DEGREES90STEPS) {
-      unknown10 = DEGREES90STEPS
-    }
-
-    if (unknown11 < UNKNOWN_11_MID) {
-      rad = 0.5 * Math.PI  - (unknown10 / DEGREES90STEPS * (Math.PI / 2))
-    } else {
-      rad = 1.5 * Math.PI + (unknown10 / DEGREES90STEPS * (Math.PI / 2))
-    }
-  } else {
-    if (MAX_UNKNOWN_10 - unknown10 > DEGREES90STEPS) {
-      unknown10 = MAX_UNKNOWN_10 - DEGREES90STEPS;
-    }
-    if (unknown11 < 8192) {
-      rad = 0.5 * Math.PI + ((MAX_UNKNOWN_10 - unknown10) / DEGREES90STEPS * (Math.PI / 2))
-    } else {
-      rad = 1.5 * Math.PI - ((MAX_UNKNOWN_10 - unknown10) / DEGREES90STEPS * Math.PI / 2)
-    }
+  if (unknown10 >= 10_000) {
+    unknown10 -= MAX_UNKNOWN_10;
   }
 
+  unknown11 -= UNKNOWN_11_MID;
 
-  let result = LONGITUDE_OFFSET - rad
-  result += 2 * Math.PI
-  result %= (2 * Math.PI)
+  let rad = Math.atan2(unknown10, -unknown11) + 1.5 * Math.PI + LONGITUDE_OFFSET;
+  rad %= (2 * Math.PI)
 
-  return result
+  return rad
 }
 
 
