@@ -11,6 +11,6 @@ class CustomJSONEncoder(JSONEncoder):
                 "lat": o.lat,
                 "lon": o.lon,
                 "date": o.date,
-                "heading": o.heading
+                "north": o.north
             }
         return super().default(o)

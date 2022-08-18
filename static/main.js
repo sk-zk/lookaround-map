@@ -155,7 +155,7 @@ async function displayPano(pano) {
     await panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
       showLoader: false,
       sphereCorrection: {
-        pan: getNorth(pano),
+        pan: pano.north + LONGITUDE_OFFSET,
       }
     });
     panoViewer.off('click'); //remove old click-EventListener
@@ -171,7 +171,7 @@ async function displayPano(pano) {
       defaultZoomLvl: 10,
       navbar: null,
       sphereCorrection: {
-        pan: getNorth(pano),
+        pan: pano.north + LONGITUDE_OFFSET,
       },
       plugins: [
         [PhotoSphereViewer.CompassPlugin, {
@@ -268,28 +268,6 @@ async function displayPano(pano) {
     ${pano.date}</small>
   `;
 }
-
-//returns the longitude of the given photo sphere, where north in the real world is
-//not 100% accurate, but it does get the job done
-function getNorth(pano) {
-  const MAX_UNKNOWN_10 = 16384;
-  const UNKNOWN_11_MID = 8192;
-
-  let unknown10 = pano.heading[2];
-  let unknown11 = pano.heading[3];
-
-  if (unknown10 >= 10_000) {
-    unknown10 -= MAX_UNKNOWN_10;
-  }
-
-  unknown11 -= UNKNOWN_11_MID;
-
-  let rad = Math.atan2(unknown10, -unknown11) + 1.5 * Math.PI + LONGITUDE_OFFSET;
-  rad %= (2 * Math.PI);
-
-  return rad;
-}
-
 
 function getDistanceInKm(lat1, lon1, lat2, lon2) {
   lon1 = lon1 * (2 * Math.PI) / 360;
