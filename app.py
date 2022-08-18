@@ -6,6 +6,7 @@ import io
 import mimetypes
 from PIL import Image
 import pillow_heif
+import requests
 import sys
 
 sys.path.append("./lookaround")
@@ -17,9 +18,11 @@ from util import CustomJSONEncoder
 from geo import haversine_distance
 
 
+session = requests.session()
+
 @lru_cache(maxsize=2**16)
 def get_coverage_tile_cached(x, y):
-    return get_coverage_tile(x, y)
+    return get_coverage_tile(x, y, session=session)
 
 
 def create_app():
@@ -32,6 +35,7 @@ def create_app():
     mimetypes.add_type('text/javascript', '.js')
     pillow_heif.register_heif_opener()
     auth = Authenticator()
+
 
     @app.route("/")
     def index():
@@ -72,7 +76,8 @@ def create_app():
     # Panorama faces are passed through this server because of CORS.
     @app.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/<int:face>/")
     def relay_pano_segment(panoid, region_id, zoom, face):
-        heic_bytes = get_pano_face(panoid, region_id, face, zoom, auth)
+        heic_bytes = get_pano_face(panoid, region_id, face, zoom, auth, session=session)
+
         with Image.open(io.BytesIO(heic_bytes)) as image:
             with io.BytesIO() as output:
                 image.save(output, format='jpeg', quality=85)
@@ -88,7 +93,7 @@ def create_app():
     def relay_full_pano(panoid, region_id, zoom):
         heic_array = []
         for i in range(4):
-            heic_bytes = get_pano_face(panoid, region_id, i, zoom, auth)
+            heic_bytes = get_pano_face(panoid, region_id, i, zoom, auth, session=session)
             with Image.open(io.BytesIO(heic_bytes)) as image:
                 heic_array.append(image)
 
