@@ -225,15 +225,15 @@ async function displayPano(pano) {
       }
 
       //distance to current tested coordinate in meters
-      let distance = getDistanceInKm(coords[i].lon, coords[i].lat, pano.lon, pano.lat) * 1000
+      let distance = getDistanceInKm(coords[i].lon, coords[i].lat, pano.lon, pano.lat) * 1000;
 
       //tests similarity between clicked-vector and currentCoord->currentTestedCoord
       let dotProduct = (xVec * x + yVec * y) / (Math.sqrt(x * x + y * y) * Math.sqrt(xVec * xVec + yVec * yVec));
 
-      bestDotProduct = Math.max(dotProduct, bestDotProduct)
+      bestDotProduct = Math.max(dotProduct, bestDotProduct);
 
       if (Math.abs(distanceWanted - distance) < minDiffToDistanceWanted && dotProduct >= 0.97) {
-        minDiffToDistanceWanted = Math.abs(distanceWanted - distance)
+        minDiffToDistanceWanted = Math.abs(distanceWanted - distance);
         distanceFound = distance;
         newPano = coords[i];
       }
@@ -243,10 +243,10 @@ async function displayPano(pano) {
     if (newPano) {
       selectedPano = newPano;
       if (selectedPanoMarker) {
-        map.removeLayer(selectedPanoMarker)
+        map.removeLayer(selectedPanoMarker);
       }
       selectedPanoMarker = L.marker(L.latLng(newPano.lat, newPano.lon)).addTo(map);
-      displayPano(newPano)
+      displayPano(newPano);
     }
   })
 
@@ -279,21 +279,21 @@ function getNorth(pano) {
   unknown11 -= UNKNOWN_11_MID;
 
   let rad = Math.atan2(unknown10, -unknown11) + 1.5 * Math.PI + LONGITUDE_OFFSET;
-  rad %= (2 * Math.PI)
+  rad %= (2 * Math.PI);
 
-  return rad
+  return rad;
 }
 
 
 function getDistanceInKm(lat1, lon1, lat2, lon2) {
-  lon1 = lon1 * (2 * Math.PI) / 360
-  lon2 = lon2 * (2 * Math.PI) / 360
-  lat1 = lat1 * (2 * Math.PI) / 360
-  lat2 = lat2 * (2 * Math.PI) / 360
+  lon1 = lon1 * (2 * Math.PI) / 360;
+  lon2 = lon2 * (2 * Math.PI) / 360;
+  lat1 = lat1 * (2 * Math.PI) / 360;
+  lat2 = lat2 * (2 * Math.PI) / 360;
 
   let x = (lon1 - lon2) * Math.cos((lat1 + lat2) / 2.0);
   let y = lat1 - lat2;
-  return Math.sqrt(x * x + y * y) * 6371.0
+  return Math.sqrt(x * x + y * y) * 6371.0;
 }
 
 function switchMapToPanoLayout(pano) {
