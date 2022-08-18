@@ -155,27 +155,13 @@ async function displayPano(pano) {
   document.querySelector("#pano").style.width = "100vw";
 
   if (panoViewer) {
-    let oldAngle = panoViewer.getPosition().longitude
-
     await panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
       showLoader: false,
-    });
-
-    //remove old click-EventListener
-    panoViewer.off('click');
-
-    //if the coverage shifts to one that was taken while driving in the different direction, the view has to be adjusted
-    if (xDirectionMoved !== null && yDirectionMoved !== null) {
-      let angleWanted = Math.atan2(-yDirectionMoved, xDirectionMoved) + 2.5 * Math.PI + getNorth(pano);
-      angleWanted %= (2 * Math.PI)
-
-      if (Math.abs(angleWanted - oldAngle) > 0.2 && Math.abs(angleWanted - oldAngle) < 2 * Math.PI - 0.2) {
-        panoViewer.rotate({
-          longitude: angleWanted,
-          latitude: 0
-        });
+      sphereCorrection: {
+        pan: getNorth(pano),
       }
-    }
+    });
+    panoViewer.off('click'); //remove old click-EventListener
   } else {
     panoViewer = new PhotoSphereViewer.Viewer({
       container: document.querySelector("#pano"),
@@ -184,9 +170,12 @@ async function displayPano(pano) {
       minFov: 10,
       maxFov: 70,
       defaultLat: 0,
-      //defaultLong: -0.523598776, // 60° (the center of the first face) minus 90°
+      defaultLong: 0,
       defaultZoomLvl: 10,
       navbar: null,
+      sphereCorrection: {
+        pan: getNorth(pano),
+      }
     });
   }
 
@@ -201,8 +190,8 @@ async function displayPano(pano) {
 
     //direction-vector of the click where (0,1) is north and (1,0) is east
     let lng_clicked = data.longitude;
-    let x = Math.sin(lng_clicked - longitudeNorth)
-    let y = Math.cos(lng_clicked - longitudeNorth)
+    let x = Math.sin(lng_clicked);
+    let y = Math.cos(lng_clicked);
     xDirectionMoved = x;
     yDirectionMoved = y;
 
@@ -260,8 +249,6 @@ async function displayPano(pano) {
       displayPano(newPano)
     }
   })
-
-  longitudeNorth = getNorth(pano)
 
   switchMapToPanoLayout(pano);
   hideMapControls();
@@ -354,7 +341,6 @@ let xDirectionMoved = null;
 let yDirectionMoved = null;
 let selectedPano = null;
 let selectedPanoMarker = null;
-let longitudeNorth = 0.0;
 
 document.querySelector("#close-pano").addEventListener("click", (e) => { closePano(); });
 
