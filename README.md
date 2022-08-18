@@ -4,8 +4,8 @@ A web viewer for Apple Look Around, usable on any device.
 ### Complete:
 - [x] See where coverage exists (at z=16 or higher)
 - [x] Select and view panoramas
-- [x] Display a compass
-- [x] Implement movement 
+- [x] Compass
+- [x] Simple movement
 
 ### TODO:
 - [ ] Render top and bottom faces of panoramas
