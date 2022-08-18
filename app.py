@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, render_template, send_file
 from flask_cors import CORS
+from functools import lru_cache
 import gc
 import io
 import mimetypes
@@ -14,6 +15,12 @@ from lookaround import get_coverage_tile, get_pano_face
 
 from util import CustomJSONEncoder
 from geo import haversine_distance
+
+
+@lru_cache(maxsize=2**16)
+def get_coverage_tile_cached(x, y):
+    print("didnt cache")
+    return get_coverage_tile(x, y)
 
 
 def create_app():
@@ -34,13 +41,13 @@ def create_app():
     # Coverage tiles are passed through this server because of CORS.
     @app.route("/tiles/coverage/<int:x>/<int:y>/")
     def relay_coverage_tile(x, y):
-        panos = get_coverage_tile(x, y)
+        panos = get_coverage_tile_cached(x, y)
         return jsonify(panos)
     
     @app.route("/closest/<float(signed=True):lat>/<float(signed=True):lon>/")
     def closest_pano_to_coord(lat, lon):
         x, y = wgs84_to_tile_coord(lat, lon, 17)
-        panos = get_coverage_tile(x, y)
+        panos = get_coverage_tile_cached(x, y)
         if len(panos) == 0:
             return jsonify(None)
 
@@ -59,7 +66,7 @@ def create_app():
         x, y = wgs84_to_tile_coord(lat, lon, 17)
         for i in range(x-1, x+2):
             for j in range (y-1, y+2):
-                tile_panos = get_coverage_tile(i, j)
+                tile_panos = get_coverage_tile_cached(i, j)
                 panos.extend(tile_panos)
         return jsonify(panos)
 
