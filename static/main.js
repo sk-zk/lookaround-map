@@ -151,22 +151,20 @@ async function fetchAndDisplayPanoAt(lat, lon) {
 }
 
 function displayPano(pano) {
-
-
-
   document.querySelector("#pano").style.display = "block";
   document.querySelector("#pano").style.width = "100vw";
+
   if (panoViewer) {
-
-
     let oldAngle = panoViewer.getPosition().longitude
 
     panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
       showLoader: false,
     });
 
+    //remove old click-EventListener
     panoViewer.off('click');
 
+    //if the coverage shifts to one that was taken while driving in the different direction, the view has to be adjusted
     if (xDirectionMoved !== null && yDirectionMoved !== null) {
       let angleWanted = Math.atan2(-yDirectionMoved, xDirectionMoved) + 2.5 * Math.PI + getNorth(pano);
       angleWanted %= (2 * Math.PI)
@@ -177,8 +175,6 @@ function displayPano(pano) {
           latitude: 0
         });
       }
-
-
     }
   } else {
     panoViewer = new PhotoSphereViewer.Viewer({
@@ -207,11 +203,11 @@ function displayPano(pano) {
     let lng_clicked = data.longitude;
     let x = Math.sin(lng_clicked - longitudeNorth)
     let y = Math.cos(lng_clicked - longitudeNorth)
-
     xDirectionMoved = x;
     yDirectionMoved = y;
 
-    //check how far up or down the user clicked and convert it into an approximate distance
+    //check how far up or down the user clicked and convert it into an approximated distance
+    //'approximated' because the height of the apple-camera is not known
     let latitudeClicked = data.latitude;
     if (latitudeClicked >= -0.03) {
       latitudeClicked = -0.03;
@@ -223,21 +219,26 @@ function displayPano(pano) {
     let distanceFound = 0;
     let newPano;
 
-    //get coords on the current tile and on the neighboring tiles
+    //get all the coords on the current tile and on the 8 neighboring tiles
+    //neighboring tiles because you could cross tiles while moving
     const response1 = await fetch(`/closestTiles/${pano.lat}/${pano.lon}/`);
     let coords = await response1.json();
 
     //get the best pano to move to
+    //from the coordinates that are in a similar direction like the direction clicked (dot-product),
+    //find the coordinate that is the closest to the wanted distance
     for (let i = 0; i < coords.length; i++) {
       let xVec = parseFloat(coords[i].lon) - parseFloat(pano.lon);
       let yVec = parseFloat(coords[i].lat) - parseFloat(pano.lat);
 
-      if (coords[i].panoid === pano.panoid) {
+      if (coords[i].panoid === pano.panoid) { //current pano
         continue;
       }
 
-      let distance = getDistance(coords[i].lon, coords[i].lat, pano.lon, pano.lat) * 1000
+      //distance to current tested coordinate in meters
+      let distance = getDistanceInKm(coords[i].lon, coords[i].lat, pano.lon, pano.lat) * 1000
 
+      //tests similarity between clicked-vector and currentCoord->currentTestedCoord
       let dotProduct = (xVec * x + yVec * y) / (Math.sqrt(x * x + y * y) * Math.sqrt(xVec * xVec + yVec * yVec));
 
       bestDotProduct = Math.max(dotProduct, bestDotProduct)
@@ -275,6 +276,8 @@ function displayPano(pano) {
   `;
 }
 
+//returns the longitude of the given photo sphere, where north in the real world is
+//not 100% accurate, but it does get the job done
 function getNorth(pano) {
   const MAX_UNKNOWN_10 = 16384;
   const UNKNOWN_11_MID = 8192;
@@ -295,7 +298,7 @@ function getNorth(pano) {
 }
 
 
-function getDistance(lat1, lon1, lat2, lon2) {
+function getDistanceInKm(lat1, lon1, lat2, lon2) {
   lon1 = lon1 * (2 * Math.PI) / 360
   lon2 = lon2 * (2 * Math.PI) / 360
   lat1 = lat1 * (2 * Math.PI) / 360
@@ -322,10 +325,6 @@ function hideMapControls() {
 function destroyViewer() {
   if (panoViewer) {
     panoViewer.destroy();
-    /*const panoContainer = document.querySelector("#pano");
-    if (panoContainer.photoSphereViewer) {
-      panoContainer.photoSphereViewer.destroy();
-      panoContainer.style.display = "none";*/
     panoViewer = null;
   }
 }
