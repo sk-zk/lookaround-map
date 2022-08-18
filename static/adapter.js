@@ -129,11 +129,10 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         degToRad(60),
         degToRad(28),
         degToRad(92.5),
-      ],
-      /*
+      ], /*
       [
         radius,
-        36 * 2,
+        36 * 4,
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(0),
         degToRad(360),
@@ -142,14 +141,13 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       ],
       [
         radius,
-        36 * 2,
+        36 * 4,
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(0),
         degToRad(360),
         degToRad(28 + 92.5),
         degToRad(59.5),
-      ],
-      */
+      ], */
     ];
     const geometries = [];
     this.meshesForFrustum = [];
@@ -157,15 +155,20 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       const geom = new THREE.SphereGeometry(...faces[i]).scale(-1, 1, 1);
       if (i < 4) {
         this.__setSideUV(geom, i);
+      } else {
+        this.__setTopBottomUV(geom, i);
+      }
+      /*if (i == 4) {
+        geom.rotateY(????);
+      }
+      else*/ if (i == 5) {
+        geom.rotateY(degToRad(27.5 - 90));
       }
       geometries.push(geom);
       this.meshesForFrustum.push(new THREE.Mesh(geom, []));
     }
 
-    const mergedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(
-      geometries,
-      true
-    );
+    const mergedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries, true);
     const mesh = new THREE.Mesh(
       mergedGeometry,
       Array(FACES).fill(new THREE.MeshBasicMaterial())
@@ -187,6 +190,26 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         ? 1 - 1/22  // 120° faces  
         : 1 - 1/12; // 60° faces
       u *= overlap;
+      uv.setXY(i, u, v);
+    }
+    uv.needsUpdate = true;
+  }
+
+  __setTopBottomUV(geom, faceIdx) {
+    if (faceIdx < 4) return;
+
+    const uv = geom.getAttribute("uv");
+    const position = geom.getAttribute("position")
+    const largestX =
+      faceIdx == 4 ? position.getX(position.count - 1) : position.getX(0);
+    for (let i = 0; i < uv.count; i++) {
+      let u = position.getX(i);
+      let v = position.getZ(i);
+      u =
+        i == 4
+          ?  u / (2 *  largestX) + 0.5
+          : (u / (2 * -largestX) + 0.5);
+      v = v / (2 * largestX) + 0.5;
       uv.setXY(i, u, v);
     }
     uv.needsUpdate = true;
@@ -281,7 +304,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     // for some reason, psv.config.sphereCorrection doesn't get updated when
     // a new pano is loaded, so I worked around it by just making the caller
     // write it into a field on the viewer
-    const rotation = this.psv.panWorkaround ?? this.psv.config.sphereCorrection.pan;
+    const rotation = this.__getCurrentNorthOffset();
     projScreenMatrix.multiplyMatrices(
       projScreenMatrix,
       new THREE.Matrix4().makeRotationY(rotation),
@@ -303,5 +326,9 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       }
     }
     return visibleFaces;
+  }
+
+  __getCurrentNorthOffset() {
+    return this.psv.panWorkaround ?? this.psv.config.sphereCorrection.pan;
   }
 }
