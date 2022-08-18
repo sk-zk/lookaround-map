@@ -3,8 +3,8 @@ import { LookaroundAdapter } from "/static/adapter.js";
 import { parseAnchorParams } from "/static/util.js";
 import { Authenticator } from "/static/auth.js";
 
-const LONGITUDE_OFFSET = 2.61799387799 //60 + 90 degrees;
-const CAMERA_HEIGHT_METERS = 2.4 //the approximated height of the cameras on the cars that took the coverage
+const LONGITUDE_OFFSET = 1.04 // 60°, which is the center of face 0
+const CAMERA_HEIGHT_METERS = 2.4 // the approximated height of the cameras on the cars that took the coverage
 
 function initMap() {
   let map = L.map("map", {
