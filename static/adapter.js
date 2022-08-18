@@ -278,9 +278,13 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       camera.projectionMatrix,
       camera.matrixWorldInverse
     );
+    // for some reason, psv.config.sphereCorrection doesn't get updated when
+    // a new pano is loaded, so I worked around it by just making the caller
+    // write it into a field on the viewer
+    const rotation = this.psv.panWorkaround ?? this.psv.config.sphereCorrection.pan;
     projScreenMatrix.multiplyMatrices(
       projScreenMatrix,
-      new THREE.Matrix4().makeRotationY(this.psv.config.sphereCorrection.pan),
+      new THREE.Matrix4().makeRotationY(rotation),
     );
     frustum.setFromProjectionMatrix(projScreenMatrix);
 

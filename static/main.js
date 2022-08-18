@@ -152,6 +152,10 @@ async function fetchAndDisplayPanoAt(lat, lon) {
 
 async function displayPano(pano) {
   if (panoViewer) {
+    // for some reason, setPanorama doesn't appear to store the
+    // new sphereCorrection anywhere, so I'm just passing it to the
+    // viewer adapter manually
+    panoViewer.panWorkaround = pano.north + LONGITUDE_OFFSET;
     await panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
       showLoader: false,
       sphereCorrection: {
