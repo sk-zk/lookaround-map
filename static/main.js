@@ -151,9 +151,6 @@ async function fetchAndDisplayPanoAt(lat, lon) {
 }
 
 async function displayPano(pano) {
-  document.querySelector("#pano").style.display = "block";
-  document.querySelector("#pano").style.width = "100vw";
-
   if (panoViewer) {
     await panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
       showLoader: false,
@@ -175,8 +172,17 @@ async function displayPano(pano) {
       navbar: null,
       sphereCorrection: {
         pan: getNorth(pano),
-      }
+      },
+      plugins: [
+        [PhotoSphereViewer.CompassPlugin, {
+           size: "80px",
+          }],
+      ],
     });
+    const compass = document.getElementsByClassName("psv-compass")[0];
+    // their compass plugin doesn't support directly passing in an absolute position by default,
+    // so I gotta resort to this until I get around to modifying it
+    compass.style.top = "calc(100vh - 270px - 90px)";
   }
 
   panoViewer.on('click', async (e, data) => {
