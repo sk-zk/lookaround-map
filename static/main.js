@@ -22,7 +22,7 @@ function initMap() {
     tint: "light",
     keepBuffer: 6,
     attribution: '© Apple',
-  });
+  }).addTo(map);
   const appleRoadDarkTiles = L.tileLayer.appleMapsTiles(auth, {
     maxZoom: 19,
     type: "road",
@@ -52,7 +52,7 @@ function initMap() {
       keepBuffer: 6,
       attribution: "© Google",
     }
-  ).addTo(map);
+  );
   const osmTiles = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     maxZoom: 19,
     keepBuffer: 6,
