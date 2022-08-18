@@ -3,6 +3,9 @@ import { LookaroundAdapter } from "/static/adapter.js";
 import { parseAnchorParams } from "/static/util.js";
 import { Authenticator } from "/static/auth.js";
 
+const LONGITUDE_OFFSET = 1.04 // 60°, which is the center of face 0
+const CAMERA_HEIGHT_METERS = 2.4 // the approximated height of the cameras on the cars that took the coverage
+
 function initMap() {
   let map = L.map("map", {
     center: [params.center[1], params.center[2]],
@@ -138,6 +141,8 @@ async function fetchAndDisplayPanoAt(lat, lon) {
     if (selectedPanoMarker) {
       map.removeLayer(selectedPanoMarker);
     }
+    xDirectionMoved = null;
+    yDirectionMoved = null;
     selectedPano = pano;
     selectedPanoMarker = L.marker(L.latLng(pano.lat, pano.lon)).addTo(map);
     //destroyExistingPanoViewer();
@@ -145,13 +150,19 @@ async function fetchAndDisplayPanoAt(lat, lon) {
   }
 }
 
-function displayPano(pano) {
-  document.querySelector("#pano").style.display = "block";
-  document.querySelector("#pano").style.width = "100vw";
+async function displayPano(pano) {
   if (panoViewer) {
-    panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
+    // for some reason, setPanorama doesn't appear to store the
+    // new sphereCorrection anywhere, so I'm just passing it to the
+    // viewer adapter manually
+    panoViewer.panWorkaround = pano.north + LONGITUDE_OFFSET;
+    await panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
       showLoader: false,
+      sphereCorrection: {
+        pan: pano.north + LONGITUDE_OFFSET,
+      }
     });
+    panoViewer.off('click'); //remove old click-EventListener
   } else {
     panoViewer = new PhotoSphereViewer.Viewer({
       container: document.querySelector("#pano"),
@@ -160,11 +171,94 @@ function displayPano(pano) {
       minFov: 10,
       maxFov: 70,
       defaultLat: 0,
-      defaultLong: -0.523598776, // 60° (the center of the first face) minus 90°
+      defaultLong: 0,
       defaultZoomLvl: 10,
       navbar: null,
+      sphereCorrection: {
+        pan: pano.north + LONGITUDE_OFFSET,
+      },
+      plugins: [
+        [PhotoSphereViewer.CompassPlugin, {
+           size: "80px",
+          }],
+      ],
     });
+    const compass = document.getElementsByClassName("psv-compass")[0];
+    // their compass plugin doesn't support directly passing in an absolute position by default,
+    // so I gotta resort to this until I get around to modifying it
+    compass.style.top = "calc(100vh - 270px - 90px)";
   }
+
+  panoViewer.on('click', async (e, data) => {
+    if (data.rightclick) { //ignore right click for moving (preferred only move with left click, but currently with mouse wheel possible)
+      return;
+    }
+
+    if (data.latitude >= 0.2) { //click was too high in the sky to move
+      return;
+    }
+
+    //direction-vector of the click where (0,1) is north and (1,0) is east
+    let lng_clicked = data.longitude;
+    let x = Math.sin(lng_clicked);
+    let y = Math.cos(lng_clicked);
+    xDirectionMoved = x;
+    yDirectionMoved = y;
+
+    //check how far up or down the user clicked and convert it into an approximated distance
+    //'approximated' because the height of the apple-camera is not known
+    let latitudeClicked = data.latitude;
+    if (latitudeClicked >= -0.03) {
+      latitudeClicked = -0.03;
+    }
+    let distanceWanted = Math.cos(latitudeClicked * -1) * CAMERA_HEIGHT_METERS / Math.sin(latitudeClicked * -1)
+
+    let minDiffToDistanceWanted = 10;
+    let bestDotProduct = -2.0;
+    let distanceFound = 0;
+    let newPano;
+
+    //get all the coords on the current tile and on the 8 neighboring tiles
+    //neighboring tiles because you could cross tiles while moving
+    const response1 = await fetch(`/closestTiles/${pano.lat}/${pano.lon}/`);
+    let coords = await response1.json();
+
+    //get the best pano to move to
+    //from the coordinates that are in a similar direction like the direction clicked (dot-product),
+    //find the coordinate that is the closest to the wanted distance
+    for (let i = 0; i < coords.length; i++) {
+      let xVec = parseFloat(coords[i].lon) - parseFloat(pano.lon);
+      let yVec = parseFloat(coords[i].lat) - parseFloat(pano.lat);
+
+      if (coords[i].panoid === pano.panoid) { //current pano
+        continue;
+      }
+
+      //distance to current tested coordinate in meters
+      let distance = getDistanceInKm(coords[i].lon, coords[i].lat, pano.lon, pano.lat) * 1000;
+
+      //tests similarity between clicked-vector and currentCoord->currentTestedCoord
+      let dotProduct = (xVec * x + yVec * y) / (Math.sqrt(x * x + y * y) * Math.sqrt(xVec * xVec + yVec * yVec));
+
+      bestDotProduct = Math.max(dotProduct, bestDotProduct);
+
+      if (Math.abs(distanceWanted - distance) < minDiffToDistanceWanted && dotProduct >= 0.97) {
+        minDiffToDistanceWanted = Math.abs(distanceWanted - distance);
+        distanceFound = distance;
+        newPano = coords[i];
+      }
+    }
+
+    //show the new pano, if one was found
+    if (newPano) {
+      selectedPano = newPano;
+      if (selectedPanoMarker) {
+        map.removeLayer(selectedPanoMarker);
+      }
+      selectedPanoMarker = L.marker(L.latLng(newPano.lat, newPano.lon)).addTo(map);
+      displayPano(newPano);
+    }
+  })
 
   switchMapToPanoLayout(pano);
   hideMapControls();
@@ -177,6 +271,17 @@ function displayPano(pano) {
     <small>${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)} |
     ${pano.date}</small>
   `;
+}
+
+function getDistanceInKm(lat1, lon1, lat2, lon2) {
+  lon1 = lon1 * (2 * Math.PI) / 360;
+  lon2 = lon2 * (2 * Math.PI) / 360;
+  lat1 = lat1 * (2 * Math.PI) / 360;
+  lat2 = lat2 * (2 * Math.PI) / 360;
+
+  let x = (lon1 - lon2) * Math.cos((lat1 + lat2) / 2.0);
+  let y = lat1 - lat2;
+  return Math.sqrt(x * x + y * y) * 6371.0;
 }
 
 function switchMapToPanoLayout(pano) {
@@ -195,10 +300,6 @@ function hideMapControls() {
 function destroyViewer() {
   if (panoViewer) {
     panoViewer.destroy();
-    /*const panoContainer = document.querySelector("#pano");
-    if (panoContainer.photoSphereViewer) {
-      panoContainer.photoSphereViewer.destroy();
-      panoContainer.style.display = "none";*/
     panoViewer = null;
   }
 }
@@ -224,8 +325,11 @@ const auth = new Authenticator();
 await auth.init();
 
 let panoViewer = null;
+let xDirectionMoved = null;
+let yDirectionMoved = null;
 let selectedPano = null;
 let selectedPanoMarker = null;
+
 document.querySelector("#close-pano").addEventListener("click", (e) => { closePano(); });
 
 const params = parseAnchorParams();

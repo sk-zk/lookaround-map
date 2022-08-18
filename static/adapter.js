@@ -98,7 +98,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         radius,
         12 * 2,
         this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(0),
+        degToRad(0-90),
         degToRad(120),
         degToRad(28),
         degToRad(92.5),
@@ -107,7 +107,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         radius,
         6 * 2,
         this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(120),
+        degToRad(120-90),
         degToRad(60),
         degToRad(28),
         degToRad(92.5),
@@ -116,7 +116,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         radius,
         12 * 2,
         this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(180),
+        degToRad(180-90),
         degToRad(120),
         degToRad(28),
         degToRad(92.5),
@@ -125,7 +125,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         radius,
         6 * 2,
         this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(300),
+        degToRad(300-90),
         degToRad(60),
         degToRad(28),
         degToRad(92.5),
@@ -277,6 +277,14 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     projScreenMatrix.multiplyMatrices(
       camera.projectionMatrix,
       camera.matrixWorldInverse
+    );
+    // for some reason, psv.config.sphereCorrection doesn't get updated when
+    // a new pano is loaded, so I worked around it by just making the caller
+    // write it into a field on the viewer
+    const rotation = this.psv.panWorkaround ?? this.psv.config.sphereCorrection.pan;
+    projScreenMatrix.multiplyMatrices(
+      projScreenMatrix,
+      new THREE.Matrix4().makeRotationY(rotation),
     );
     frustum.setFromProjectionMatrix(projScreenMatrix);
 
