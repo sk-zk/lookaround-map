@@ -19,7 +19,6 @@ from geo import haversine_distance
 
 @lru_cache(maxsize=2**16)
 def get_coverage_tile_cached(x, y):
-    print("didnt cache")
     return get_coverage_tile(x, y)
 
 
