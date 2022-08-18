@@ -10,6 +10,7 @@ class CustomJSONEncoder(JSONEncoder):
                 "region_id": str(o.region_id),
                 "lat": o.lat,
                 "lon": o.lon,
-                "date": o.date
+                "date": o.date,
+                "heading": o.heading
             }
         return super().default(o)

@@ -53,6 +53,16 @@ def create_app():
                 closest = pano
         return jsonify(closest)
 
+    @app.route("/closestTiles/<float(signed=True):lat>/<float(signed=True):lon>/")
+    def closest_tiles(lat, lon):
+        panos = []
+        x, y = wgs84_to_tile_coord(lat, lon, 17)
+        for i in range(x-1, x+2):
+            for j in range (y-1, y+2):
+                tile_panos = get_coverage_tile(i, j)
+                panos.extend(tile_panos)
+        return jsonify(panos)
+
     # Panorama faces are passed through this server because of CORS.
     @app.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/<int:face>/")
     def relay_pano_segment(panoid, region_id, zoom, face):
