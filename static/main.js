@@ -150,14 +150,14 @@ async function fetchAndDisplayPanoAt(lat, lon) {
   }
 }
 
-function displayPano(pano) {
+async function displayPano(pano) {
   document.querySelector("#pano").style.display = "block";
   document.querySelector("#pano").style.width = "100vw";
 
   if (panoViewer) {
     let oldAngle = panoViewer.getPosition().longitude
 
-    panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
+    await panoViewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
       showLoader: false,
     });
 
@@ -214,7 +214,7 @@ function displayPano(pano) {
     }
     let distanceWanted = Math.cos(latitudeClicked * -1) * CAMERA_HEIGHT_METERS / Math.sin(latitudeClicked * -1)
 
-    let minDiffToDistanceWanted = 1000;
+    let minDiffToDistanceWanted = 10;
     let bestDotProduct = -2.0;
     let distanceFound = 0;
     let newPano;
