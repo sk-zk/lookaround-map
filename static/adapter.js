@@ -278,6 +278,10 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       camera.projectionMatrix,
       camera.matrixWorldInverse
     );
+    projScreenMatrix.multiplyMatrices(
+      projScreenMatrix,
+      new THREE.Matrix4().makeRotationY(this.psv.config.sphereCorrection.pan),
+    );
     frustum.setFromProjectionMatrix(projScreenMatrix);
 
     // TODO find a more elegant way to do this
