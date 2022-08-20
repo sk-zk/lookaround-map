@@ -8,6 +8,7 @@ A web viewer for Apple Look Around, usable on any device.
 - [x] Simple movement
 
 ### TODO:
+- [ ] Find pitch and roll values
 - [ ] Render top and bottom faces of panoramas
 - [ ] Find a raster blue line layer if it exists, or decode the vector layer
 - [ ] Move movement code into custom plugin which displays available locations
