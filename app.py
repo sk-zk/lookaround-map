@@ -115,11 +115,6 @@ def create_app():
             mimetype='image/jpeg'
         )
         gc.collect()
-        return response
-        
-    # TODO get the mainfest clientside as well
-    @app.route("/tokenp2/")
-    def get_token_p2():
-        return jsonify(auth.token_p2)
+        return response     
 
     return app

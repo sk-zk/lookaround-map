@@ -1,29 +1,16 @@
-const TOKEN_P1 = "4cjLaD4jGRwlQ9U"
-const MANIFEST_URL = "https://gspe35-ssl.ls.apple.com/geo_manifest/dynamic/config?application=geod" +
-    "&application_version=1&country_code=US&hardware=MacBookPro11,2&os=osx" +
-    "&os_build=20B29&os_version=11.0.1"
+const TOKEN_P1 = "4cjLaD4jGRwlQ9U";
+const TOKEN_P2 = "72xIzEBe0vHBmf9";
 
 export class Authenticator {
     constructor() {
-        this.tokenP2 = null;
-        this.resourceManifest = null;
-        this.sessionId = null;
-    }
-
-    async init() {
-        await this.refreshCredentials();
-    }
-
-    async refreshCredentials() {
         this.sessionId = this.#generateSessionId();
-        this.resourceManifest = await this.#getResourceManifest();
     }
 
     async authenticateUrl(url) {
         const urlObj = new URL(url);
 
         const tokenP3 = this.#generateTokenP3();
-        const token = TOKEN_P1 + this.tokenP2 + tokenP3;
+        const token = TOKEN_P1 + TOKEN_P2 + tokenP3;
         const timestamp = Math.floor(Date.now() / 1000) + 4200;
         const separator = urlObj.search ? "&" : "?";
 
@@ -49,14 +36,6 @@ export class Authenticator {
             id += digit.toString();
         }
         return id;
-    }
-
-    async #getResourceManifest() {
-        // TODO get the manifest clientside instead of this temp solution
-        // bc I didn't want to deal with protobuf right now
-        const response = await fetch("/tokenp2/");
-        this.tokenP2 = await response.json();
-        return null;
     }
 
     #generateTokenP3() {

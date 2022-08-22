@@ -322,7 +322,6 @@ function closePano() {
 
 
 const auth = new Authenticator();
-await auth.init();
 
 let panoViewer = null;
 let xDirectionMoved = null;
