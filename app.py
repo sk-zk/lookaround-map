@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, render_template, send_file
 from flask_cors import CORS
+from flask_compress import Compress
 from functools import lru_cache
 import gc
 import io
@@ -29,6 +30,10 @@ def create_app():
     app = Flask(__name__)
     CORS(app)
 
+    app.config["COMPRESS_REGISTER"] = False
+    compress = Compress()
+    compress.init_app(app)
+
     app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
     app.json_encoder = CustomJSONEncoder
     
@@ -43,11 +48,13 @@ def create_app():
 
     # Coverage tiles are passed through this server because of CORS.
     @app.route("/tiles/coverage/<int:x>/<int:y>/")
+    @compress.compressed()
     def relay_coverage_tile(x, y):
         panos = get_coverage_tile_cached(x, y)
         return jsonify(panos)
-    
+      
     @app.route("/closest/<float(signed=True):lat>/<float(signed=True):lon>/")
+    @compress.compressed()
     def closest_pano_to_coord(lat, lon):
         x, y = wgs84_to_tile_coord(lat, lon, 17)
         panos = get_coverage_tile_cached(x, y)
@@ -64,6 +71,7 @@ def create_app():
         return jsonify(closest)
 
     @app.route("/closestTiles/<float(signed=True):lat>/<float(signed=True):lon>/")
+    @compress.compressed()
     def closest_tiles(lat, lon):
         panos = []
         x, y = wgs84_to_tile_coord(lat, lon, 17)
