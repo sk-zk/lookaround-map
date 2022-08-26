@@ -1,6 +1,6 @@
 import "/static/layers.js";
 import { LookaroundAdapter } from "/static/adapter.js";
-import { parseAnchorParams } from "/static/util.js";
+import { parseHashParams } from "/static/util.js";
 import { Authenticator } from "/static/auth.js";
 
 const LONGITUDE_OFFSET = 1.07992247; // // 61.875°, which is the center of face 0
@@ -8,10 +8,10 @@ const CAMERA_HEIGHT_METERS = 2.4; // the approximated height of the cameras on t
 
 function initMap() {
   let map = L.map("map", {
-    center: [params.center[1], params.center[2]],
+    center: [params.center.latitude, params.center.longitude],
     minZoom: 3,
     maxZoom: 19,
-    zoom: params.center[0],
+    zoom: params.center.zoom,
     preferCanvas: true,
     zoomControl: true,
   });
@@ -107,12 +107,11 @@ function initMap() {
   L.control.layers(baseLayers, overlays).addTo(map);
 
   map.on("moveend", (e) => {
-    updateUrlParameters();
+    updateHashParameters();
   });
   map.on("zoomend", (e) => {
-    updateUrlParameters();
+    updateHashParameters();
   });
-  
   map.on("click", async (e) => {
     await fetchAndDisplayPanoAt(e.latlng.lat, e.latlng.lng);
   });
@@ -120,18 +119,22 @@ function initMap() {
   return map;
 }
 
-function updateUrlParameters() {
-  const center = map.getCenter();
-  const zoom = map.getZoom();
-  window.location.hash =
-    `#c=${zoom}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}`;
-  if (selectedPano) {
-    // there's no API call known to me which will return metadata for a 
-    // specific panoid like there is with streetview. this means that to fetch 
-    // pano metadata, its location must also be known, so I've decided to use
-    // that for permalinks rather than panoids until I have a better solution
-    window.location.hash += `&p=${selectedPano.lat.toFixed(5)}/${selectedPano.lon.toFixed(5)}`;
-  }
+function updateHashParameters() {
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+    let newHash = `c=${zoom}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}`;
+    if (selectedPano) {
+      // there's no API call known to me which will return metadata for a
+      // specific panoid like there is with streetview. this means that to fetch
+      // pano metadata, its location must also be known, so I've decided to use
+      // that for permalinks rather than panoids until I have a better solution
+      newHash += `&p=${selectedPano.lat.toFixed(
+        5
+      )}/${selectedPano.lon.toFixed(5)}`;
+    }
+    // instead of setting window.location.hash directly, I set it like this
+    // to not trigger a hashchanged event
+    history.replaceState(null, null, document.location.pathname + '#' + newHash);
 }
 
 async function fetchAndDisplayPanoAt(lat, lon) {
@@ -145,7 +148,6 @@ async function fetchAndDisplayPanoAt(lat, lon) {
     yDirectionMoved = null;
     selectedPano = pano;
     selectedPanoMarker = L.marker(L.latLng(pano.lat, pano.lon)).addTo(map);
-    //destroyExistingPanoViewer();
     displayPano(pano);
   }
 }
@@ -320,24 +322,34 @@ function closePano() {
   document.querySelector("#pano-info").style.display = "none";
 }
 
+function onHashChanged(e) {
+  const params = parseHashParams();
+  if (params.pano) {
+    fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude);
+  } else {
+    closePano();
+  }
+  map.setView(L.latLng(params.center.latitude, params.center.longitude));
+  map.setZoom(params.center.zoom);
+}
 
 const auth = new Authenticator();
 
+let map = null;
 let panoViewer = null;
 let xDirectionMoved = null;
 let yDirectionMoved = null;
 let selectedPano = null;
 let selectedPanoMarker = null;
 
+window.addEventListener("hashchange", onHashChanged);
 document.querySelector("#close-pano").addEventListener("click", (e) => { closePano(); });
 
-const params = parseAnchorParams();
-
-let map = null;
-if (params.startPano) {
+const params = parseHashParams();
+if (params.pano) {
   switchMapToPanoLayout();
   map = initMap();
-  await fetchAndDisplayPanoAt(params.startPano[0], params.startPano[1]);
+  await fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude);
 }
 else {
   map = initMap();
