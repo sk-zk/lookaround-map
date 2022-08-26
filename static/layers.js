@@ -50,9 +50,6 @@ L.GridLayer.Coverage = L.GridLayer.extend({
     tile.setAttribute("height", tileSize.y);
 
     const ctx = tile.getContext("2d");
-    ctx.fillStyle = "rgba(0, 150, 170, 0.2)";
-    ctx.strokeStyle = "rgba(0, 150, 170, 0.8)";
-    ctx.lineWidth = 2;
 
     if (coverageTileCache[[coords.x, coords.y]]) {
       const panos = coverageTileCache[[coords.x, coords.y]];
@@ -80,6 +77,14 @@ L.gridLayer.coverage = function (opts) {
 
 function drawPanos(panos, coords, tileSize, ctx) {
   for (let pano of panos) {
+    if (pano.coverageType === 3) {
+      ctx.fillStyle = "rgba(173, 140, 191, 0.2)";
+      ctx.strokeStyle = "rgba(173, 140, 191, 0.8)";
+    } else {
+      ctx.fillStyle = "rgba(0, 150, 170, 0.2)";
+      ctx.strokeStyle = "rgba(0, 150, 170, 0.8)";
+    }
+    ctx.lineWidth = 2;
     const tileCoord = wgs84ToTileCoord(pano.lat, pano.lon, 17);
     const xOffset = (tileCoord.x - coords.x) * tileSize.x - 1;
     const yOffset = (tileCoord.y - coords.y) * tileSize.y - 1;
