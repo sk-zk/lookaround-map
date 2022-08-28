@@ -73,12 +73,16 @@ def create_app():
     @app.route("/closestTiles/<float(signed=True):lat>/<float(signed=True):lon>/")
     @compress.compressed()
     def closest_tiles(lat, lon):
+        MAX_DISTANCE = 100
         panos = []
         x, y = wgs84_to_tile_coord(lat, lon, 17)
         for i in range(x-1, x+2):
             for j in range (y-1, y+2):
                 tile_panos = get_coverage_tile_cached(i, j)
-                panos.extend(tile_panos)
+                for pano in tile_panos:
+                     distance = haversine_distance(lat, lon, pano.lat, pano.lon)
+                     if distance < MAX_DISTANCE:
+                        panos.append(pano)
         return jsonify(panos)
 
     # Panorama faces are passed through this server because of CORS.
