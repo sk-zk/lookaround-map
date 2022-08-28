@@ -89,11 +89,6 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
   _mouseMovedTo(position) {
     if (!this.nearbyPanos) return;
 
-    if (position.latitude >= 0.2) {
-      // cursor is too high in the sky to move
-      this._hideMarker();
-      return;
-    }
     const closest = this._getClosestPano(position);
     if (closest === null) {
       this._hideMarker();
