@@ -1,9 +1,10 @@
 import "/static/layers.js";
 import { LookaroundAdapter } from "/static/adapter.js";
 import { parseHashParams } from "/static/util.js";
+import { MovementPlugin } from "/static/movementPlugin.js";
 import { Authenticator } from "/static/auth.js";
 
-const LONGITUDE_OFFSET = 1.07992247; // // 61.875°, which is the center of face 0
+const LONGITUDE_OFFSET = 1.07992247; // 61.875°, which is the center of face 0
 const CAMERA_HEIGHT_METERS = 2.4; // the approximated height of the cameras on the cars that took the coverage
 
 function initMap() {
@@ -80,19 +81,19 @@ function initMap() {
     minZoom: 16,
     maxZoom: 16,
     tileSize: 128,
-  });
-  /* too slow
-  const coverageLayer15 = L.gridLayer.coverage({
+  }); 
+  /*const coverageLayer15 = L.gridLayer.coverage({
     minZoom: 15,
     maxZoom: 15,
     tileSize: 64,
-  }); */
+  });*/
   const coverageGroup = L.layerGroup([
     coverageLayerNormal,
     coverageLayer16,
     coverageLayer18,
     coverageLayer19,
   ]).addTo(map);
+  
   const baseLayers = {
     "Apple Maps Road (Light)": appleRoadLightTiles,
     "Apple Maps Road (Dark)": appleRoadDarkTiles,
@@ -141,13 +142,6 @@ async function fetchAndDisplayPanoAt(lat, lon) {
   const response = await fetch(`/closest/${lat}/${lon}/`);
   const pano = await response.json();
   if (pano) {
-    if (selectedPanoMarker) {
-      map.removeLayer(selectedPanoMarker);
-    }
-    xDirectionMoved = null;
-    yDirectionMoved = null;
-    selectedPano = pano;
-    selectedPanoMarker = L.marker(L.latLng(pano.lat, pano.lon)).addTo(map);
     displayPano(pano);
   }
 }
@@ -164,108 +158,19 @@ async function displayPano(pano) {
         pan: pano.north + LONGITUDE_OFFSET,
       }
     });
-    panoViewer.off('click'); //remove old click-EventListener
   } else {
-    panoViewer = new PhotoSphereViewer.Viewer({
-      container: document.querySelector("#pano"),
-      adapter: LookaroundAdapter,
-      panorama: `/pano/${pano.panoid}/${pano.region_id}/`,
-      minFov: 10,
-      maxFov: 70,
-      defaultLat: 0,
-      defaultLong: 0,
-      defaultZoomLvl: 10,
-      navbar: null,
-      sphereCorrection: {
-        pan: pano.north + LONGITUDE_OFFSET,
-      },
-      plugins: [
-        [PhotoSphereViewer.CompassPlugin, {
-           size: "80px",
-          }],
-      ],
-    });
-    const compass = document.getElementsByClassName("psv-compass")[0];
-    // their compass plugin doesn't support directly passing in an absolute position by default,
-    // so I gotta resort to this until I get around to modifying it
-    compass.style.top = "calc(100vh - 270px - 90px)";
+    initPanoViewer(pano);
+    switchMapToPanoLayout(pano);
+    hideMapControls();
+    document.querySelector("#close-pano").style.display = "flex";
   }
+  updateMapMarker(pano);
+  panoViewer.plugins.movement.updatePanoMarkers(pano);
 
-  panoViewer.on('click', async (e, data) => {
-    if (data.rightclick) { //ignore right click for moving (preferred only move with left click, but currently with mouse wheel possible)
-      return;
-    }
+  updatePanoInfo(pano);
+}
 
-    if (data.latitude >= 0.2) { //click was too high in the sky to move
-      return;
-    }
-
-    //direction-vector of the click where (0,1) is north and (1,0) is east
-    let lng_clicked = data.longitude;
-    let x = Math.sin(lng_clicked);
-    let y = Math.cos(lng_clicked);
-    xDirectionMoved = x;
-    yDirectionMoved = y;
-
-    //check how far up or down the user clicked and convert it into an approximated distance
-    //'approximated' because the height of the apple-camera is not known
-    let latitudeClicked = data.latitude;
-    if (latitudeClicked >= -0.03) {
-      latitudeClicked = -0.03;
-    }
-    let distanceWanted = Math.cos(latitudeClicked * -1) * CAMERA_HEIGHT_METERS / Math.sin(latitudeClicked * -1)
-
-    let minDiffToDistanceWanted = 10;
-    let bestDotProduct = -2.0;
-    let distanceFound = 0;
-    let newPano;
-
-    //get all the coords on the current tile and on the 8 neighboring tiles
-    //neighboring tiles because you could cross tiles while moving
-    const response1 = await fetch(`/closestTiles/${pano.lat}/${pano.lon}/`);
-    let coords = await response1.json();
-
-    //get the best pano to move to
-    //from the coordinates that are in a similar direction like the direction clicked (dot-product),
-    //find the coordinate that is the closest to the wanted distance
-    for (let i = 0; i < coords.length; i++) {
-      let xVec = parseFloat(coords[i].lon) - parseFloat(pano.lon);
-      let yVec = parseFloat(coords[i].lat) - parseFloat(pano.lat);
-
-      if (coords[i].panoid === pano.panoid) { //current pano
-        continue;
-      }
-
-      //distance to current tested coordinate in meters
-      let distance = getDistanceInKm(coords[i].lon, coords[i].lat, pano.lon, pano.lat) * 1000;
-
-      //tests similarity between clicked-vector and currentCoord->currentTestedCoord
-      let dotProduct = (xVec * x + yVec * y) / (Math.sqrt(x * x + y * y) * Math.sqrt(xVec * xVec + yVec * yVec));
-
-      bestDotProduct = Math.max(dotProduct, bestDotProduct);
-
-      if (Math.abs(distanceWanted - distance) < minDiffToDistanceWanted && dotProduct >= 0.97) {
-        minDiffToDistanceWanted = Math.abs(distanceWanted - distance);
-        distanceFound = distance;
-        newPano = coords[i];
-      }
-    }
-
-    //show the new pano, if one was found
-    if (newPano) {
-      selectedPano = newPano;
-      if (selectedPanoMarker) {
-        map.removeLayer(selectedPanoMarker);
-      }
-      selectedPanoMarker = L.marker(L.latLng(newPano.lat, newPano.lon)).addTo(map);
-      displayPano(newPano);
-    }
-  })
-
-  switchMapToPanoLayout(pano);
-  hideMapControls();
-
-  document.querySelector("#close-pano").style.display = "flex";
+function updatePanoInfo(pano) {
   const panoInfo = document.querySelector("#pano-info");
   panoInfo.style.display = "block";
   panoInfo.innerHTML = `
@@ -275,35 +180,73 @@ async function displayPano(pano) {
   `;
 }
 
-function getDistanceInKm(lat1, lon1, lat2, lon2) {
-  lon1 = lon1 * (2 * Math.PI) / 360;
-  lon2 = lon2 * (2 * Math.PI) / 360;
-  lat1 = lat1 * (2 * Math.PI) / 360;
-  lat2 = lat2 * (2 * Math.PI) / 360;
+function initPanoViewer(pano) {
+  panoViewer = new PhotoSphereViewer.Viewer({
+    container: document.querySelector("#pano"),
+    adapter: LookaroundAdapter,
+    panorama: `/pano/${pano.panoid}/${pano.region_id}/`,
+    minFov: 10,
+    maxFov: 70,
+    defaultLat: 0,
+    defaultLong: 0,
+    defaultZoomLvl: 10,
+    navbar: null,
+    sphereCorrection: {
+      pan: pano.north + LONGITUDE_OFFSET,
+    },
+    plugins: [
+      [PhotoSphereViewer.CompassPlugin, {
+        size: "80px",
+      }],
+      [PhotoSphereViewer.MarkersPlugin, {}],
+      [MovementPlugin, {}]
+    ],
+  });
 
-  let x = (lon1 - lon2) * Math.cos((lat1 + lat2) / 2.0);
-  let y = lat1 - lat2;
-  return Math.sqrt(x * x + y * y) * 6371.0;
+  panoViewer.plugins.movement.on("moved", (e, pano) => {
+    updateMapMarker(pano);
+    updatePanoInfo(pano);
+  });
+
+  /*
+  panoViewer.on("key-press", (e, data) => {
+    if (data === "ArrowRight") {
+      panoViewer.renderer.mesh.rotateX(0.01);
+    } else if (data === "ArrowLeft") {
+      panoViewer.renderer.mesh.rotateX(-0.01);
+    } else if (data === "ArrowUp") {
+      panoViewer.renderer.mesh.rotateZ(-0.01);
+    } else if (data === "ArrowDown") {
+      panoViewer.renderer.mesh.rotateZ(0.01);
+    }
+    panoViewer.needsUpdate();
+  }); */
+
+  const compass = document.getElementsByClassName("psv-compass")[0];
+  // their compass plugin doesn't support directly passing in an absolute position by default,
+  // so I gotta resort to this until I get around to modifying it
+  compass.style.top = "calc(100vh - 270px - 90px)";
+}
+
+function updateMapMarker(pano) {
+  if (selectedPanoMarker) {
+    map.removeLayer(selectedPanoMarker);
+  }
+  selectedPanoMarker = L.marker(L.latLng(pano.lat, pano.lon)).addTo(map);
+  map.setView(L.latLng(pano.lat, pano.lon));
+  selectedPano = pano;
 }
 
 function switchMapToPanoLayout(pano) {
   document.querySelector("#map").classList.add("pano-overlay");
   if (map) {
     map.invalidateSize();
-    map.setView(L.latLng(pano.lat, pano.lon));
   }
 }
 
 function hideMapControls() {
   document.querySelector(".leaflet-control-zoom").style.display = "none";
   document.querySelector(".leaflet-control-layers").style.display = "none";
-}
-
-function destroyViewer() {
-  if (panoViewer) {
-    panoViewer.destroy();
-    panoViewer = null;
-  }
 }
 
 function closePano() {
@@ -322,6 +265,13 @@ function closePano() {
   document.querySelector("#pano-info").style.display = "none";
 }
 
+function destroyViewer() {
+  if (panoViewer) {
+    panoViewer.destroy();
+    panoViewer = null;
+  }
+}
+
 function onHashChanged(e) {
   const params = parseHashParams();
   if (params.pano) {
@@ -337,8 +287,6 @@ const auth = new Authenticator();
 
 let map = null;
 let panoViewer = null;
-let xDirectionMoved = null;
-let yDirectionMoved = null;
 let selectedPano = null;
 let selectedPanoMarker = null;
 

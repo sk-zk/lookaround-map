@@ -1,3 +1,4 @@
+import { ScreenFrustum } from "/static/util.js";
 import "/static/BufferGeometryUtils.js";
 
 const FACES = 6;
@@ -5,9 +6,6 @@ const FACES = 6;
 function degToRad(deg) {
   return (deg * Math.PI) / 180;
 }
-
-const frustum = new THREE.Frustum();
-const projScreenMatrix = new THREE.Matrix4();
 
 /**
  * @summary Adapter for Look Around panoramas
@@ -32,6 +30,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
 
     this.psv.on(PhotoSphereViewer.CONSTANTS.EVENTS.POSITION_UPDATED, this);
     this.psv.on(PhotoSphereViewer.CONSTANTS.EVENTS.ZOOM_UPDATED, this);
+
+    this.screenFrustum = new ScreenFrustum(this.psv);
   }
 
   /**
@@ -294,22 +294,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
   }
 
   __getVisibleFaces() {
-    const camera = this.psv.renderer.camera;
-    camera.updateMatrix();
-    camera.updateMatrixWorld();
-    projScreenMatrix.multiplyMatrices(
-      camera.projectionMatrix,
-      camera.matrixWorldInverse
-    );
-    // for some reason, psv.config.sphereCorrection doesn't get updated when
-    // a new pano is loaded, so I worked around it by just making the caller
-    // write it into a field on the viewer
-    const rotation = this.__getCurrentNorthOffset();
-    projScreenMatrix.multiplyMatrices(
-      projScreenMatrix,
-      new THREE.Matrix4().makeRotationY(rotation),
-    );
-    frustum.setFromProjectionMatrix(projScreenMatrix);
+    this.screenFrustum.update();
 
     // TODO find a more elegant way to do this
     const visibleFaces = [];
@@ -319,7 +304,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       const step = 20;
       for (let i = 0; i < position.count; i += step) {
         const point = new THREE.Vector3().fromBufferAttribute(position, i);
-        if (frustum.containsPoint(point)) {
+        if (this.screenFrustum.frustum.containsPoint(point)) {
           visibleFaces.push(meshIdx);
           break;
         }
@@ -328,7 +313,4 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     return visibleFaces;
   }
 
-  __getCurrentNorthOffset() {
-    return this.psv.panWorkaround ?? this.psv.config.sphereCorrection.pan;
-  }
 }

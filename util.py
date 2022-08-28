@@ -13,5 +13,6 @@ class CustomJSONEncoder(JSONEncoder):
                 "date": o.date,
                 "north": o.north,
                 "coverageType": o.coverage_type,
+                "rawElevation": o.raw_elevation,
             }
         return super().default(o)
