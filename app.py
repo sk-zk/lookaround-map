@@ -10,7 +10,7 @@ import pillow_heif
 import requests
 import sys
 
-sys.path.append("./lookaround")
+sys.path.append("lookaround")
 from lookaround.auth import Authenticator
 from lookaround.geo import wgs84_to_tile_coord
 from lookaround import get_coverage_tile, get_pano_face
