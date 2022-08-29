@@ -208,20 +208,6 @@ function initPanoViewer(pano) {
     updatePanoInfo(pano);
   });
 
-  /*
-  panoViewer.on("key-press", (e, data) => {
-    if (data === "ArrowRight") {
-      panoViewer.renderer.mesh.rotateX(0.01);
-    } else if (data === "ArrowLeft") {
-      panoViewer.renderer.mesh.rotateX(-0.01);
-    } else if (data === "ArrowUp") {
-      panoViewer.renderer.mesh.rotateZ(-0.01);
-    } else if (data === "ArrowDown") {
-      panoViewer.renderer.mesh.rotateZ(0.01);
-    }
-    panoViewer.needsUpdate();
-  }); */
-
   const compass = document.getElementsByClassName("psv-compass")[0];
   // their compass plugin doesn't support directly passing in an absolute position by default,
   // so I gotta resort to this until I get around to modifying it
