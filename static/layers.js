@@ -76,7 +76,7 @@ L.gridLayer.coverage = function (opts) {
 };
 
 function drawPanos(panos, coords, tileSize, ctx) {
-  for (let pano of panos) {
+  for (const pano of panos) {
     if (pano.coverageType === 3) {
       ctx.fillStyle = "rgba(173, 140, 191, 0.2)";
       ctx.strokeStyle = "rgba(173, 140, 191, 0.8)";

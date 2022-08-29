@@ -270,7 +270,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
   }
 
   __refreshFaces(faces, zoom) {
-    for (let faceIdx of faces) {
+    for (const faceIdx of faces) {
       if (
         this.mesh.material[faceIdx].map &&
         this.mesh.material[faceIdx].map.userData.zoom > zoom &&
