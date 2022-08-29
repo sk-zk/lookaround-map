@@ -168,6 +168,7 @@ async function displayPano(pano) {
   panoViewer.plugins.movement.updatePanoMarkers(pano);
 
   updatePanoInfo(pano);
+  updateHashParameters();
 }
 
 function updatePanoInfo(pano) {
@@ -206,6 +207,7 @@ function initPanoViewer(pano) {
   panoViewer.plugins.movement.on("moved", (e, pano) => {
     updateMapMarker(pano);
     updatePanoInfo(pano);
+    updateHashParameters();
   });
 
   const compass = document.getElementsByClassName("psv-compass")[0];
