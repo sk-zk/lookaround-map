@@ -36,6 +36,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
     this.lastMousePosition = null;
     this.screenFrustum = new ScreenFrustum(this.psv);
     this.mouseHasMoved = false;
+    this.movementEnabled = true;
   }
 
   /**
@@ -87,7 +88,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
   }
 
   _mouseMovedTo(position) {
-    if (!this.nearbyPanos) return;
+    if (!this.nearbyPanos || !this.movementEnabled) return;
 
     const closest = this._getClosestPano(position);
     if (closest === null) {
@@ -108,7 +109,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
   }
 
   async _onClick(e, data) {
-    if (data.rightclick) {
+    if (data.rightclick || !this.movementEnabled) {
       return;
     }
     if (!this.marker.visible || !this.marker.data) {
@@ -121,10 +122,13 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
         await this._navigateTo(closest.pano);
       }
     } else {
-      await this._navigateTo(this.marker.data);
+      const pano = this.marker.data;
       this._hideMarker();
+      this.movementEnabled = false;
+      await this._navigateTo(pano);
       // allow user to keep mouse in the same spot while clicking forward
       this._mouseMovedTo(this.lastMousePosition);
+      this.movementEnabled = true;
     }
   }
 
