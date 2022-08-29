@@ -126,9 +126,9 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
       this._hideMarker();
       this.movementEnabled = false;
       await this._navigateTo(pano);
+      this.movementEnabled = true;
       // allow user to keep mouse in the same spot while clicking forward
       this._mouseMovedTo(this.lastMousePosition);
-      this.movementEnabled = true;
     }
   }
 
