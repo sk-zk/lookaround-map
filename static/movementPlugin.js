@@ -144,7 +144,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
     this.screenFrustum.update();
     let closest = null;
     let closestDist = 9999999;
-    for (pano of this.nearbyPanos) {
+    for (const pano of this.nearbyPanos) {
       // ignore pano markers that aren't even on screen
       const viewerCoords = this.psv.dataHelper.sphericalCoordsToViewerCoords({
         latitude: pano.position.pitch,
