@@ -1,3 +1,25 @@
+const TILE_SIZE = 256.0;
+
+export function wgs84ToTileCoord(lat, lon, zoom) {
+  let scale = 1 << zoom;
+  let worldCoord = wgs84ToMercator(lat, lon);
+  return {
+    x: (worldCoord.x * scale) / TILE_SIZE,
+    y: (worldCoord.y * scale) / TILE_SIZE,
+  };
+}
+
+function wgs84ToMercator(lat, lon) {
+  let siny = Math.sin((lat * Math.PI) / 180.0);
+  siny = Math.min(Math.max(siny, -0.9999), 0.9999);
+  return {
+    x: TILE_SIZE * (0.5 + lon / 360.0),
+    y: TILE_SIZE * (0.5 - Math.log((1 + siny) / (1 - siny)) / (4 * Math.PI)),
+  };
+}
+
+///////
+
 // Code based on MapillaryJS
 // https://github.com/mapillary/mapillary-js/blob/main/src/geo/GeoCoords.ts
 // (MIT)

@@ -1,5 +1,5 @@
-import { ScreenFrustum } from "/static/util.js";
-import "/static/BufferGeometryUtils.js";
+import { ScreenFrustum } from "/static/viewer/util.js";
+import "/static/viewer/BufferGeometryUtils.js";
 
 const FACES = 6;
 
@@ -21,6 +21,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
    */
   constructor(psv) {
     super(psv);
+
+    this.endpoint = this.psv.config.panoData.endpoint;
 
     // base url of the panorama without face and zoom params, e.g. /pano/10310324438691663065/1086517344/.
     // gets set in loadTexture().
@@ -68,7 +70,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
   }
 
   async __loadOneTexture(zoom, faceIdx, progress = null) {
-    const faceUrl = this.url + `${zoom}/${faceIdx}/`;
+    const faceUrl = `${this.endpoint}${this.url}${zoom}/${faceIdx}/`;
     return await this.psv.textureLoader
       .loadImage(faceUrl, (p) => {
         if (progress) {

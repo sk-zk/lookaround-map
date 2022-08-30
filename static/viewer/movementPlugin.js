@@ -1,5 +1,5 @@
 import { geodeticToEnu, enuToPhotoSphere, distanceBetween } from "/static/geo.js";
-import { ScreenFrustum } from "/static/util.js";
+import { ScreenFrustum } from "/static/viewer/util.js";
 
 const MARKER_ID = "0";
 const MAX_DISTANCE = 100;
@@ -16,11 +16,12 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
 
   constructor(psv, options) {
     super(psv);
+    this.endpoint = this.psv.config.panoData.endpoint;
     this.marker = this.psv.plugins.markers.addMarker({
       id: MARKER_ID,
       longitude: 0,
       latitude: 0,
-      image: "/static/marker2.png",
+      image: `${this.endpoint}/static/viewer/marker.png`,
       width: 1,
       height: 1,
       opacity: 0.4,
@@ -43,7 +44,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
    * For the given panorama, fetches nearby locations the user can navigate to.
    */
   async updatePanoMarkers(refPano) {
-    const response = await fetch(`/closestTiles/${refPano.lat}/${refPano.lon}/`);
+    const response = await fetch(`${this.endpoint}/closestTiles/${refPano.lat}/${refPano.lon}/`);
     const responsePanos = await response.json();
 
     this.nearbyPanos = [];
@@ -133,14 +134,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
   }
 
   async _navigateTo(pano) {
-    this.psv.panWorkaround = pano.north + LONGITUDE_OFFSET;
-    await this.psv.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
-      showLoader: false,
-      sphereCorrection: {
-        pan: pano.north + LONGITUDE_OFFSET,
-      },
-    });
-    await this.updatePanoMarkers(pano);
+    this.psv.navigateTo(pano);
     this.trigger("moved", pano);
   }
 

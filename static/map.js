@@ -1,26 +1,5 @@
-const TILE_SIZE = 256.0;
+import { wgs84ToTileCoord } from "/static/geo.js";
 
-//////
-
-export function wgs84ToTileCoord(lat, lon, zoom) {
-  let scale = 1 << zoom;
-  let worldCoord = wgs84ToMercator(lat, lon);
-  return {
-    x: (worldCoord.x * scale) / TILE_SIZE,
-    y: (worldCoord.y * scale) / TILE_SIZE,
-  };
-}
-
-function wgs84ToMercator(lat, lon) {
-  let siny = Math.sin((lat * Math.PI) / 180.0);
-  siny = Math.min(Math.max(siny, -0.9999), 0.9999);
-  return {
-    x: TILE_SIZE * (0.5 + lon / 360.0),
-    y: TILE_SIZE * (0.5 - Math.log((1 + siny) / (1 - siny)) / (4 * Math.PI)),
-  };
-}
-
-////////
 
 L.GridLayer.DebugCoords = L.GridLayer.extend({
   createTile: function (coords) {
@@ -136,4 +115,107 @@ L.TileLayer.AppleMapsTiles = L.TileLayer.extend({
 
 L.tileLayer.appleMapsTiles = function (auth, opts) {
   return new L.TileLayer.AppleMapsTiles(auth, opts);
+}
+
+////////
+
+export function createMap(config) {
+  let map = L.map("map", {
+    center: [config.center.latitude, config.center.longitude],
+    minZoom: 3,
+    maxZoom: 19,
+    zoom: config.center.zoom,
+    preferCanvas: true,
+    zoomControl: true,
+  });
+
+  const appleRoadLightTiles = L.tileLayer.appleMapsTiles(config.auth, {
+    maxZoom: 19,
+    type: "road",
+    tint: "light",
+    keepBuffer: 6,
+    attribution: "© Apple",
+  }).addTo(map);
+  const appleRoadDarkTiles = L.tileLayer.appleMapsTiles(config.auth, {
+    maxZoom: 19,
+    type: "road",
+    tint: "dark",
+    keepBuffer: 6,
+    attribution: "© Apple",
+  });
+  const appleSatelliteTiles = L.layerGroup([
+    L.tileLayer.appleMapsTiles(config.auth, {
+      maxZoom: 19,
+      type: "satellite",
+      keepBuffer: 6,
+      attribution: "© Apple",
+    }),
+    L.tileLayer.appleMapsTiles(config.auth, {
+      maxZoom: 19,
+      type: "satellite-overlay",
+      keepBuffer: 6,
+      attribution: "© Apple",
+    }),
+  ]);
+
+  const googleRoadTiles = L.tileLayer(
+    "https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m8!1e0!2ssvv!4m2!1scb_client!2sapiv3!4m2!1scc!2s*211m3*211e2*212b1*213e2!3m3!3sUS!12m1!1e1!4e0",
+    {
+      maxZoom: 19,
+      keepBuffer: 6,
+      attribution: "© Google",
+    }
+  );
+  const osmTiles = L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      maxZoom: 19,
+      keepBuffer: 6,
+      attribution: "© OpenStreetMap",
+    }
+  );
+
+  const debugCoords = L.gridLayer.debugCoords();
+
+  const coverageLayerNormal = L.gridLayer.coverage({
+    minZoom: 17,
+    maxZoom: 17,
+    tileSize: 256,
+  });
+  const coverageLayer18 = L.gridLayer.coverage({
+    minZoom: 18,
+    maxZoom: 18,
+    tileSize: 512,
+  });
+  const coverageLayer19 = L.gridLayer.coverage({
+    minZoom: 19,
+    maxZoom: 19,
+    tileSize: 1024,
+  });
+  const coverageLayer16 = L.gridLayer.coverage({
+    minZoom: 16,
+    maxZoom: 16,
+    tileSize: 128,
+  });
+  const coverageGroup = L.layerGroup([
+    coverageLayer16,
+    coverageLayerNormal,
+    coverageLayer18,
+    coverageLayer19,
+  ]).addTo(map);
+
+  const baseLayers = {
+    "Apple Maps Road (Light)": appleRoadLightTiles,
+    "Apple Maps Road (Dark)": appleRoadDarkTiles,
+    "Apple Maps Satellite": appleSatelliteTiles,
+    "Google Maps Road": googleRoadTiles,
+    "OpenStreetMap": osmTiles,
+  };
+  const overlays = {
+    '<div class="multiline-checkbox-label">Look Around coverage<br>(requires z=16 or higher)</div>': coverageGroup,
+    "Tile boundaries": debugCoords,
+  };
+  L.control.layers(baseLayers, overlays).addTo(map);
+
+  return map;
 }
