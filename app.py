@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, render_template, send_file
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 from flask_compress import Compress
 from functools import lru_cache
 import gc
@@ -28,7 +28,7 @@ def get_coverage_tile_cached(x, y):
 
 def create_app():
     app = Flask(__name__)
-    CORS(app)
+    CORS(app, resources={r"/static/*": {"origins": "*"}})
 
     app.config["COMPRESS_REGISTER"] = False
     compress = Compress()
@@ -48,12 +48,14 @@ def create_app():
 
     # Coverage tiles are passed through this server because of CORS.
     @app.route("/tiles/coverage/<int:x>/<int:y>/")
+    @cross_origin()
     @compress.compressed()
     def relay_coverage_tile(x, y):
         panos = get_coverage_tile_cached(x, y)
         return jsonify(panos)
       
     @app.route("/closest/<float(signed=True):lat>/<float(signed=True):lon>/")
+    @cross_origin()
     @compress.compressed()
     def closest_pano_to_coord(lat, lon):
         x, y = wgs84_to_tile_coord(lat, lon, 17)
@@ -71,6 +73,7 @@ def create_app():
         return jsonify(closest)
 
     @app.route("/closestTiles/<float(signed=True):lat>/<float(signed=True):lon>/")
+    @cross_origin()
     @compress.compressed()
     def closest_tiles(lat, lon):
         MAX_DISTANCE = 100
@@ -87,6 +90,7 @@ def create_app():
 
     # Panorama faces are passed through this server because of CORS.
     @app.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/<int:face>/")
+    @cross_origin()
     def relay_pano_segment(panoid, region_id, zoom, face):
         heic_bytes = get_pano_face(panoid, region_id, face, zoom, auth, session=session)
 
