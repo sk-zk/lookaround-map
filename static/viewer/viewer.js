@@ -64,10 +64,10 @@ export function createPanoViewer(config) {
       },
     });
     if (resetView) {
-      viewer.adapter.dynamicLoadingEnabled = true;
       const heading = getHeading(defaultHeading, pano.north);
       viewer.zoom(defaultZoomLvl);
       viewer.rotate({ latitude: 0, longitude: heading });
+      viewer.adapter.dynamicLoadingEnabled = true;
       viewer.adapter.__refresh();
     }
     await viewer.plugins.movement.updatePanoMarkers(pano);
