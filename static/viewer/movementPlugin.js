@@ -134,7 +134,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
   }
 
   async _navigateTo(pano) {
-    this.psv.navigateTo(pano);
+    await this.psv.navigateTo(pano);
     this.trigger("moved", pano);
   }
 
