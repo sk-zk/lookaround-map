@@ -32,8 +32,11 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
 
     this.psv.on(PhotoSphereViewer.CONSTANTS.EVENTS.POSITION_UPDATED, this);
     this.psv.on(PhotoSphereViewer.CONSTANTS.EVENTS.ZOOM_UPDATED, this);
+    this.psv.on(PhotoSphereViewer.CONSTANTS.EVENTS.BEFORE_ROTATE, this);
 
     this.screenFrustum = new ScreenFrustum(this.psv);
+
+    this.dynamicLoadingEnabled = true;
   }
 
   /**
@@ -251,18 +254,25 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
    */
   handleEvent(e) {
     switch (e.type) {
-      case PhotoSphereViewer.CONSTANTS.EVENTS.POSITION_UPDATED:
+      case PhotoSphereViewer.CONSTANTS.EVENTS.BEFORE_ROTATE:
+        // the rotate() method of the viewer only fires BEFORE_ROTATE
+        // and not POSITION_UPDATED, so I had to restort to handling
+        // BEFFORE_ROTATE instead and passing the rotation param from it
+        // all the way to __getVisibleFaces()
+        this.__refresh(e.args[0]);
+        break;
       case PhotoSphereViewer.CONSTANTS.EVENTS.ZOOM_UPDATED:
         this.__refresh();
         break;
     }
   }
 
-  __refresh() {
+  __refresh(position=null) {
     if (!this.mesh) return;
     if (this.mesh.material.length === 0) return;
-
-    const visibleFaces = this.__getVisibleFaces();
+    if (!this.dynamicLoadingEnabled) return;
+    
+    const visibleFaces = this.__getVisibleFaces(position);
     // TODO finetune this
     if (this.psv.renderer.prop.vFov < 55) {
       this.__refreshFaces(visibleFaces, 0);
@@ -295,8 +305,9 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     }
   }
 
-  __getVisibleFaces() {
-    this.screenFrustum.update();
+  __getVisibleFaces(position=null) {
+    const longitude = position?.longitude ?? null;
+    this.screenFrustum.update(longitude);
 
     // TODO find a more elegant way to do this
     const visibleFaces = [];
