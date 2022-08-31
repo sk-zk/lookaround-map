@@ -1,4 +1,5 @@
 import { wgs84ToTileCoord } from "/static/geo.js";
+import { LRUMap } from "/static/external/lru_js/lru.js";
 
 
 L.GridLayer.DebugCoords = L.GridLayer.extend({
@@ -16,10 +17,9 @@ L.gridLayer.debugCoords = function (opts) {
 
 ////////
 
-// cache coverage tiles locally in the most primitive way possible
-// to stop leaflet from re-requesting everything every time the zoom level changes.
-// TODO write a proper cache that kicks out tiles that haven't been loaded in a while
-const coverageTileCache = {};
+// cache coverage tiles locally to stop leaflet from re-requesting everything
+// every time the zoom level changes.
+const coverageTileCache = new LRUMap(2**12);
 
 L.GridLayer.Coverage = L.GridLayer.extend({
   createTile: function (coords, done) {
@@ -30,8 +30,8 @@ L.GridLayer.Coverage = L.GridLayer.extend({
 
     const ctx = tile.getContext("2d");
 
-    if (coverageTileCache[[coords.x, coords.y]]) {
-      const panos = coverageTileCache[[coords.x, coords.y]];
+    if (coverageTileCache.has(`${coords.x},${coords.y}`)) {
+      const panos = coverageTileCache.get(`${coords.x},${coords.y}`);
       drawPanos(panos, coords, tileSize, ctx);
       // apparently I can't call done directly?
       setTimeout(function () {
@@ -41,7 +41,7 @@ L.GridLayer.Coverage = L.GridLayer.extend({
       fetch(`/tiles/coverage/${coords.x}/${coords.y}/`)
         .then((response) => response.json())
         .then((panos) => {
-          coverageTileCache[[coords.x, coords.y]] = panos;
+          coverageTileCache.set(`${coords.x},${coords.y}`, panos);
           drawPanos(panos, coords, tileSize, ctx);
           done(null, tile);
         });
