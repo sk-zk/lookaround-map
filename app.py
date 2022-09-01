@@ -78,7 +78,6 @@ def create_app():
         MAX_DISTANCE = 100
         panos = []
         for tile in geo.get_circle_tiles(lat, lon, MAX_DISTANCE, 17):
-            print(tile)
             tile_panos = get_coverage_tile_cached(tile[0], tile[1])
             for pano in tile_panos:
                 distance = geo.distance(lat, lon, pano.lat, pano.lon)
