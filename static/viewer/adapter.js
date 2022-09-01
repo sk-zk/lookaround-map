@@ -66,7 +66,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     const progress = [0, 0, 0, 0, 0, 0];
     const startZoom = 4;
     this.url = panorama;
-    for (let i = 0; i < FACES; i++) {
+    for (let i = 0; i < 4; i++) {
       promises.push(this.__loadOneTexture(startZoom, i, progress));
     }
     return Promise.all(promises).then((texture) => ({ panorama, texture }));
@@ -79,7 +79,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         if (progress) {
           progress[faceIdx] = p;
           this.psv.loader.setProgress(
-            PhotoSphereViewer.utils.sum(progress) / FACES
+            PhotoSphereViewer.utils.sum(progress) / 4
           );
         }
       })
