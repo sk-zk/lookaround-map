@@ -16,8 +16,7 @@ from lookaround.geo import wgs84_to_tile_coord
 from lookaround import get_coverage_tile, get_pano_face
 
 from util import CustomJSONEncoder
-from geo import haversine_distance
-
+import geo
 
 session = requests.session()
 
@@ -66,7 +65,7 @@ def create_app():
         smallest_distance = 9999999
         closest = None
         for pano in panos:
-            distance = haversine_distance(lat, lon, pano.lat, pano.lon)
+            distance = geo.distance(lat, lon, pano.lat, pano.lon)
             if distance < smallest_distance:
                 smallest_distance = distance
                 closest = pano
@@ -83,7 +82,7 @@ def create_app():
             for j in range (y-1, y+2):
                 tile_panos = get_coverage_tile_cached(i, j)
                 for pano in tile_panos:
-                     distance = haversine_distance(lat, lon, pano.lat, pano.lon)
+                     distance = geo.distance(lat, lon, pano.lat, pano.lon)
                      if distance < MAX_DISTANCE:
                         panos.append(pano)
         return jsonify(panos)
