@@ -12,7 +12,7 @@ import sys
 
 sys.path.append("lookaround")
 from lookaround.auth import Authenticator
-from lookaround.geo import wgs84_to_tile_coord
+from lookaround.geo import wgs84_to_tile_coord, tile_coord_to_wgs84
 from lookaround import get_coverage_tile, get_pano_face
 
 from util import CustomJSONEncoder
@@ -77,14 +77,13 @@ def create_app():
     def closest_tiles(lat, lon):
         MAX_DISTANCE = 100
         panos = []
-        x, y = wgs84_to_tile_coord(lat, lon, 17)
-        for i in range(x-1, x+2):
-            for j in range (y-1, y+2):
-                tile_panos = get_coverage_tile_cached(i, j)
-                for pano in tile_panos:
-                     distance = geo.distance(lat, lon, pano.lat, pano.lon)
-                     if distance < MAX_DISTANCE:
-                        panos.append(pano)
+        for tile in geo.get_circle_tiles(lat, lon, MAX_DISTANCE, 17):
+            print(tile)
+            tile_panos = get_coverage_tile_cached(tile[0], tile[1])
+            for pano in tile_panos:
+                distance = geo.distance(lat, lon, pano.lat, pano.lon)
+                if distance < MAX_DISTANCE:
+                    panos.append(pano)
         return jsonify(panos)
 
     # Panorama faces are passed through this server because of CORS.
