@@ -225,9 +225,11 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
    */
   setTexture(mesh, textureData) {
     for (let i = 0; i < FACES; i++) {
-      mesh.material[i] = new THREE.MeshBasicMaterial({
-        map: textureData.texture[i],
-      });
+      if (textureData.texture[i]) {
+        mesh.material[i] = new THREE.MeshBasicMaterial({
+          map: textureData.texture[i],
+        });
+      }
     }
     this.__refresh(); // immediately replace the low quality tiles from intial load
   }
