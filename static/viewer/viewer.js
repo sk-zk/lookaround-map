@@ -1,13 +1,13 @@
 document.head.innerHTML += `
   <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.css">
-  <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4.7.0/dist/plugins/compass.css">
-  <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4.7.0/dist/plugins/markers.css">
+  <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/compass.css">
+  <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/markers.css">
 `;
 import "https://cdn.jsdelivr.net/npm/three/build/three.min.js";
 import "https://cdn.jsdelivr.net/npm/uevent@2/browser.min.js";
 import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.js";
-import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4.7.0/dist/plugins/compass.js";
-import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4.7.0/dist/plugins/markers.js";
+import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/compass.js";
+import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/markers.js";
 import { LookaroundAdapter } from "/static/viewer/adapter.js";
 import { MovementPlugin } from "/static/viewer/movementPlugin.js";
 

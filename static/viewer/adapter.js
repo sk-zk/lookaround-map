@@ -15,6 +15,8 @@ function degToRad(deg) {
 export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
   static id = "lookaround";
   static supportsDownload = false;
+  // pretend to support overlays, see below
+  static supportsOverlay = true;
 
   /**
    * @param {PSV.Viewer} psv
@@ -242,6 +244,12 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       mesh.material[i].opacity = opacity;
       mesh.material[i].transparent = opacity < 1;
     }
+  }
+
+  setOverlay(mesh, textureData, opacity) {
+    // do nothing.
+    // 4.7.1 wants to call setOverlay even when you declare it to be unsupported,
+    // so the class pretends to support it to get rid of the exception.
   }
 
   /**
