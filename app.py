@@ -12,8 +12,6 @@ import pillow_heif
 import requests
 import sys
 
-import time
-
 sys.path.append("lookaround")
 from lookaround.auth import Authenticator
 from lookaround.geo import wgs84_to_tile_coord, tile_coord_to_wgs84
@@ -110,20 +108,9 @@ def create_app():
         heic_bytes = get_pano_face(panoid, region_id, face, zoom, auth, session=session)
 
         if use_pyheif:
-            a = time.time()
             image = pyheif.read(heic_bytes)
-            print(image)
-            b = time.time()
-            print("dec: " + str(b-a))
-
-            xyz = time.time()
             ndarray = np.array(image.data).reshape(image.size[1], image.size[0], 3)
-            zxy = time.time()
-            print("arr: " + str(zxy-xyz))
-            c = time.time()
             jpeg_bytes = simplejpeg.encode_jpeg(ndarray)
-            d = time.time()
-            print("enc: " + str(d-c))
         else:
             with Image.open(io.BytesIO(heic_bytes)) as image:
                 with io.BytesIO() as output:
