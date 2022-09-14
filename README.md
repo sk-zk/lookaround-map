@@ -1,6 +1,6 @@
 **lookaround-map** is an Apple Look Around viewer running in the browser.
 
-Live at [lookmap.eu.pythonanywhere.com/](lookmap.eu.pythonanywhere.com)!
+Live at [lookmap.eu.pythonanywhere.com](https://lookmap.eu.pythonanywhere.com)!
 
 ## Setup
 ```
