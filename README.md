@@ -1,4 +1,15 @@
-A web viewer for Apple Look Around, usable on any device.
+**lookaround-map** is an Apple Look Around viewer running in the browser.
+
+Live at [lookmap.eu.pythonanywhere.com/](lookmap.eu.pythonanywhere.com)!
+
+## Setup
+```
+git clone https://github.com/sk-zk/lookaround-map.git --recursive
+cd lookaround-map
+pip install -r requirements.txt
+flask run
+```
+On Linux and Mac, you may optionally [install `pyheif`](https://github.com/carsales/pyheif) for slightly faster decoding.
 
 ## Progress
 ### Complete:
@@ -20,3 +31,4 @@ A web viewer for Apple Look Around, usable on any device.
    - Well, I've merged it into main, but without the pitch and roll offsets, it's not as accurate as it could be 
 - [ ] Find and decode depth data and use it to improve movement
    - There are three types of pano data the app will request. One is `/t/<face>/<zoom>`, which returns the pano faces as HEIC, but there are two others: `/m/<zoom>` and `/mt/7`, in a custom format with the header `MCP4`. One of them probably contains the depth information I'm looking for.
+- [ ] Reverse geocoding

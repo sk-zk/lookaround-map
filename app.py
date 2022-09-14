@@ -1,14 +1,18 @@
+from argparse import ArgumentError
 from flask import Flask, jsonify, render_template, send_file
 from flask_cors import CORS, cross_origin
 from flask_compress import Compress
 from functools import lru_cache
 import gc
+import importlib
 import io
 import mimetypes
 from PIL import Image
 import pillow_heif
 import requests
 import sys
+
+import time
 
 sys.path.append("lookaround")
 from lookaround.auth import Authenticator
@@ -18,7 +22,21 @@ from lookaround import get_coverage_tile, get_pano_face
 from util import CustomJSONEncoder
 import geo
 
+
+def is_pyheif_installed():
+    pyheif = importlib.util.find_spec("pyheif")
+    return pyheif is not None
+
+
 session = requests.session()
+
+use_pyheif = is_pyheif_installed()
+if use_pyheif:
+    print("pyheif enabled")
+    import pyheif
+    import simplejpeg
+    import numpy as np
+
 
 @lru_cache(maxsize=2**16)
 def get_coverage_tile_cached(x, y):
@@ -91,10 +109,26 @@ def create_app():
     def relay_pano_segment(panoid, region_id, zoom, face):
         heic_bytes = get_pano_face(panoid, region_id, face, zoom, auth, session=session)
 
-        with Image.open(io.BytesIO(heic_bytes)) as image:
-            with io.BytesIO() as output:
-                image.save(output, format='jpeg', quality=85)
-                jpeg_bytes = output.getvalue()
+        if use_pyheif:
+            a = time.time()
+            image = pyheif.read(heic_bytes)
+            print(image)
+            b = time.time()
+            print("dec: " + str(b-a))
+
+            xyz = time.time()
+            ndarray = np.array(image.data).reshape(image.size[1], image.size[0], 3)
+            zxy = time.time()
+            print("arr: " + str(zxy-xyz))
+            c = time.time()
+            jpeg_bytes = simplejpeg.encode_jpeg(ndarray)
+            d = time.time()
+            print("enc: " + str(d-c))
+        else:
+            with Image.open(io.BytesIO(heic_bytes)) as image:
+                with io.BytesIO() as output:
+                    image.save(output, format='jpeg', quality=85)
+                    jpeg_bytes = output.getvalue()
         response = send_file(
             io.BytesIO(jpeg_bytes),
             mimetype='image/jpeg'

@@ -7,3 +7,4 @@ protobuf==4.21.4
 pycryptodome==3.15.0
 pyproj==3.3.1
 requests==2.26.0
+simplejpeg==1.6.5
