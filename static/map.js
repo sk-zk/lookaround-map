@@ -204,6 +204,15 @@ export function createMap(config) {
     coverageLayer19,
   ]).addTo(map);
 
+  const googleStreetViewCoverageTiles = L.tileLayer(
+    "https://mts.googleapis.com/vt?hl=en-US&lyrs=svv|cb_client:app&style=5,8&x={x}&y={y}&z={z}",
+    {
+      maxZoom: 19,
+      className: "gsv-coverage",
+      opacity: 0.7,
+    }
+  );
+
   const baseLayers = {
     "Apple Maps Road (Light)": appleRoadLightTiles,
     "Apple Maps Road (Dark)": appleRoadDarkTiles,
@@ -213,6 +222,7 @@ export function createMap(config) {
   };
   const overlays = {
     '<div class="multiline-checkbox-label">Look Around coverage<br>(requires z=16 or higher)</div>': coverageGroup,
+    '<div class="multiline-checkbox-label">Google Street View coverage<br>(official only - for comparison)': googleStreetViewCoverageTiles,
     "Tile boundaries": debugCoords,
   };
   L.control.layers(baseLayers, overlays).addTo(map);
