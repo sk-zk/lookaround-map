@@ -17,6 +17,7 @@ On Linux and Mac, you may optionally [install `pyheif`](https://github.com/carsa
 - [x] Select and view panoramas
 - [x] Compass
 - [x] Simple movement
+- [x] Reverse geocoding with Nominatim
 
 ### TODO:
 - [ ] Find pitch and roll values
@@ -31,4 +32,4 @@ On Linux and Mac, you may optionally [install `pyheif`](https://github.com/carsa
    - Well, I've merged it into main, but without the pitch and roll offsets, it's not as accurate as it could be 
 - [ ] Find and decode depth data and use it to improve movement
    - There are three types of pano data the app will request. One is `/t/<face>/<zoom>`, which returns the pano faces as HEIC, but there are two others: `/m/<zoom>` and `/mt/7`, in a custom format with the header `MCP4`. One of them probably contains the depth information I'm looking for.
-- [ ] Reverse geocoding
+- [ ] Fetch the address from Apple rather than OSM

@@ -1,6 +1,7 @@
 import { createMap } from "/static/map.js";
 import { createPanoViewer } from "/static/viewer/viewer.js";
 import { Authenticator } from "/static/auth.js";
+import { reverseGeocode } from "/static/nominatim.js";
 
 function initMap() {
   map = createMap({
@@ -75,7 +76,7 @@ async function displayPano(pano) {
     document.querySelector("#close-pano").style.display = "flex";
   }
   updateMapMarker(pano);
-  updatePanoInfo(pano);
+  await updatePanoInfo(pano);
   updateHashParams();
 }
 
@@ -91,21 +92,72 @@ function initPanoViewer(pano) {
   // so I gotta resort to this until I get around to modifying it
   compass.style.top = "calc(100vh - 270px - 90px)";
 
-  panoViewer.plugins.movement.on("moved", (e, pano) => {
+  panoViewer.plugins.movement.on("moved", async (e, pano) => {
     updateMapMarker(pano);
     updatePanoInfo(pano);
     updateHashParams();
   });
 }
 
-function updatePanoInfo(pano) {
-  const panoInfo = document.querySelector("#pano-info");
-  panoInfo.style.display = "block";
-  panoInfo.innerHTML = `
-    <strong>${pano.panoid}</strong>/${pano.region_id}<br>
-    <small>${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)} |
-    ${pano.date}</small>
-  `;
+async function updatePanoInfo(pano) {
+  document.querySelector("#pano-info").style.display = "block";
+  document.querySelector("#pano-id").innerHTML = `${pano.panoid} / ${pano.region_id}`;
+  document.querySelector("#pano-coordinates").innerHTML = `${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)}`;
+  document.querySelector("#pano-date").innerHTML = `${pano.date}`;
+  await updatePanoAddress(pano);
+}
+
+async function updatePanoAddress(pano) {
+  // 2 AM code below
+  const countriesWithHouseNrFirst = ["us", "ca", "au", "nz", "ie", "gb", "fr"]
+  const address = await reverseGeocode(pano.lat, pano.lon);
+  let html = "";
+
+  if (address.house_number) {
+    const road = [];
+    if (countriesWithHouseNrFirst.includes(address.country_code)) 
+    {
+      road.push(address.house_number);
+      road.push(address.road);
+    } 
+    else {
+      road.push(address.road);
+      road.push(address.house_number);
+    }
+    html += `<strong>${road.join(" ")}</strong><br>`;
+  }
+  else if (address.road) {
+    html += `<strong>${address.road}</strong><br>`;
+  }
+
+  const town = [];
+  if (address.hamlet) {
+    town.push(address.hamlet);
+  }
+  if (address.village) {
+    town.push(address.village);
+  }
+  if (address.town) {
+    town.push(address.town);
+  }
+  if (address.city) {
+    town.push(address.city);
+  }
+  html += town.join(", ") + "<br>";
+
+  const admin = [];
+  if (address.county) {
+    admin.push(address.county);
+  }
+  if (address.state) {
+    admin.push(address.state);
+  }
+  admin.push(address.country);
+  html += admin.join(", ");
+
+  html += '<div id="nominatim-attribution">© OpenStreetMap contributors</div><hr>';
+
+  document.querySelector("#pano-address").innerHTML = html;
 }
 
 function updateMapMarker(pano) {

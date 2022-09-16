@@ -60,6 +60,10 @@ body {
   color: white;
 }
 
+#pano-info hr {
+  border-top: 1px solid white;
+}
+
 .multiline-checkbox-label {
   display: inline-block;
   vertical-align: top;
@@ -67,4 +71,10 @@ body {
 
 .gsv-coverage {
   filter: hue-rotate(150deg);
+}
+
+#nominatim-attribution {
+  font-size: smaller;
+  font-style: italic;
+  color: #ccc;
 }
