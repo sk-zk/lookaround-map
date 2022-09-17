@@ -37,6 +37,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
     this.lastMousePosition = null;
     this.screenFrustum = new ScreenFrustum(this.psv);
     this.mouseHasMoved = false;
+    this.lastProcessedMoveEvent = 0;
     this.movementEnabled = true;
   }
 
@@ -75,6 +76,15 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
 
   _onMouseMove(e) {
     this.mouseHasMoved = true;
+
+    const updateLimit = 1000/60.0;
+    const now = Date.now();
+    const msSinceLastUpdate = now - this.lastProcessedMoveEvent;
+    if (msSinceLastUpdate < updateLimit) {
+      return;
+    }
+    this.lastProcessedMoveEvent = now;
+
     const vector = this.psv.dataHelper.viewerCoordsToVector3({
       x: e.clientX,
       y: e.clientY,
