@@ -1,0 +1,24 @@
+{
+  "name": "lookaround-map",
+  "version": "1.0.0",
+  "description": "An Apple Look Around viewer running in the browser.",
+  "main": "rollup.config.js",
+  "dependencies": {
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup": "^2.79.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sk-zk/lookaround-map.git"
+  },
+  "author": "skzk",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sk-zk/lookaround-map/issues"
+  },
+  "homepage": "https://github.com/sk-zk/lookaround-map#readme"
+}

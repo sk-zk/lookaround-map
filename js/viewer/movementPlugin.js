@@ -1,5 +1,5 @@
-import { geodeticToEnu, enuToPhotoSphere, distanceBetween } from "/static/geo.js";
-import { ScreenFrustum } from "/static/viewer/util.js";
+import { geodeticToEnu, enuToPhotoSphere, distanceBetween } from "../geo.js";
+import { ScreenFrustum } from "./util.js";
 
 const MARKER_ID = "0";
 const MAX_DISTANCE = 100;
@@ -21,7 +21,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
       id: MARKER_ID,
       longitude: 0,
       latitude: 0,
-      image: `${this.endpoint}/static/viewer/marker.png`,
+      image: `${this.endpoint}/static/marker.png`,
       width: 1,
       height: 1,
       opacity: 0.4,

@@ -1,5 +1,5 @@
-import { ScreenFrustum } from "/static/viewer/util.js";
-import "/static/viewer/BufferGeometryUtils.js";
+import { ScreenFrustum } from "./util.js";
+import "./BufferGeometryUtils.js";
 
 const FACES = 6;
 

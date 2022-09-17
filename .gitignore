@@ -90,3 +90,6 @@ ENV/
 
 .idea/
 .vscode/
+
+node_modules/
+static/dist/

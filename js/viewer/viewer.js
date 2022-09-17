@@ -8,8 +8,8 @@ import "https://cdn.jsdelivr.net/npm/uevent@2/browser.min.js";
 import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.js";
 import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/compass.js";
 import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/markers.js";
-import { LookaroundAdapter } from "/static/viewer/adapter.js";
-import { MovementPlugin } from "/static/viewer/movementPlugin.js";
+import { LookaroundAdapter } from "./adapter.js";
+import { MovementPlugin } from "./movementPlugin.js";
 
 
 const LONGITUDE_OFFSET = 1.07992247; // 61.875°, which is the center of face 0

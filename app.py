@@ -56,7 +56,6 @@ def create_app():
     pillow_heif.register_heif_opener()
     auth = Authenticator()
 
-
     @app.route("/")
     def index():
         return render_template('index.html')

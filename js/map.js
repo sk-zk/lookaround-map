@@ -1,5 +1,5 @@
-import { wgs84ToTileCoord } from "/static/geo.js";
-import { LRUMap } from "/static/external/lru_js/lru.js";
+import { wgs84ToTileCoord } from "./geo.js";
+import { LRUMap } from "./external/lru_js/lru.js";
 
 
 L.GridLayer.DebugCoords = L.GridLayer.extend({
