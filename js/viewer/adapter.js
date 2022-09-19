@@ -69,7 +69,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     // and where the user is looking.
     const promises = [];
     const progress = [0, 0, 0, 0, 0, 0];
-    const startZoom = 4;
+    const startZoom = 5;
     for (let i = 0; i < 4; i++) {
       promises.push(this.__loadOneTexture(startZoom, i, progress));
     }
