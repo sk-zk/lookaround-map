@@ -24,9 +24,9 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
 
     this.endpoint = this.psv.config.panoData.endpoint;
 
-    // base url of the panorama without face and zoom params, e.g. /pano/10310324438691663065/1086517344/.
-    // gets set in loadTexture().
-    this.url = null;
+    this.panorama = this.psv.config.panorama.panorama;
+    this.url = this.psv.config.panorama.panorama.url;
+    this.previousThetaLength = this.panorama.projection.latitude_size[0];
 
     this.SPHERE_HORIZONTAL_SEGMENTS = 32;
 
@@ -55,21 +55,25 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
 
   /**
    * @override
-   * @param {string} panorama
-   * @returns {Promise.<PSV.TextureData>}
    */
-  loadTexture(panorama) {
+  loadTexture(panoramaMetadata) {
+    this.panorama = panoramaMetadata.panorama;
+    this.url = panoramaMetadata.url;
+
+    // some trekker panos have longer side faces than regular car footage.
+    // if this pano has a different projection from the last one, the mesh needs to be rebuilt.
+    this.__recreateMeshIfNecessary();
+
     // initial load of the pano with a low starting quality.
     // higher resolution faces are loaded dynamically based on zoom level
     // and where the user is looking.
     const promises = [];
     const progress = [0, 0, 0, 0, 0, 0];
     const startZoom = 4;
-    this.url = panorama;
     for (let i = 0; i < 4; i++) {
       promises.push(this.__loadOneTexture(startZoom, i, progress));
     }
-    return Promise.all(promises).then((texture) => ({ panorama, texture }));
+    return Promise.all(promises).then((texture) => ({ panorama: panoramaMetadata, texture }));
   }
 
   async __loadOneTexture(zoom, faceIdx, progress = null) {
@@ -91,11 +95,38 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       });
   }
 
+  __recreateMeshIfNecessary() {
+    const thetaLength = this.panorama.projection.latitude_size[0];
+    if (this.previousThetaLength !== thetaLength) {
+      this.psv.renderer.scene.remove(this.psv.renderer.meshContainer);
+
+      const mesh = this.psv.adapter.createMesh();
+      mesh.userData = { "psvSphere": true };
+      this.psv.renderer.mesh = mesh;
+
+      const meshContainer = new THREE.Group();
+      meshContainer.add(mesh);
+      this.psv.renderer.meshContainer = meshContainer;
+
+      this.psv.renderer.scene.add(meshContainer);
+    }
+    this.previousThetaLength = thetaLength;
+  }
+
   /**
    * @override
    */
   createMesh(scale = 1) {
     const radius = PhotoSphereViewer.CONSTANTS.SPHERE_RADIUS * scale;
+
+    // fix for trekker panos which use a slightly different projection sometimes.
+    // sorry about the weird calculations here; I'm sure there's a more correct way to 
+    // derive it from the projection data in the API response, but, well, it's math, so I'm out.
+    const normalThetaLength = 1.614429558;
+    const normalThetaStart = degToRad(28);
+    const dTheta = this.panorama.projection.latitude_size[0] - normalThetaLength;
+    const sideFacesThetaStart = normalThetaStart - (dTheta / 2);
+
     const faces = [
       // radius, widthSegments, heightSegments,
       // phiStart, phiLength, thetaStart, thetaLength
@@ -105,8 +136,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(0-90),
         degToRad(120),
-        degToRad(28),
-        degToRad(92.5),
+        sideFacesThetaStart,
+        this.panorama.projection.latitude_size[0],
       ],
       [
         radius,
@@ -114,8 +145,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(120-90),
         degToRad(60),
-        degToRad(28),
-        degToRad(92.5),
+        sideFacesThetaStart,
+        this.panorama.projection.latitude_size[1],
       ],
       [
         radius,
@@ -123,8 +154,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(180-90),
         degToRad(120),
-        degToRad(28),
-        degToRad(92.5),
+        sideFacesThetaStart,
+        this.panorama.projection.latitude_size[2],
       ],
       [
         radius,
@@ -132,8 +163,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(300-90),
         degToRad(60),
-        degToRad(28),
-        degToRad(92.5),
+        sideFacesThetaStart,
+        this.panorama.projection.latitude_size[3],
       ], /*
       [
         radius,

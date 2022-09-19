@@ -14,5 +14,6 @@ class CustomJSONEncoder(JSONEncoder):
                 "north": o.north,
                 "coverageType": o.coverage_type,
                 "rawElevation": o.raw_elevation,
+                "projection": { "latitude_size": [x["latitude_size"] for x in o.projection] }
             }
         return super().default(o)

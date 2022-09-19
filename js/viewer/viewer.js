@@ -29,7 +29,10 @@ export function createPanoViewer(config) {
   const viewer = new PhotoSphereViewer.Viewer({
     container: config.container,
     adapter: LookaroundAdapter,
-    panorama: `/pano/${config.initialPano.panoid}/${config.initialPano.region_id}/`,
+    panorama: { 
+      panorama: config.initialPano, 
+      url: `/pano/${config.initialPano.panoid}/${config.initialPano.region_id}/`,
+    },
     panoData: { endpoint: endpoint },
     minFov: 10,
     maxFov: 70,
@@ -57,7 +60,10 @@ export function createPanoViewer(config) {
       // on the screen, which is a waste of time and bandwidth.
       viewer.adapter.dynamicLoadingEnabled = false;
     }
-    await viewer.setPanorama(`/pano/${pano.panoid}/${pano.region_id}/`, {
+    await viewer.setPanorama({ 
+      panorama: pano, 
+      url: `/pano/${pano.panoid}/${pano.region_id}/`,
+    }, {
       showLoader: false,
       sphereCorrection: {
         pan: pano.north + LONGITUDE_OFFSET,
