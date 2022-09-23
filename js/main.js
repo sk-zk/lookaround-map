@@ -1,7 +1,7 @@
-import { createMap } from "./map.js";
+import { createMap } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
-import { Authenticator } from "./auth.js";
-import { reverseGeocode } from "./nominatim.js";
+import { Authenticator } from "./util/Authenticator.js";
+import { reverseGeocode } from "./util/nominatim.js";
 
 function initMap() {
   map = createMap({

@@ -28,4 +28,3 @@ export class ScreenFrustum {
       return this.psv.panWorkaround ?? this.psv.config.sphereCorrection.pan;
     }
   }
-  

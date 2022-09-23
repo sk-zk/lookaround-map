@@ -1,5 +1,6 @@
-import { geodeticToEnu, enuToPhotoSphere, distanceBetween } from "../geo.js";
-import { ScreenFrustum } from "./util.js";
+import { geodeticToEnu, enuToPhotoSphere, distanceBetween } from "../util/geo.js";;
+import { ScreenFrustum } from "./ScreenFrustrum.js";
+
 
 const MARKER_ID = "0";
 const MAX_DISTANCE = 100;
