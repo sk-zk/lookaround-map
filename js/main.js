@@ -15,7 +15,8 @@ function initMap() {
     updateHashParams();
   });
   map.on("click", async (e) => {
-    await fetchAndDisplayPanoAt(e.latlng.lat, e.latlng.lng);
+    const clickCoordinates = e.latlng.wrap();
+    await fetchAndDisplayPanoAt(clickCoordinates.lat, clickCoordinates.lng);
   });
 }
 
@@ -43,7 +44,7 @@ function parseHashParams() {
 }
 
 function updateHashParams() {
-    const center = map.getCenter();
+    const center = map.getCenter().wrap();
     const zoom = map.getZoom();
     let newHash = `c=${zoom}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}`;
     if (selectedPano) {
