@@ -36,7 +36,7 @@ if use_pyheif:
     import numpy as np
 
 
-@lru_cache(maxsize=2**16)
+@lru_cache(maxsize=2**14)
 def get_coverage_tile_cached(x, y):
     return get_coverage_tile(x, y, session=session)
 
