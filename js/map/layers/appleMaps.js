@@ -20,7 +20,7 @@ L.TileLayer.AppleMapsTiles = L.TileLayer.extend({
           break;
         case "satellite":
           url = `https://sat-cdn1.apple-mapkit.com/tile?` +
-                `style=7&size=1&scale=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&v=2210195`;
+                `style=7&size=1&scale=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&v=9312`;
           break;
         case "satellite-overlay":
           url = `https://cdn1.apple-mapkit.com/ti/tile?` +
