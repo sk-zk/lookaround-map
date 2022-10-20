@@ -15,12 +15,12 @@ L.TileLayer.AppleMapsTiles = L.TileLayer.extend({
         default:
         case "road":
           url = `https://cdn3.apple-mapkit.com/ti/tile?` +
-          `style=0&size=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&scale=1` +
+          `style=0&size=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&v=2210195&scale=1` +
           `&lang=en&poi=1&tint=${this.options.tint}&emphasis=standard`;
           break;
         case "satellite":
           url = `https://sat-cdn1.apple-mapkit.com/tile?` +
-                `style=7&size=1&scale=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&v=9312`;
+                `style=7&size=1&scale=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&v=2210195`;
           break;
         case "satellite-overlay":
           url = `https://cdn1.apple-mapkit.com/ti/tile?` +
