@@ -154,14 +154,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
     let closestDist = 9999999;
     for (const pano of this.nearbyPanos) {
       // ignore pano markers that aren't even on screen
-      const viewerCoords = this.psv.dataHelper.sphericalCoordsToViewerCoords({
-        latitude: pano.position.pitch,
-        longitude: pano.position.yaw,
-      });
-      if (viewerCoords.x > this.psv.prop.size.width || viewerCoords.x < 0
-        || viewerCoords.y > this.psv.prop.size.height || viewerCoords.y < 0) {
-        continue;
-      }
+      if (this._markerPositionIsOffScreen(pano.position)) continue;
       const distance = distanceBetween(
         position.latitude, position.longitude,
         pano.position.pitch, pano.position.yaw,
@@ -172,6 +165,15 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
       }
     }
     return closest;
+  }
+
+  _markerPositionIsOffScreen(pano_position) {
+    const viewerCoords = this.psv.dataHelper.sphericalCoordsToViewerCoords({
+      latitude: pano_position.pitch,
+      longitude: pano_position.yaw,
+    });
+    return viewerCoords.x > this.psv.prop.size.width  || viewerCoords.x < 0 ||
+           viewerCoords.y > this.psv.prop.size.height || viewerCoords.y < 0;
   }
 
   _hideMarker() {
