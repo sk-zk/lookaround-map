@@ -1,6 +1,7 @@
+import { Api } from "./Api.js";
+import { Authenticator } from "./util/Authenticator.js";
 import { createMap } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
-import { Authenticator } from "./util/Authenticator.js";
 import { reverseGeocode } from "./util/nominatim.js";
 
 function initMap() {
@@ -60,8 +61,7 @@ function updateHashParams() {
 }
 
 async function fetchAndDisplayPanoAt(lat, lon) {
-  const response = await fetch(`/closest/${lat}/${lon}/`);
-  const pano = await response.json();
+  const pano = await api.getPanoAroundPoint(lat, lon);
   if (pano) {
     displayPano(pano);
   }
@@ -216,6 +216,7 @@ function onHashChanged(e) {
   map.setZoom(params.center.zoom);
 }
 
+const api = new Api();
 const auth = new Authenticator();
 
 let map = null;

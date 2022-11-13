@@ -8,6 +8,7 @@ import "https://cdn.jsdelivr.net/npm/uevent@2/browser.min.js";
 import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.js";
 import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/compass.js";
 import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/markers.js";
+import { Api } from "../Api.js";
 import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
 
@@ -45,6 +46,8 @@ export function createPanoViewer(config) {
     },
     plugins: plugins,
   });
+
+  viewer.api = new Api(endpoint);
 
   viewer.navigateTo = async (pano, resetView=false) => {
     // for some reason, setPanorama doesn't appear to store the

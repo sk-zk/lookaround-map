@@ -1,9 +1,12 @@
-import { wgs84ToTileCoord } from "../../util/geo.js";
+import { Api } from "../../Api.js";
 import { LRUMap } from "../../external/js_lru/lru.js";
+import { wgs84ToTileCoord } from "../../util/geo.js";
 
 // cache coverage tiles locally to stop leaflet from re-requesting everything
 // every time the zoom level changes.
 const coverageTileCache = new LRUMap(2**12);
+
+const api = new Api();
 
 L.GridLayer.Coverage = L.GridLayer.extend({
   createTile: function (coords, done) {
@@ -22,8 +25,7 @@ L.GridLayer.Coverage = L.GridLayer.extend({
         done(null, tile);
       }, 0);
     } else {
-      fetch(`/tiles/coverage/${coords.x}/${coords.y}/`)
-        .then((response) => response.json())
+      api.getCoverageTile(coords.x, coords.y)
         .then((panos) => {
           coverageTileCache.set(`${coords.x},${coords.y}`, panos);
           drawPanos(panos, coords, tileSize, ctx);

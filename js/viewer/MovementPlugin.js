@@ -17,12 +17,11 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
 
   constructor(psv, options) {
     super(psv);
-    this.endpoint = this.psv.config.panoData.endpoint;
     this.marker = this.psv.plugins.markers.addMarker({
       id: MARKER_ID,
       longitude: 0,
       latitude: 0,
-      image: `${this.endpoint}/static/marker.png`,
+      image: `${this.psv.config.panoData.endpoint}/static/marker.png`,
       width: 1,
       height: 1,
       opacity: 0.4,
@@ -46,8 +45,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
    * For the given panorama, fetches nearby locations the user can navigate to.
    */
   async updatePanoMarkers(refPano) {
-    const response = await fetch(`${this.endpoint}/closestTiles/${refPano.lat}/${refPano.lon}/`);
-    const responsePanos = await response.json();
+    const responsePanos = await this.psv.api.getPanosAroundPoint(refPano.lat, refPano.lon);
 
     this.nearbyPanos = [];
     for (const pano of responsePanos) {
