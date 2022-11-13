@@ -1,5 +1,6 @@
 from functools import lru_cache
 import gc
+import importlib
 import io
 
 from flask import Blueprint, current_app, jsonify, request, send_file 
@@ -14,14 +15,26 @@ from lookaround import get_coverage_tile, get_pano_face
 import geo
 
 
-api = Blueprint('api', __name__, url_prefix='/')
-session = requests.session()
-auth = Authenticator()
+def is_pyheif_installed():
+    pyheif = importlib.util.find_spec("pyheif")
+    return pyheif is not None
 
 @lru_cache(maxsize=2**14)
 def get_coverage_tile_cached(x, y):
     return get_coverage_tile(x, y, session=session)
-    
+
+
+api = Blueprint('api', __name__, url_prefix='/')
+session = requests.session()
+auth = Authenticator()
+
+use_pyheif = is_pyheif_installed()
+if use_pyheif:
+    print("pyheif enabled")
+    import pyheif
+    import simplejpeg
+    import numpy as np
+
 
 # Coverage tiles are passed through this server because of CORS.
 @api.route("/tiles/coverage/<int:x>/<int:y>/")
@@ -71,7 +84,7 @@ def relay_pano_segment(panoid, region_id, zoom, face):
     heic_bytes = get_pano_face(
         panoid, region_id, face, zoom, auth, session=session)
 
-    if current_app.config["USE_PYHEIF"]:
+    if use_pyheif:
         image = pyheif.read(heic_bytes)
         ndarray = np.array(image.data).reshape(
             image.size[1], image.size[0], 3)

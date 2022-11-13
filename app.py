@@ -1,7 +1,6 @@
 from flask import Flask, render_template
 from flask_cors import CORS
 from flask_compress import Compress
-import importlib
 import mimetypes
 import pillow_heif
 import sys
@@ -10,11 +9,6 @@ sys.path.append("lookaround")
 
 from api import api
 from util import CustomJSONEncoder
-
-
-def is_pyheif_installed():
-    pyheif = importlib.util.find_spec("pyheif")
-    return pyheif is not None
 
 def create_app():
     app = Flask(__name__)
@@ -35,13 +29,6 @@ def create_app():
     
     mimetypes.add_type('text/javascript', '.js')
     pillow_heif.register_heif_opener()
-
-    app.config["USE_PYHEIF"] = is_pyheif_installed()
-    if app.config["USE_PYHEIF"]:
-        print("pyheif enabled")
-        import pyheif
-        import simplejpeg
-        import numpy as np
 
     app.register_blueprint(api)
 
