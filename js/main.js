@@ -61,7 +61,7 @@ function updateHashParams() {
 }
 
 async function fetchAndDisplayPanoAt(lat, lon) {
-  const pano = await api.getPanoAroundPoint(lat, lon);
+  const pano = (await api.getPanosAroundPoint(lat, lon, 5, 1))[0];
   if (pano) {
     displayPano(pano);
   }

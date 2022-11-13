@@ -1,23 +1,21 @@
 export class Api {
-    constructor(endpoint) {
+    constructor(endpoint="") {
         this.endpoint = endpoint;
     }
 
     async getCoverageTile(x, y) {
-        const response = await fetch(`/tiles/coverage/${x}/${y}/`);
+        const response = await fetch(`${this.endpoint}/tiles/coverage/${x}/${y}/`);
         const tile = await response.json();
         return tile;
     }
 
-    async getPanoAroundPoint(lat, lon) {
-        const response = await fetch(`/closest/${lat}/${lon}/`);
-        const pano = await response.json();
-        return pano;
-    }
-
-    async getPanosAroundPoint(lat, lon) {
-        const response = await fetch(`${this.endpoint}/closestTiles/${lat}/${lon}/`);
-        const responsePanos = await response.json();
-        return responsePanos;
+    async getPanosAroundPoint(lat, lon, radius, limit=null) {
+        let url = `${this.endpoint}/closest?lat=${lat}&lon=${lon}&radius=${radius}`;
+        if (limit) {
+            url += `&limit=${limit}`
+        }
+        const response = await fetch(url);
+        const panos = await response.json();
+        return panos;
     }
 }

@@ -2,7 +2,7 @@ from functools import lru_cache
 import gc
 import io
 
-from flask import Blueprint, current_app, jsonify, send_file 
+from flask import Blueprint, current_app, jsonify, request, send_file 
 from flask_cors import cross_origin
 import numpy as np
 from PIL import Image
@@ -30,35 +30,39 @@ def relay_coverage_tile(x, y):
     panos = get_coverage_tile_cached(x, y)
     return jsonify(panos)
 
-@api.route("/closest/<float(signed=True):lat>/<float(signed=True):lon>/")
+@api.route("/closest")
 @cross_origin()
-def closest_pano_to_coord(lat, lon):
-    x, y = wgs84_to_tile_coord(lat, lon, 17)
-    panos = get_coverage_tile_cached(x, y)
-    if len(panos) == 0:
-        return jsonify(None)
+def closest():
+    """
+    Retrieves the closest panoramas to a given point from the Look Around API.
+    The returned panoramas are sorted by distance to this point.
+    """
+    # parse params
+    MAX_RADIUS = 100
+    lat = request.args.get("lat", default=None, type=float)
+    lon = request.args.get("lon", default=None, type=float)
+    radius = request.args.get("radius", default=100, type=float)
+    limit = request.args.get("limit", default=None, type=int)
+    if not lat or not lon:
+        return "Latitude and longitude must be set", 400
+    if radius > MAX_RADIUS:
+        radius = MAX_RADIUS
+    if limit and limit < 1:
+        limit = 1
 
-    smallest_distance = 9999999
-    closest = None
-    for pano in panos:
-        distance = geo.distance(lat, lon, pano.lat, pano.lon)
-        if distance < smallest_distance:
-            smallest_distance = distance
-            closest = pano
-    return jsonify(closest)
-
-@api.route("/closestTiles/<float(signed=True):lat>/<float(signed=True):lon>/")
-@cross_origin()
-def closest_tiles(lat, lon):
-    MAX_DISTANCE = 100
+    # fetch panos and sort
     panos = []
-    for tile in geo.get_circle_tiles(lat, lon, MAX_DISTANCE, 17):
-        tile_panos = get_coverage_tile_cached(tile[0], tile[1])
+    for (x,y) in geo.get_circle_tiles(lat, lon, radius, 17):
+        tile_panos = get_coverage_tile_cached(x, y)
         for pano in tile_panos:
             distance = geo.distance(lat, lon, pano.lat, pano.lon)
-            if distance < MAX_DISTANCE:
-                panos.append(pano)
-    return jsonify(panos)
+            if distance < radius:
+                panos.append((pano, distance))
+    panos = sorted(panos, key=lambda x: x[1])
+    if limit:
+        return jsonify([x[0] for x in panos[:limit]])
+    else:
+        return jsonify([x[0] for x in panos])
 
 # Panorama faces are passed through this server because of CORS.
 @api.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/<int:face>/")

@@ -45,7 +45,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
    * For the given panorama, fetches nearby locations the user can navigate to.
    */
   async updatePanoMarkers(refPano) {
-    const responsePanos = await this.psv.api.getPanosAroundPoint(refPano.lat, refPano.lon);
+    const responsePanos = await this.psv.api.getPanosAroundPoint(refPano.lat, refPano.lon, 100);
 
     this.nearbyPanos = [];
     for (const pano of responsePanos) {
