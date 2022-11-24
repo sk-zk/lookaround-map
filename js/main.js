@@ -73,8 +73,6 @@ async function displayPano(pano) {
   } else {
     initPanoViewer(pano);
     switchMapToPanoLayout(pano);
-    hideMapControls();
-    document.querySelector("#close-pano").style.display = "flex";
   }
   updateMapMarker(pano);
   await updatePanoInfo(pano);
@@ -101,7 +99,6 @@ function initPanoViewer(pano) {
 }
 
 async function updatePanoInfo(pano) {
-  document.querySelector("#pano-info").style.display = "block";
   document.querySelector("#pano-id").innerHTML = `${pano.panoid} / ${pano.region_id}`;
   document.querySelector("#pano-coordinates").innerHTML = `${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)}`;
   document.querySelector("#pano-date").innerHTML = `${pano.date}`;
@@ -131,14 +128,18 @@ function updateMapMarker(pano) {
 
 function switchMapToPanoLayout(pano) {
   document.querySelector("#map").classList.add("pano-overlay");
+  toggleLayoutControlVisibility(false);
   if (map) {
     map.invalidateSize();
   }
 }
 
-function hideMapControls() {
-  document.querySelector(".leaflet-control-zoom").style.display = "none";
-  document.querySelector(".leaflet-control-layers").style.display = "none";
+function toggleLayoutControlVisibility(isMapLayout) {
+  document.querySelector(".leaflet-control-zoom").style.display = isMapLayout ? "block" : "none";
+  document.querySelector(".leaflet-control-layers").style.display = isMapLayout ? "block" : "none";
+  document.querySelector("#github-link").style.display = isMapLayout ? "block" : "none";
+  document.querySelector("#close-pano").style.display = isMapLayout ? "none" : "flex";
+  document.querySelector("#pano-info").style.display = isMapLayout ? "none": "block";
 }
 
 function closePanoViewer() {
@@ -150,11 +151,8 @@ function closePanoViewer() {
   if (selectedPanoMarker) {
     map.removeLayer(selectedPanoMarker);
   }
-  document.querySelector(".leaflet-control-zoom").style.display = "block";
-  document.querySelector(".leaflet-control-layers").style.display = "block";
 
-  document.querySelector("#close-pano").style.display = "none";
-  document.querySelector("#pano-info").style.display = "none";
+  toggleLayoutControlVisibility(true);
 
   document.title = appTitle;
 }

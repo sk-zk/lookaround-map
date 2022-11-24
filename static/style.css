@@ -78,3 +78,18 @@ body {
   font-style: italic;
   color: #ccc;
 }
+
+#github-link {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  background: rgba(255,255,255,0.5);
+  z-index: 2;
+  border-radius: 5px;
+  padding: 5px;
+  line-height: 0;
+  border: 2px solid rgba(0,0,0,0.2);
+  opacity: 0.96;
+}
