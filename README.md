@@ -36,3 +36,4 @@ On Linux and Mac, you may optionally [install `pyheif`](https://github.com/carsa
 - [ ] Find and decode depth data and use it to improve movement
    - There are three types of pano data the app will request. One is `/t/<face>/<zoom>`, which returns the pano faces as HEIC, but there are two others: `/m/<zoom>` and `/mt/7`, in a custom format with the header `MCP4`. One of them probably contains the depth information I'm looking for.
 - [ ] Fetch the address from Apple rather than OSM
+- [ ] Properly convert and display elevation
