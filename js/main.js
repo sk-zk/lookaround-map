@@ -191,8 +191,8 @@ document.querySelector("#close-pano").addEventListener("click", (e) => { closePa
 
 const params = parseHashParams();
 if (params.pano) {
-  switchMapToPanoLayout();
   initMap();
+  switchMapToPanoLayout();
   await fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude);
 }
 else {
