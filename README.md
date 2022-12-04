@@ -12,7 +12,17 @@ npm i
 rollup -c
 flask run
 ```
-On Linux and Mac, you may optionally [install `pyheif`](https://github.com/carsales/pyheif) for slightly faster decoding.
+
+### Decoding
+Since no browser supports the HEIC format (not even Apple's own Safari, funnily enough), images must be converted to JPG before sending them to the client.
+To do so, three options are available. Simply install the one you like and it will be selected automatically.
+
+#1: By default, `pillow-heif` will be used to decode images. It's the slowest of the group, but runs on every platform.
+
+#2: [`pyheif`](https://github.com/carsales/pyheif), which is slightly faster. Supports Linux and Mac.
+
+#3: However, **the fastest option** (that I'm aware of) is my own `heic2rgb` (repo and instructions to follow), which is noticeably faster than the previous two. Supports Linux and Windows.
+
 
 ## Progress
 ### Complete:

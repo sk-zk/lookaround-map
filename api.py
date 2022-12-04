@@ -15,9 +15,9 @@ from lookaround import get_coverage_tile, get_pano_face
 import geo
 
 
-def is_pyheif_installed():
-    pyheif = importlib.util.find_spec("pyheif")
-    return pyheif is not None
+def is_package_installed(package_name):
+    package = importlib.util.find_spec(package_name)
+    return package is not None
 
 @lru_cache(maxsize=2**14)
 def get_coverage_tile_cached(x, y):
@@ -28,12 +28,17 @@ api = Blueprint('api', __name__, url_prefix='/')
 session = requests.session()
 auth = Authenticator()
 
-use_pyheif = is_pyheif_installed()
-if use_pyheif:
-    print("pyheif enabled")
-    import pyheif
+use_heic2rgb = is_package_installed("heic2rgb")
+if use_heic2rgb:
+    print("heic2rgb enabled")
+    import heic2rgb
     import simplejpeg
-    import numpy as np
+else:
+    use_pyheif = is_package_installed("pyheif")
+    if use_pyheif:
+        print("pyheif enabled")
+        import pyheif
+        import simplejpeg
 
 
 # Coverage tiles are passed through this server because of CORS.
@@ -84,7 +89,12 @@ def relay_pano_segment(panoid, region_id, zoom, face):
     heic_bytes = get_pano_face(
         panoid, region_id, face, zoom, auth, session=session)
 
-    if use_pyheif:
+    if use_heic2rgb:
+        image = heic2rgb.decode(heic_bytes)
+        ndarray = np.frombuffer(image.data, dtype=np.uint8).reshape(
+            image.height, image.width, 3)
+        jpeg_bytes = simplejpeg.encode_jpeg(ndarray)
+    elif use_pyheif:
         image = pyheif.read(heic_bytes)
         ndarray = np.array(image.data).reshape(
             image.size[1], image.size[0], 3)
