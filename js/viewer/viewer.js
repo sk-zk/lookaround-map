@@ -24,7 +24,7 @@ export function createPanoViewer(config) {
   const endpoint = config.endpoint ?? "";
   const plugins = configurePlugins(config);
   const defaultHeading = config.defaultHeading ?? DefaultHeading.North;
-  const defaultLong = getHeading(defaultHeading, config.initialPano.north);
+  const defaultLong = getHeading(defaultHeading, config.initialPano.heading);
   const defaultZoomLvl = 10;
 
   const viewer = new PhotoSphereViewer.Viewer({
@@ -42,7 +42,7 @@ export function createPanoViewer(config) {
     defaultZoomLvl: defaultZoomLvl,
     navbar: null,
     sphereCorrection: {
-      pan: config.initialPano.north + LONGITUDE_OFFSET,
+      pan: config.initialPano.heading + LONGITUDE_OFFSET,
     },
     plugins: plugins,
   });
@@ -53,7 +53,7 @@ export function createPanoViewer(config) {
     // for some reason, setPanorama doesn't appear to store the
     // new sphereCorrection anywhere, so I'm just passing it to the
     // viewer adapter manually
-    viewer.panWorkaround = pano.north + LONGITUDE_OFFSET;
+    viewer.panWorkaround = pano.heading + LONGITUDE_OFFSET;
 
     if (resetView) {
       // temporarily disable dynamic face loading.
@@ -69,11 +69,11 @@ export function createPanoViewer(config) {
     }, {
       showLoader: false,
       sphereCorrection: {
-        pan: pano.north + LONGITUDE_OFFSET,
+        pan: pano.heading + LONGITUDE_OFFSET,
       },
     });
     if (resetView) {
-      const heading = getHeading(defaultHeading, pano.north);
+      const heading = getHeading(defaultHeading, pano.heading);
       viewer.zoom(defaultZoomLvl);
       viewer.rotate({ latitude: 0, longitude: heading });
       viewer.adapter.dynamicLoadingEnabled = true;
@@ -87,7 +87,7 @@ export function createPanoViewer(config) {
   return viewer;
 }
 
-function getHeading(defaultHeading, north) {
+function getHeading(defaultHeading, heading) {
   let defaultLong;
   switch (defaultHeading) {
     case DefaultHeading.North:
@@ -95,7 +95,7 @@ function getHeading(defaultHeading, north) {
       defaultLong = 0;
       break;
     case DefaultHeading.Road:
-      defaultLong = -north;
+      defaultLong = -heading;
       break;
   }
   return defaultLong;
