@@ -117,7 +117,7 @@ function updatePanoAddressField(address) {
   document.querySelector("#pano-address").innerHTML = html;
 }
 
-function updateMapMarker(pano) {
+async function updateMapMarker(pano) {
   if (selectedPanoMarker) {
     map.removeLayer(selectedPanoMarker);
   }

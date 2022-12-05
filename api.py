@@ -19,8 +19,17 @@ def is_package_installed(package_name):
     package = importlib.util.find_spec(package_name)
     return package is not None
 
-@lru_cache(maxsize=2**14)
-def get_coverage_tile_cached(x, y):
+# there are two separate caches for map tiles:
+# a larger one for the relayed map tiles that are rendered in the client,
+# and a smaller one for tiles parsed for movement.
+# somehow, movement is faster when using a smaller cache, despite 
+# the network latency.
+@lru_cache(maxsize=2**10)
+def get_coverage_tile__cached_for_map(x, y):
+    return get_coverage_tile(x, y, session=session)
+
+@lru_cache(maxsize=2**6)
+def get_coverage_tile__cached_for_movement(x, y):
     return get_coverage_tile(x, y, session=session)
 
 
@@ -45,7 +54,7 @@ else:
 @api.route("/tiles/coverage/<int:x>/<int:y>/")
 @cross_origin()
 def relay_coverage_tile(x, y):
-    panos = get_coverage_tile_cached(x, y)
+    panos = get_coverage_tile__cached_for_map(x, y)
     return jsonify(panos)
 
 @api.route("/closest")
@@ -71,7 +80,7 @@ def closest():
     # fetch panos and sort
     panos = []
     for (x,y) in geo.get_circle_tiles(lat, lon, radius, 17):
-        tile_panos = get_coverage_tile_cached(x, y)
+        tile_panos = get_coverage_tile__cached_for_movement(x, y)
         for pano in tile_panos:
             distance = geo.distance(lat, lon, pano.lat, pano.lon)
             if distance < radius:
