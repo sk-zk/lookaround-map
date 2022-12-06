@@ -1,6 +1,7 @@
 import "./layers/debugCoords.js";
 import "./layers/appleLookaroundCoverage.js";
 import "./layers/appleMaps.js";
+import "https://cdnjs.cloudflare.com/ajax/libs/leaflet-contextmenu/1.4.0/leaflet.contextmenu.min.js";
 
 const MAX_ZOOM = 19;
 const KEEP_BUFFER = 6;
@@ -13,15 +14,54 @@ export function createMap(config) {
     zoom: config.center.zoom,
     preferCanvas: true,
     zoomControl: true,
+    contextmenu: true,
+    contextmenuWidth: 200,
+    contextmenuItems: [
+      {
+        text: "Copy coordinates to clipboard",
+        callback: (e)  => {
+          navigator.clipboard.writeText(`${e.latlng.lat}, ${e.latlng.lng}`);
+        },
+      },
+      {
+        text: "Center map here",
+        callback: (e) => map.panTo(e.latlng),
+      },
+      '-', 
+      /* TODO
+      {
+        text: "Open in Apple Maps",
+      },*/
+      {
+        text: "Open in Google Maps",
+        callback: (e) => {
+          const center = map.getCenter();
+          window.open(`https://www.google.com/maps/@${center.lat},${center.lng},${map.getZoom()}z/data=!5m1!1e5`, '_blank');
+        }
+      },
+      {
+        text: "Open in OpenStreetMap",
+        callback: (e) => {
+          const center = map.getCenter();
+          window.open(`https://www.openstreetmap.org/#map=${map.getZoom()}/${center.lat}/${center.lng}`, '_blank');
+        }
+      }
+    ],
   });
 
-  const appleRoadLightTiles = L.tileLayer.appleMapsTiles(config.auth, {
-    maxZoom: MAX_ZOOM,
-    type: "road",
-    tint: "light",
-    keepBuffer: KEEP_BUFFER,
-    attribution: "© Apple",
-  }).addTo(map);
+  map.on("mousedown", (e) => {
+    map.contextmenu._items[0].el.innerHTML = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+  })
+
+  const appleRoadLightTiles = L.tileLayer
+    .appleMapsTiles(config.auth, {
+      maxZoom: MAX_ZOOM,
+      type: "road",
+      tint: "light",
+      keepBuffer: KEEP_BUFFER,
+      attribution: "© Apple",
+    })
+    .addTo(map);
   const appleRoadDarkTiles = L.tileLayer.appleMapsTiles(config.auth, {
     maxZoom: MAX_ZOOM,
     type: "road",
@@ -104,11 +144,13 @@ export function createMap(config) {
     "Apple Maps Road (Dark)": appleRoadDarkTiles,
     "Apple Maps Satellite": appleSatelliteTiles,
     "Google Maps Road": googleRoadTiles,
-    "OpenStreetMap": osmTiles,
+    OpenStreetMap: osmTiles,
   };
   const overlays = {
-    '<div class="multiline-checkbox-label">Look Around coverage<br>(requires z=16 or higher)</div>': coverageGroup,
-    '<div class="multiline-checkbox-label">Google Street View coverage<br>(official only - for comparison)': googleStreetViewCoverageTiles,
+    '<div class="multiline-checkbox-label">Look Around coverage<br>(requires z=16 or higher)</div>':
+      coverageGroup,
+    '<div class="multiline-checkbox-label">Google Street View coverage<br>(official only - for comparison)':
+      googleStreetViewCoverageTiles,
     "Tile boundaries": debugCoords,
   };
   L.control.layers(baseLayers, overlays).addTo(map);
