@@ -4,6 +4,8 @@ import { createMap } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
 import { reverseGeocode } from "./util/nominatim.js";
 
+const RAD2DEG = 180 / Math.PI;
+
 function initMap() {
   map = createMap({
     center: params.center, 
@@ -48,12 +50,12 @@ function updateHashParams() {
     const center = map.getCenter().wrap();
     const zoom = map.getZoom();
     let newHash = `c=${zoom}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}`;
-    if (selectedPano) {
+    if (currentPano) {
       // there's no API call known to me which will return metadata for a
       // specific panoid like there is with streetview. this means that to fetch
       // pano metadata, its location must also be known, so I've decided to use
       // that for permalinks rather than panoids until I have a better solution
-      newHash += `&p=${selectedPano.lat.toFixed(5)}/${selectedPano.lon.toFixed(5)}`;
+      newHash += `&p=${currentPano.lat.toFixed(5)}/${currentPano.lon.toFixed(5)}`;
     }
     // instead of setting window.location.hash directly, I set it like this
     // to not trigger a hashchanged event
@@ -62,6 +64,7 @@ function updateHashParams() {
 
 async function fetchAndDisplayPanoAt(lat, lon) {
   const pano = (await api.getPanosAroundPoint(lat, lon, 25, 1))[0];
+  currentPano = pano;
   if (pano) {
     displayPano(pano);
   }
@@ -92,10 +95,25 @@ function initPanoViewer(pano) {
   compass.style.top = "calc(100vh - 270px - 90px)";
 
   panoViewer.plugins.movement.on("moved", async (e, pano) => {
+    currentPano = pano;
     updateMapMarker(pano);
     updatePanoInfo(pano);
     updateHashParams();
   });
+
+  document.querySelector("#open-in-gsv").addEventListener("click", openInGsv);
+}
+
+function openInGsv() {
+  const angle = panoViewer.getPosition();
+  const pan = angle.longitude * RAD2DEG;
+  const pitch = (angle.latitude * RAD2DEG) + 90;
+  // estimated, but it works well enough
+  const zoom = -0.65 * panoViewer.getZoomLevel() + 77.5;
+  window.open(
+    `https://www.google.com/maps/@${currentPano.lat},${currentPano.lon},3a,${zoom}y,${pan}h,${pitch}t/data=!3m1!1e1`, 
+    '_blank'
+    );
 }
 
 async function updatePanoInfo(pano) {
@@ -123,7 +141,6 @@ async function updateMapMarker(pano) {
   }
   selectedPanoMarker = L.marker(L.latLng(pano.lat, pano.lon)).addTo(map);
   map.setView(L.latLng(pano.lat, pano.lon));
-  selectedPano = pano;
 }
 
 function switchMapToPanoLayout(pano) {
@@ -143,7 +160,7 @@ function toggleLayoutControlVisibility(isMapLayout) {
 }
 
 function closePanoViewer() {
-  selectedPano = null;
+  currentPano = null;
   destroyPanoViewer();
 
   document.querySelector("#map").classList.remove("pano-overlay");
@@ -182,7 +199,7 @@ const auth = new Authenticator();
 
 let map = null;
 let panoViewer = null;
-let selectedPano = null;
+let currentPano = null;
 let selectedPanoMarker = null;
 
 document.title = appTitle;

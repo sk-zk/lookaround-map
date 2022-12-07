@@ -94,6 +94,10 @@ body {
   opacity: 0.96;
 }
 
+#pano-info a {
+  color: inherit;
+}
+
 
 .leaflet-contextmenu {
   display: none;
