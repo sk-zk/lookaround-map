@@ -28,10 +28,13 @@ export function createMap(config) {
         callback: (e) => map.panTo(e.latlng),
       },
       '-', 
-      /* TODO
       {
         text: "Open in Apple Maps",
-      },*/
+        callback: (e) => {
+          const center = map.getCenter();
+          window.open(`http://maps.apple.com/?ll=${center.lat},${center.lng}&z=${map.getZoom()}`, '_blank');
+        }
+      },
       {
         text: "Open in Google Maps",
         callback: (e) => {
