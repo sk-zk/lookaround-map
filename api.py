@@ -19,22 +19,20 @@ def is_package_installed(package_name):
     package = importlib.util.find_spec(package_name)
     return package is not None
 
-# there are two separate caches for map tiles:
-# a larger one for the relayed map tiles that are rendered in the client,
-# and a smaller one for tiles parsed for movement.
-# somehow, movement is faster when using a smaller cache, despite 
-# the network latency.
-@lru_cache(maxsize=2**10)
-def get_coverage_tile__cached_for_map(x, y):
-    return get_coverage_tile(x, y, session=session)
+# i've decided to remove the cache for `relay_coverage_tile` completely
+# because, for god knows what reason, it slowed down the `closest` endpoint
+# quite a bit, even though it never interacted with the map tile cache in any way.
+# top 10 questions scientists still can't answer.
 
 @lru_cache(maxsize=2**6)
 def get_coverage_tile__cached_for_movement(x, y):
-    return get_coverage_tile(x, y, session=session)
+    return get_coverage_tile(x, y, session=movement_session)
 
 
 api = Blueprint('api', __name__, url_prefix='/')
-session = requests.session()
+pano_session = requests.session()
+movement_session = requests.session()
+map_session = requests.session()
 auth = Authenticator()
 
 use_heic2rgb = is_package_installed("heic2rgb")
@@ -54,7 +52,7 @@ else:
 @api.route("/tiles/coverage/<int:x>/<int:y>/")
 @cross_origin()
 def relay_coverage_tile(x, y):
-    panos = get_coverage_tile__cached_for_map(x, y)
+    panos = get_coverage_tile(x, y, session=map_session)
     return jsonify(panos)
 
 @api.route("/closest")
@@ -79,7 +77,8 @@ def closest():
 
     # fetch panos and sort
     panos = []
-    for (x,y) in geo.get_circle_tiles(lat, lon, radius, 17):
+    tiles = geo.get_circle_tiles(lat, lon, radius, 17)
+    for (x,y) in tiles:
         tile_panos = get_coverage_tile__cached_for_movement(x, y)
         for pano in tile_panos:
             distance = geo.distance(lat, lon, pano.lat, pano.lon)
@@ -95,8 +94,7 @@ def closest():
 @api.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/<int:face>/")
 @cross_origin()
 def relay_pano_segment(panoid, region_id, zoom, face):
-    heic_bytes = get_pano_face(
-        panoid, region_id, face, zoom, auth, session=session)
+    heic_bytes = get_pano_face(panoid, region_id, face, zoom, auth, session=pano_session)
 
     if use_heic2rgb:
         image = heic2rgb.decode(heic_bytes)
@@ -129,7 +127,7 @@ def relay_full_pano(panoid, region_id, zoom):
     heic_array = []
     for i in range(4):
         heic_bytes = get_pano_face(
-            panoid, region_id, i, zoom, auth, session=session)
+            panoid, region_id, i, zoom, auth, session=pano_session)
         with Image.open(io.BytesIO(heic_bytes)) as image:
             heic_array.append(image)
 
