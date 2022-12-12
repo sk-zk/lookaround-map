@@ -18,6 +18,27 @@ function wgs84ToMercator(lat, lon) {
   };
 }
 
+export function mercatorToWgs84(x, y) {
+  const lat = (2 * Math.atan(Math.exp((y - 128) / -(256 / (2 * Math.PI)))) - Math.PI / 2) / (Math.PI / 180);
+  const lon = (x - 128) / (256 / 360);
+  return { lat: lat, lon: lon };
+}
+
+export function tileCoordToWgs84(x, y, zoom) {
+  const scale = 1 << zoom;
+  const pixelCoordX = x * TILE_SIZE;
+  const pixelCoordY =  y * TILE_SIZE;
+  const worldCoordX = pixelCoordX / scale;
+  const worldCoordY = pixelCoordY / scale;
+  return mercatorToWgs84(worldCoordX, worldCoordY);
+}
+
+export function wrapLon(value) {
+  const worlds = Math.floor((value + 180) / 360);
+  return value - worlds * 360;
+}
+
+
 ///////
 
 // Code based on MapillaryJS

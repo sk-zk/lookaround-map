@@ -1,162 +1,173 @@
-import "./layers/debugCoords.js";
-import "./layers/appleLookaroundCoverage.js";
-import "./layers/appleMaps.js";
-import "https://cdnjs.cloudflare.com/ajax/libs/leaflet-contextmenu/1.4.0/leaflet.contextmenu.min.js";
-
-const MAX_ZOOM = 19;
-const KEEP_BUFFER = 6;
+import { blueLineLayer } from "./layers/cachedBlueLines.js";
+import { appleRoad, appleRoadDark, appleSatellite } from "./layers/appleMaps.js";
+import { googleRoad, googleStreetView } from "./layers/googleMaps.js";
+import { openStreetMap, cartoDbPositron, cartoDbDarkMatter } from "./layers/openStreetMap.js";
+import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
+import { Constants } from "./Constants.js";
+import { FilterControl } from "./FilterControl.js";
+import { wrapLon } from "../util/geo.js";
 
 export function createMap(config) {
-  let map = L.map("map", {
-    center: [config.center.latitude, config.center.longitude],
-    minZoom: 3,
-    maxZoom: MAX_ZOOM,
-    zoom: config.center.zoom,
-    preferCanvas: true,
-    zoomControl: true,
-    contextmenu: true,
-    contextmenuWidth: 200,
-    contextmenuItems: [
+  ol.proj.useGeographic();
+
+  const baseLayers = new ol.layer.Group({
+    title: "Base layer",
+    layers: [appleRoad, appleRoadDark, appleSatellite, googleRoad, 
+      openStreetMap, cartoDbPositron, cartoDbDarkMatter]
+  });
+
+  const overlays = new ol.layer.Group({
+    title: "Overlays",
+    layers: [lookaroundCoverage, blueLineLayer, googleStreetView]
+  });
+
+  const map = new ol.Map({
+    layers: [baseLayers, overlays],
+    target: "map",
+    view: new ol.View({
+      center: [config.center.longitude, config.center.latitude],
+      zoom: config.center.zoom,
+      minZoom: 2,
+      maxZoom: Constants.MAX_ZOOM,
+      constrainResolution: true,
+    }),
+    controls: ol.control.defaults.defaults({
+      zoom: true,
+      attribution: false,
+      rotate: false,
+    }),
+  });
+
+  const layerSwitcher = new LayerSwitcher({
+    reverse: false,
+    groupSelectStyle: 'group'
+  });
+  map.addControl(layerSwitcher);
+
+  const attributionControl = new ol.control.Attribution({
+    collapsible: false,
+    collapsed: false,
+  });
+  map.addControl(attributionControl);
+
+  createContextMenu(map);
+  createFilterControl(map);
+  createPanoMarkerLayer(map);
+
+  return map;
+}
+
+function createFilterControl(map) {
+  const filterControl = new FilterControl();
+  blueLineLayer.setFilterSettings(filterControl.getFilterSettings());
+  lookaroundCoverage.setFilterSettings(filterControl.getFilterSettings());
+  filterControl.on("changed", (e) => {
+    blueLineLayer.setFilterSettings(e.filterSettings);
+    blueLineLayer.getLayers().forEach(l => l.changed());
+    lookaroundCoverage.setFilterSettings(e.filterSettings);
+    lookaroundCoverage.getLayers().forEach(l => l.getSource().refresh());
+  });
+  map.addControl(filterControl);
+}
+
+function createContextMenu(map) {
+  const contextMenu = new ContextMenu({
+    width: 250,
+    defaultItems: false,
+    items: [
       {
         text: "Copy coordinates to clipboard",
-        callback: (e)  => {
-          navigator.clipboard.writeText(`${e.latlng.lat}, ${e.latlng.lng}`);
+        icon: "/static/icons/copy.png",
+        callback: (e) => {
+          navigator.clipboard.writeText(`${e.coordinate[1]}, ${e.coordinate[0]}`);
         },
       },
       {
         text: "Center map here",
-        callback: (e) => map.panTo(e.latlng),
+        icon: "image:()",
+        callback: (e) => {
+          map.getView().animate({
+            duration: 300,
+            center: e.coordinate,
+          });
+        },
       },
-      '-', 
+      "-",
       {
         text: "Open in Apple Maps",
+        icon: "image:()",
         callback: (e) => {
-          const center = map.getCenter();
-          window.open(`http://maps.apple.com/?ll=${center.lat},${center.lng}&z=${map.getZoom()}`, '_blank');
-        }
+          const view = map.getView();
+          const center = view.getCenter();
+          const zoom = view.getZoom();
+          window.open(
+            `http://maps.apple.com/?ll=${center[1]},${center[0]}&z=${zoom}`,
+            "_blank"
+          );
+        },
       },
       {
         text: "Open in Google Maps",
+        icon: "image:()",
         callback: (e) => {
-          const center = map.getCenter();
-          window.open(`https://www.google.com/maps/@${center.lat},${center.lng},${map.getZoom()}z/data=!5m1!1e5`, '_blank');
-        }
+          const view = map.getView();
+          const center = view.getCenter();
+          const zoom = view.getZoom();
+          window.open(
+            `https://www.google.com/maps/@${center[1]},${center[0]},${zoom}z/data=!5m1!1e5`,
+            "_blank"
+          );
+        },
       },
       {
         text: "Open in OpenStreetMap",
+        icon: "image:()",
         callback: (e) => {
-          const center = map.getCenter();
-          window.open(`https://www.openstreetmap.org/#map=${map.getZoom()}/${center.lat}/${center.lng}`, '_blank');
-        }
-      }
+          const view = map.getView();
+          const center = view.getCenter();
+          const zoom = view.getZoom();
+          window.open(
+            `https://www.openstreetmap.org/#map=${zoom}/${center[1]}/${center[0]}`,
+            "_blank"
+          );
+        },
+      },
     ],
   });
-
-  map.on("mousedown", (e) => {
-    map.contextmenu._items[0].el.innerHTML = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
-  })
-
-  const appleRoadLightTiles = L.tileLayer
-    .appleMapsTiles(config.auth, {
-      maxZoom: MAX_ZOOM,
-      type: "road",
-      tint: "light",
-      keepBuffer: KEEP_BUFFER,
-      attribution: "© Apple",
-    })
-    .addTo(map);
-  const appleRoadDarkTiles = L.tileLayer.appleMapsTiles(config.auth, {
-    maxZoom: MAX_ZOOM,
-    type: "road",
-    tint: "dark",
-    keepBuffer: KEEP_BUFFER,
-    attribution: "© Apple",
+  map.addControl(contextMenu);
+  map.getViewport().addEventListener("contextmenu", (e) => {
+    const clickCoordinates = map.getEventCoordinate(e);
+    clickCoordinates[0] = wrapLon(clickCoordinates[0]);
+    // looks like this library doesn't support updating menu item text at runtime either
+    contextMenu.element.childNodes[0].childNodes[0].innerHTML = 
+      `${clickCoordinates[1].toFixed(5)}, ${clickCoordinates[0].toFixed(5)}`;
   });
-  const appleSatelliteTiles = L.layerGroup([
-    L.tileLayer.appleMapsTiles(config.auth, {
-      maxZoom: MAX_ZOOM,
-      type: "satellite",
-      keepBuffer: KEEP_BUFFER,
-      attribution: "© Apple",
+}
+
+function createPanoMarkerLayer(map) {
+  const markerStyle = new ol.style.Style({
+    image: new ol.style.Icon({
+      anchor: [0.5, 1],
+      anchorXUnits: 'fraction',
+      anchorYUnits: 'fraction',
+      src: '/static/marker-icon.png',
     }),
-    L.tileLayer.appleMapsTiles(config.auth, {
-      maxZoom: MAX_ZOOM,
-      type: "satellite-overlay",
-      keepBuffer: KEEP_BUFFER,
-      attribution: "© Apple",
-    }),
-  ]);
-
-  const googleRoadTiles = L.tileLayer(
-    "https://maps.googleapis.com/maps/vt?pb=!1m5!1m4!1i{z}!2i{x}!3i{y}!4i256!2m8!1e0!2ssvv!4m2!1scb_client!2sapiv3!4m2!1scc!2s*211m3*211e2*212b1*213e2!3m3!3sUS!12m1!1e1!4e0",
-    {
-      maxZoom: MAX_ZOOM,
-      keepBuffer: KEEP_BUFFER,
-      attribution: "© Google",
-    }
-  );
-  const osmTiles = L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      maxZoom: MAX_ZOOM,
-      keepBuffer: KEEP_BUFFER,
-      attribution: "© OpenStreetMap",
-    }
-  );
-
-  const debugCoords = L.gridLayer.debugCoords();
-
-  const coverageLayerNormal = L.gridLayer.coverage({
-    minZoom: 17,
-    maxZoom: 17,
-    tileSize: 256,
   });
-  const coverageLayer18 = L.gridLayer.coverage({
-    minZoom: 18,
-    maxZoom: 18,
-    tileSize: 512,
-  });
-  const coverageLayer19 = L.gridLayer.coverage({
-    minZoom: 19,
-    maxZoom: 19,
-    tileSize: 1024,
-  });
-  const coverageLayer16 = L.gridLayer.coverage({
-    minZoom: 16,
-    maxZoom: 16,
-    tileSize: 128,
-  });
-  const coverageGroup = L.layerGroup([
-    coverageLayer16,
-    coverageLayerNormal,
-    coverageLayer18,
-    coverageLayer19,
-  ]).addTo(map);
 
-  const googleStreetViewCoverageTiles = L.tileLayer(
-    "https://mts.googleapis.com/vt?hl=en-US&lyrs=svv|cb_client:app&style=5,8&x={x}&y={y}&z={z}",
-    {
-      maxZoom: MAX_ZOOM,
-      className: "gsv-coverage",
-      opacity: 0.7,
-    }
-  );
+  const markerFeature = new ol.Feature({
+    geometry: null,
+  });
 
-  const baseLayers = {
-    "Apple Maps Road (Light)": appleRoadLightTiles,
-    "Apple Maps Road (Dark)": appleRoadDarkTiles,
-    "Apple Maps Satellite": appleSatelliteTiles,
-    "Google Maps Road": googleRoadTiles,
-    OpenStreetMap: osmTiles,
-  };
-  const overlays = {
-    '<div class="multiline-checkbox-label">Look Around coverage<br>(requires z=16 or higher)</div>':
-      coverageGroup,
-    '<div class="multiline-checkbox-label">Google Street View coverage<br>(official only - for comparison)':
-      googleStreetViewCoverageTiles,
-    "Tile boundaries": debugCoords,
-  };
-  L.control.layers(baseLayers, overlays).addTo(map);
+  markerFeature.setStyle(markerStyle);
 
-  return map;
+  const mapMarkerSource = new ol.source.Vector({
+    features: [markerFeature],
+  });
+
+  const mapMarkerLayer = new ol.layer.Vector({
+    source: mapMarkerSource,
+  });
+  mapMarkerLayer.set('name', 'panoMarker');
+
+  map.addLayer(mapMarkerLayer);
 }

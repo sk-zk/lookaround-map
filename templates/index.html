@@ -4,13 +4,17 @@
 <head>
   <title>Apple Look Around Viewer</title>
   <link rel="icon" href="data:image/svg+xml,
-    <svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22>
-        <text y=%22.9em%22 font-size=%2285%22>🍎</text>
-    </svg>">
-  <meta charset="utf-8" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.2/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.2/dist/leaflet.js"></script>
-  <link rel="stylesheet" href="/static/style.css" />
+      <svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22>
+          <text y=%22.9em%22 font-size=%2285%22>🍎</text>
+      </svg>">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.1.0/ol.css"
+    type="text/css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@v7.1.0/dist/ol.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/ol-layerswitcher@4.1.0/dist/ol-layerswitcher.css" />
+  <script src="https://unpkg.com/ol-layerswitcher@4.1.0"></script>
+  <link href="https://cdn.jsdelivr.net/npm/ol-contextmenu@latest/dist/ol-contextmenu.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/ol-contextmenu"></script>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 
 <body>
@@ -29,11 +33,11 @@
   </div>
   <div id="github-link" class="github-link">
     <a href="https://github.com/sk-zk/lookaround-map/" title="View the source on GitHub">
-      <img src="/static/GitHub-Mark-32px.png" width="32" height="32" alt="GitHub logo">
+      <img src="/static/GitHub-Mark-32px.png" width="24" height="24" alt="GitHub logo">
     </a>
   </div>
-    
   <button id="close-pano" type="button"><span>✕</span></button>
+
   <script src="/static/dist/main.js" type="module"></script>
 </body>
 

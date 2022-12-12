@@ -3,6 +3,7 @@ import { Authenticator } from "./util/Authenticator.js";
 import { createMap } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
 import { reverseGeocode } from "./util/nominatim.js";
+import { wrapLon } from "./util/geo.js";
 
 const RAD2DEG = 180 / Math.PI;
 
@@ -14,12 +15,10 @@ function initMap() {
   map.on("moveend", (e) => {
     updateHashParams();
   });
-  map.on("zoomend", (e) => {
-    updateHashParams();
-  });
   map.on("click", async (e) => {
-    const clickCoordinates = e.latlng.wrap();
-    await fetchAndDisplayPanoAt(clickCoordinates.lat, clickCoordinates.lng);
+    const clickCoordinates = map.getEventCoordinate(e.originalEvent);
+    clickCoordinates[0] = wrapLon(clickCoordinates[0]);
+    await fetchAndDisplayPanoAt(clickCoordinates[1], clickCoordinates[0]);
   });
 }
 
@@ -47,9 +46,10 @@ function parseHashParams() {
 }
 
 function updateHashParams() {
-    const center = map.getCenter().wrap();
-    const zoom = map.getZoom();
-    let newHash = `c=${zoom}/${center.lat.toFixed(5)}/${center.lng.toFixed(5)}`;
+    const view = map.getView();
+    const center = view.getCenter();
+    const zoom = view.getZoom();
+    let newHash = `c=${zoom}/${center[1].toFixed(5)}/${center[0].toFixed(5)}`;
     if (currentPano) {
       // there's no API call known to me which will return metadata for a
       // specific panoid like there is with streetview. this means that to fetch
@@ -119,7 +119,14 @@ function openInGsv() {
 async function updatePanoInfo(pano) {
   document.querySelector("#pano-id").innerHTML = `${pano.panoid} / ${pano.region_id}`;
   document.querySelector("#pano-coordinates").innerHTML = `${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)}`;
-  document.querySelector("#pano-date").innerHTML = `${pano.date}`;
+  const date = new Date(pano.timestamp);
+  const locale = navigator.languages[0] ?? "en-GB";
+  const formattedDate = new Intl.DateTimeFormat(locale, {
+    dateStyle: "medium",
+    timeStyle: "long",
+    timeZone: pano.timezone,
+  }).format(date);
+  document.querySelector("#pano-date").innerHTML = formattedDate;
   const address = await reverseGeocode(pano.lat, pano.lon);
   updatePanoAddressField(address);
   document.title = `${address[0]} - ${appTitle}`;
@@ -136,24 +143,28 @@ function updatePanoAddressField(address) {
 }
 
 async function updateMapMarker(pano) {
-  if (selectedPanoMarker) {
-    map.removeLayer(selectedPanoMarker);
-  }
-  selectedPanoMarker = L.marker(L.latLng(pano.lat, pano.lon)).addTo(map);
-  map.setView(L.latLng(pano.lat, pano.lon));
+  map.getLayers().forEach((layer) => {
+    if (layer.get('name') === 'panoMarker') {
+      layer.getSource().getFeatures()[0].setGeometry(new ol.geom.Point([pano.lon, pano.lat]));
+    }
+  })
+
+  map.getView().animate({
+    center: [pano.lon, pano.lat],
+    duration: 100,
+  });
 }
 
 function switchMapToPanoLayout(pano) {
   document.querySelector("#map").classList.add("pano-overlay");
   toggleLayoutControlVisibility(false);
   if (map) {
-    map.invalidateSize();
+    map.updateSize();
   }
 }
 
 function toggleLayoutControlVisibility(isMapLayout) {
-  document.querySelector(".leaflet-control-zoom").style.display = isMapLayout ? "block" : "none";
-  document.querySelector(".leaflet-control-layers").style.display = isMapLayout ? "block" : "none";
+  document.querySelector(".ol-overlaycontainer-stopevent").style.display = isMapLayout ? "block" : "none";
   document.querySelector("#github-link").style.display = isMapLayout ? "block" : "none";
   document.querySelector("#close-pano").style.display = isMapLayout ? "none" : "flex";
   document.querySelector("#pano-info").style.display = isMapLayout ? "none": "block";
@@ -164,10 +175,12 @@ function closePanoViewer() {
   destroyPanoViewer();
 
   document.querySelector("#map").classList.remove("pano-overlay");
-  map.invalidateSize();  
-  if (selectedPanoMarker) {
-    map.removeLayer(selectedPanoMarker);
-  }
+  map.updateSize();  
+  map.getLayers().forEach((layer) => {
+    if (layer.get('name') === 'panoMarker') {
+      layer.getSource().getFeatures()[0].setGeometry(null);
+    }
+  })
 
   toggleLayoutControlVisibility(true);
 
@@ -187,9 +200,9 @@ function onHashChanged(e) {
     fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude);
   } else {
     closePanoViewer();
-  }
-  map.setView(L.latLng(params.center.latitude, params.center.longitude));
-  map.setZoom(params.center.zoom);
+  } 
+  map.getView().setCenter([params.center.longitude, params.center.latitude]);
+  map.getView().setZoom(params.center.zoom);
 }
 
 
@@ -200,7 +213,6 @@ const auth = new Authenticator();
 let map = null;
 let panoViewer = null;
 let currentPano = null;
-let selectedPanoMarker = null;
 
 document.title = appTitle;
 window.addEventListener("hashchange", onHashChanged);

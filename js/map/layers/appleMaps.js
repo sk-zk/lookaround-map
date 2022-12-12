@@ -1,43 +1,70 @@
-const subdomains = ["1", "2", "3", "4"];
+import { Authenticator } from "../../util/Authenticator.js";
 
-L.TileLayer.AppleMapsTiles = L.TileLayer.extend({
-    initialize: function (auth, opts) {
-      this.auth = auth;
-      L.setOptions(this, opts);
-    },
-    createTile: function (coords, done) {
-      var tile = document.createElement("img");
-      tile.alt = "";
-  
-      L.DomEvent.on(tile, "load", L.Util.bind(this._tileOnLoad, this, done, tile));
-          L.DomEvent.on(tile, "error", L.Util.bind(this._tileOnError, this, done, tile));
-  
-      let url = "";
-      const subdomain = subdomains[(Math.random() * subdomains.length) | 0];
-      switch (this.options.type) {
-        default:
-        case "road":
-          url = `https://cdn${subdomain}.apple-mapkit.com/ti/tile?` +
-          `style=0&size=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&v=2210195&scale=1` +
-          `&lang=en&poi=1&tint=${this.options.tint}&emphasis=standard`;
-          break;
-        case "satellite":
-          url = `https://sat-cdn${subdomain}.apple-mapkit.com/tile?` +
-                `style=7&size=1&scale=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&v=9312`;
-          break;
-        case "satellite-overlay":
-          url = `https://cdn${subdomain}.apple-mapkit.com/ti/tile?` +
-                `style=46&size=1&x=${coords.x}&y=${coords.y}&z=${coords.z}&scale=1&poi=0`;
-          break;
-      }
-  
-      this.auth.authenticateUrl(url)
-        .then((url) => { tile.src = url; });
-      done(null, tile);
-      return tile;
-    }
-  });
-  
-  L.tileLayer.appleMapsTiles = function (auth, opts) {
-    return new L.TileLayer.AppleMapsTiles(auth, opts);
-  }
+const auth = new Authenticator();
+
+async function tileLoadFunction(imageTile, src) {
+  imageTile.getImage().src = await auth.authenticateUrl(src);
+}
+
+const appleRoad = new ol.layer.Tile({
+  type: "base",
+  title: "Apple Maps Road",
+  source: new ol.source.XYZ({
+    minZoom: 2,
+    maxZoom: 19,
+    attributions: "© Apple",
+    url:
+      `https://cdn{1-4}.apple-mapkit.com/ti/tile?` +
+      `style=0&size=1&x={x}&y={y}&z={z}&v=2210195&scale=1` +
+      `&lang=en&poi=1&tint=light&emphasis=standard`,
+    tileLoadFunction: tileLoadFunction,
+  }),
+});
+
+const appleRoadDark = new ol.layer.Tile({
+  type: "base",
+  title: "Apple Maps Road (Dark)",
+  visible: false,
+  source: new ol.source.XYZ({
+    minZoom: 2,
+    maxZoom: 19,
+    attributions: "© Apple",
+    url:
+      `https://cdn{1-4}.apple-mapkit.com/ti/tile?` +
+      `style=0&size=1&x={x}&y={y}&z={z}&v=2210195&scale=1` +
+      `&lang=en&poi=1&tint=dark&emphasis=standard`,
+    tileLoadFunction: tileLoadFunction,
+  }),
+});
+
+const appleSatelliteImage = new ol.layer.Tile({
+  source: new ol.source.XYZ({
+    minZoom: 2,
+    maxZoom: 19,
+    attributions: "© Apple",
+    url:
+      `https://sat-cdn{1-4}.apple-mapkit.com/tile?` +
+      `style=7&size=1&scale=1&x={x}&y={y}&z={z}&v=9312`,
+    tileLoadFunction: tileLoadFunction,
+  }),
+});
+const appleSatelliteOverlay = new ol.layer.Tile({
+  source: new ol.source.XYZ({
+    minZoom: 2,
+    maxZoom: 19,
+    attributions: "© Apple",
+    url:
+      `https://cdn{1-4}.apple-mapkit.com/ti/tile?` +
+      `style=46&size=1&x={x}&y={y}&z={z}&scale=1&poi=0`,
+    tileLoadFunction: tileLoadFunction,
+  }),
+});
+const appleSatellite = new ol.layer.Group({
+  title: "Apple Maps Satellite",
+  type: "base",
+  combine: "true",
+  visible: false,
+  layers: [appleSatelliteImage, appleSatelliteOverlay],
+});
+
+export { appleRoad, appleRoadDark, appleSatellite };
