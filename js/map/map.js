@@ -30,6 +30,7 @@ export function createMap(config) {
       minZoom: 2,
       maxZoom: Constants.MAX_ZOOM,
       constrainResolution: true,
+      enableRotation: false,
     }),
     controls: ol.control.defaults.defaults({
       zoom: true,
