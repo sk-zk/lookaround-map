@@ -68,7 +68,6 @@ class CachedBlueLinesLayer extends ol.layer.VectorTile {
       title: options.title,
       visible: options.visible,
       opacity: 0.7,
-      extent: ol.extent.boundingExtent(options.extent),
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
       source: new CachedBlueLinesSource({
@@ -87,55 +86,29 @@ class CachedBlueLinesLayer extends ol.layer.VectorTile {
   }
 }
 
-// TODO improve this
+// For now, I've removed the extents and just let the rest 404.
+// Might be OK.
 
-const blueLineLayerGermanyMain = new CachedBlueLinesLayer({
+const blueLineLayerMain = new CachedBlueLinesLayer({
   minZoom: 0,
   maxZoom: 14,
-  extent: [
-    [5.8663153, 47.2701114],
-    [15.0419309, 55.099161],
-  ],
 });
 // my static tiles end at z=14 and the layer that comes directly from apple
 // is displayed at z>=16. this is a workaround to stop z=15 from being blurry.
-const blueLineLayerGermany15 = new CachedBlueLinesLayer({
+const blueLineLayer15 = new CachedBlueLinesLayer({
   minZoom: 14,
   maxZoom: 15,
-  extent: [
-    [5.8663153, 47.2701114],
-    [15.0419309, 55.099161],
-  ],
-});
-
-const blueLineLayerSingaporeMain = new CachedBlueLinesLayer({
-  minZoom: 0,
-  maxZoom: 14,
-  extent: [
-    [103.6056259,1.1586817],
-    [104.4096568,1.4715641],
-  ],
-});
-const blueLineLayerSingapore15 = new CachedBlueLinesLayer({
-  minZoom: 14,
-  maxZoom: 15,
-  extent: [
-    [103.6056259,1.1586817],
-    [104.4096568,1.4715641],
-  ],
 });
 
 const blueLineLayer = new ol.layer.Group({
   visible: false,
-  title: "Apple Look Around cached blue lines<br><em>(Germany and Singapore only)</em>",
+  title: "Apple Look Around cached blue lines<br><em>(not available for all countries)</em>",
   combine: "true",
-  layers: [blueLineLayerGermanyMain, blueLineLayerGermany15, blueLineLayerSingaporeMain, blueLineLayerSingapore15],
+  layers: [blueLineLayerMain, blueLineLayer15],
 });
 blueLineLayer.setFilterSettings = (filterSettings) => {
-  blueLineLayerGermanyMain.setFilterSettings(filterSettings);
-  blueLineLayerGermany15.setFilterSettings(filterSettings);
-  blueLineLayerSingaporeMain.setFilterSettings(filterSettings);
-  blueLineLayerSingapore15.setFilterSettings(filterSettings);
+  blueLineLayerMain.setFilterSettings(filterSettings);
+  blueLineLayer15.setFilterSettings(filterSettings);
 };
 
 export { blueLineLayer };
