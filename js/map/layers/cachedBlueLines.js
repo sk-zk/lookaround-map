@@ -48,6 +48,7 @@ class CachedBlueLinesSource extends ol.source.VectorTile {
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
       format: new ol.format.MVT(),
+      //url: "http://localhost:8080/maps/lookaround/{z}/{x}/{y}.vector.pbf",
       url: "https://lookmap.eu.pythonanywhere.com/bluelines/{z}/{x}/{y}",
       tileGrid: ol.tilegrid.createXYZ({
         minZoom: options.minZoom,
@@ -61,6 +62,7 @@ class CachedBlueLinesSource extends ol.source.VectorTile {
 
 class CachedBlueLinesLayer extends ol.layer.VectorTile {
   #filterSettings = Constants.DEFAULT_FILTERS;
+  #currentPolygonFilter = null;
 
   constructor(options) {
     options = options || {};
@@ -83,6 +85,15 @@ class CachedBlueLinesLayer extends ol.layer.VectorTile {
 
   setFilterSettings(filterSettings) {
     this.#filterSettings = filterSettings;
+    this.#setPolygonFilter();
+  }
+
+  #setPolygonFilter() {
+    this.removeFilter(this.#currentPolygonFilter);
+    this.#currentPolygonFilter = this.#filterSettings.polygonFilter;
+    if (this.#currentPolygonFilter != null) {
+      this.addFilter(this.#filterSettings.polygonFilter);
+    }
   }
 }
 

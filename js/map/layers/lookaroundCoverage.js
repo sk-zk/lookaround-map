@@ -83,6 +83,9 @@ class LookaroundCoverageSource extends ol.source.XYZ {
 }
 
 class LookaroundCoverageLayer extends ol.layer.Tile {
+  #currentPolygonFilter = null;
+  #filterSettings = Constants.DEFAULT_FILTERS;
+
   constructor(options) {
     options = options || {};
 
@@ -97,8 +100,18 @@ class LookaroundCoverageLayer extends ol.layer.Tile {
   }
 
   setFilterSettings(filterSettings) {
-    this.getSource().setFilterSettings(filterSettings);
+    this.#filterSettings = filterSettings;
+    this.getSource().setFilterSettings(this.#filterSettings);
+    this.#setPolygonFilter();
   }
+
+  #setPolygonFilter() {
+    this.removeFilter(this.#currentPolygonFilter);
+    this.#currentPolygonFilter = this.#filterSettings.polygonFilter;
+    if (this.#currentPolygonFilter != null) {
+      this.addFilter(this.#filterSettings.polygonFilter);
+    }
+  } 
 }
 
 // doing it this way to prevent openlayers from scaling

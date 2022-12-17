@@ -33,6 +33,7 @@ To do so, three options are available. Simply install the one you like and it wi
 - [x] Reverse geocoding with Nominatim
 
 ### TODO:
+- [ ] Set up dependencies properly
 - [ ] Convert and apply tilt and roll offsets
 - [ ] Render top and bottom faces of panoramas
    - Completely lost as to which projection this is

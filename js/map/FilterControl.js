@@ -19,7 +19,6 @@ class FilterControl extends ol.control.Control {
       this.#filterSettings.filterByDate = e.target.checked;
       this.#filtersChanged();
     });
-
     menu.querySelector("#coverage-min-date").addEventListener("blur", (e) => {
       this.#filterSettings.minDate = Math.floor(
         new Date(menu.querySelector("#coverage-min-date").value).getTime()
@@ -32,6 +31,7 @@ class FilterControl extends ol.control.Control {
       );
       this.#filtersChanged();
     });
+
     menu.querySelector("#show-cars").checked = true;
     menu.querySelector("#show-cars").addEventListener("change", (e) => {
       this.#filterSettings.showCars = e.target.checked;
@@ -42,6 +42,35 @@ class FilterControl extends ol.control.Control {
       this.#filterSettings.showTrekkers = e.target.checked;
       this.#filtersChanged();
     });
+
+    menu.querySelector("#polygon-filter").addEventListener("change", (e) => { 
+      this.#polygonSelected(e); 
+      menu.querySelector("#remove-polygon-filter").style.display = "inline";
+    }, false);
+    menu.querySelector("#remove-polygon-filter").addEventListener("click", (e) => {
+      this.#filterSettings.polygonFilter = null;
+      e.target.style.display = "none";
+      this.#filtersChanged();
+    });
+  }
+
+  #polygonSelected(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.addEventListener("load", (e) => {
+      const geoJson = new ol.format.GeoJSON();
+      const features = geoJson.readFeatures(e.target.result, {
+        featureProjection: "EPSG:3857",
+      });
+      const crop = new ol.filter.Crop({
+        feature: features[0],
+        wrapX: true,
+        inner: false,
+      });
+      this.#filterSettings.polygonFilter = crop;
+      this.#filtersChanged();
+    });
+    reader.readAsText(file);
   }
 
   getFilterSettings() {
@@ -65,8 +94,14 @@ class FilterControl extends ol.control.Control {
     // TODO unfuck this
     menu.innerHTML = `
     <div class="filter-control-menu-container">
-    <h2>Filters</h2>
     <div class="filter-control-group">
+    <h2>Coverage type</h2>
+    <input type="checkbox" id="show-cars" name="show-cars" checked><label for="show-cars">Show car footage</label><br>
+    <input type="checkbox" id="show-trekkers" name="show-trekkers" checked><label for="show-trekkers">Show trekker
+      footage</label>
+    </div>
+    <div class="filter-control-group">
+    <h2>Capture date</h2>
     <input type="checkbox" id="filter-date" name="filter-date"><label for="filter-date">Filter by date:</label>
     <table>
       <tr>
@@ -80,9 +115,9 @@ class FilterControl extends ol.control.Control {
     </table>
     </div>
     <div class="filter-control-group">
-    <input type="checkbox" id="show-cars" name="show-cars" checked><label for="show-cars">Show car footage</label><br>
-    <input type="checkbox" id="show-trekkers" name="show-trekkers" checked><label for="show-trekkers">Show trekker
-      footage</label>
+    <h2>Crop by GeoJSON polygon</h2>
+      <input type="file" id="polygon-filter" />
+      <button id="remove-polygon-filter" style="display:none;">✕</button>
     </div>
     </div>
     `;

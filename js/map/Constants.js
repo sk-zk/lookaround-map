@@ -6,6 +6,7 @@ const Constants = Object.freeze({
     maxDate: Math.floor(new Date("2023-01-01").getTime()),
     showCars: true,
     showTrekkers: true,
+    polygonFilter: null,
   },
 });
 export { Constants };
