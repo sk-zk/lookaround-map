@@ -78,6 +78,8 @@ function tileLoadFunction(tile, url) {
         .then((data) => { 
           if (response.ok) {
             setFeatures(data, tile, extent, projection);
+          } else {
+            tile.setFeatures([]);
           }
         })
         .catch((e) => {
