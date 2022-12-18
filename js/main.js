@@ -4,6 +4,7 @@ import { createMap } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
 import { reverseGeocode } from "./util/nominatim.js";
 import { wrapLon } from "./util/geo.js";
+import { TimeMachineControl } from "./map/ui/TimeMachineControl.js";
 
 const RAD2DEG = 180 / Math.PI;
 
@@ -101,6 +102,10 @@ function initPanoViewer(pano) {
     updateHashParams();
   });
 
+  panoViewer.alternativeDatesChangedCallback = (dates) => {
+    timeMachineControl.setAlternativeDates(dates);
+  };
+
   document.querySelector("#open-in-gsv").addEventListener("click", openInGsv);
 }
 
@@ -118,12 +123,11 @@ function openInGsv() {
 
 async function updatePanoInfo(pano) {
   document.querySelector("#pano-id").innerHTML = `${pano.panoid} / ${pano.region_id}`;
-  document.querySelector("#pano-coordinates").innerHTML = `${pano.lat.toFixed(5)}, ${pano.lon.toFixed(5)}`;
   const date = new Date(pano.timestamp);
   const locale = navigator.languages[0] ?? "en-GB";
   const formattedDate = new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
-    timeStyle: "long",
+    timeStyle: "medium",
     timeZone: pano.timezone,
   }).format(date);
   document.querySelector("#pano-date").innerHTML = formattedDate;
@@ -216,7 +220,12 @@ let currentPano = null;
 
 document.title = appTitle;
 window.addEventListener("hashchange", onHashChanged);
-document.querySelector("#close-pano").addEventListener("click", (e) => { closePanoViewer(); });
+document.querySelector("#close-pano").addEventListener("click", (_) => { closePanoViewer(); });
+
+const timeMachineControl = new TimeMachineControl();
+timeMachineControl.panoSelectedCallback = (pano) => {
+  displayPano(pano);
+}
 
 const params = parseHashParams();
 if (params.pano) {

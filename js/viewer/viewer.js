@@ -11,6 +11,7 @@ import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/markers.
 import { Api } from "../Api.js";
 import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
+import { distanceBetween } from "../util/geo.js";
 
 
 const LONGITUDE_OFFSET = 1.07992247; // 61.875°, which is the center of face 0
@@ -49,6 +50,8 @@ export function createPanoViewer(config) {
 
   viewer.api = new Api(endpoint);
 
+  viewer.alternativeDatesChangedCallback = function() {};
+
   viewer.navigateTo = async (pano, resetView=false) => {
     // for some reason, setPanorama doesn't appear to store the
     // new sphereCorrection anywhere, so I'm just passing it to the
@@ -79,12 +82,48 @@ export function createPanoViewer(config) {
       viewer.adapter.dynamicLoadingEnabled = true;
       viewer.adapter.__refresh();
     }
-    await viewer.plugins.movement.updatePanoMarkers(pano);
+    const nearbyPanos = await viewer.api.getPanosAroundPoint(pano.lat, pano.lon, 100);
+    viewer.plugins.movement.updatePanoMarkers(pano, nearbyPanos);
+    const alternativeDates = getAlternativeDates(pano, nearbyPanos);
+    viewer.alternativeDatesChangedCallback(alternativeDates);
   };
 
-  viewer.plugins.movement.updatePanoMarkers(config.initialPano);
+  viewer.api.getPanosAroundPoint(config.initialPano.lat, config.initialPano.lon, 100)
+    .then((nearbyPanos) => {
+      viewer.plugins.movement.updatePanoMarkers(config.initialPano, nearbyPanos);
+      const alternativeDates = getAlternativeDates(config.initialPano, nearbyPanos);
+      viewer.alternativeDatesChangedCallback(alternativeDates);
+    });
 
   return viewer;
+}
+
+function getAlternativeDates(refPano, nearbyPanos) {
+  const MAX_DISTANCE = 30 / 1000;
+  const alternativeDates = {};
+  const dateTimeFormat = new Intl.DateTimeFormat("en-GB", {
+    dateStyle: "short",
+    timeZone: refPano.timezone,
+  });
+  const refDate = dateTimeFormat.format(new Date(refPano.timestamp));
+  for (const pano of nearbyPanos) {
+    const date = dateTimeFormat.format(new Date(pano.timestamp));
+    if (refDate === date) continue;
+
+    const distance = distanceBetween(refPano.lat, refPano.lon, pano.lat, pano.lon);
+    if (distance > MAX_DISTANCE) continue;
+
+    if (alternativeDates[date]) {
+      if (alternativeDates[date][1] > distance) {
+        alternativeDates[date] = [pano, distance];
+      }
+    } else {
+      alternativeDates[date] = [pano, distance];
+    }
+  }
+  return Object.keys(alternativeDates)
+    .map((x) => alternativeDates[x][0])
+    .sort((a, b) => a.timestamp - b.timestamp);
 }
 
 function getHeading(defaultHeading, heading) {

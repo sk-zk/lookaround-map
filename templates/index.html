@@ -24,14 +24,17 @@
   <div id="pano-info">
     <div id="pano-address"></div>
     <div id="pano-metadata">
-      <small>
-        <div id="pano-id"></div>
-        <span id="pano-coordinates"></span> |
-        <span id="pano-date"></span>
-        <div><a href="javascript:void(0);" id="open-in-gsv">Open in Google Street View</a></div>
-      </small>
+      <div id="time-machine">
+        <img src="/static/icons/clock.png" width=16 height=16 class="time-machine-button">
+        <div id="pano-date-and-time-machine-menu-container">
+          <span id="pano-date" class="time-machine-button"></span>
+          <div id="time-machine-menu"></div>
+        </div>
+      </div>
+      <div id="pano-id"></div>
+      <div><a href="javascript:void(0);" id="open-in-gsv">Open in Google Street View</a></div>
     </div>
-  </div>
+    </div>
   <div id="github-link" class="github-link">
     <a href="https://github.com/sk-zk/lookaround-map/" title="View the source on GitHub">
       <img src="/static/GitHub-Mark-32px.png" width="24" height="24" alt="GitHub logo">
