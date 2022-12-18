@@ -1,4 +1,5 @@
 import { Constants } from "../Constants.js";
+import { gunzipSync } from "../../../node_modules/fflate/esm/browser.js";
 
 const carLinesStyle = new ol.style.Style({
   stroke: new ol.style.Stroke({
@@ -35,6 +36,7 @@ function styleFeature(feature, resolution, filterSettings) {
   }
 }
 
+
 class CachedBlueLinesSource extends ol.source.VectorTile {
   constructor(options) {
     options = options || {};
@@ -48,17 +50,54 @@ class CachedBlueLinesSource extends ol.source.VectorTile {
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
       format: new ol.format.MVT(),
-      //url: "http://localhost:8080/maps/lookaround/{z}/{x}/{y}.vector.pbf",
-      url: "https://lookmap.eu.pythonanywhere.com/bluelines/{z}/{x}/{y}",
       tileGrid: ol.tilegrid.createXYZ({
         minZoom: options.minZoom,
         maxZoom: options.maxZoom,
         tileSize: [options.tileSize, options.tileSize],
       }),
       tilePixelRatio: 2,
+      //url: "http://localhost:8080/maps/lookaround/{z}/{x}/{y}.vector.pbf",
+      // nh = no Content-Type header.
+      // the static tiles which tegola generates are gzipped, meaning you need
+      // to set the appropriate Content-Type so the browser can deal with it.
+      // unfortunately, pythonanyhwere also applies the header to 404s, which means
+      // that any request to a non-existing tile causes a content encoding error.
+      // to fix this, I've added a second endpoint without Content-Type header
+      // and decompress tiles manually in js.
+      url: "https://lookmap.eu.pythonanywhere.com/bluelines_nh/{z}/{x}/{y}",
+      tileLoadFunction: tileLoadFunction,
     });
   }
 }
+
+function tileLoadFunction(tile, url) {
+  tile.setLoader((extent, resolution, projection) => {
+    fetch(url).then((response) => {
+      response
+        .arrayBuffer()
+        .then((data) => { 
+          if (response.ok) {
+            setFeatures(data, tile, extent, projection);
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+          tile.setFeatures([]);
+        });
+    });
+  });
+}
+
+function setFeatures(data, tile, extent, projection) {
+  const decompressed = gunzipSync(new Uint8Array(data));
+  const format = tile.getFormat();
+  const features = format.readFeatures(decompressed, {
+    extent: extent,
+    featureProjection: projection,
+  });
+  tile.setFeatures(features);
+}
+
 
 class CachedBlueLinesLayer extends ol.layer.VectorTile {
   #filterSettings = Constants.DEFAULT_FILTERS;
@@ -96,9 +135,6 @@ class CachedBlueLinesLayer extends ol.layer.VectorTile {
     }
   }
 }
-
-// For now, I've removed the extents and just let the rest 404.
-// Might be OK.
 
 const blueLineLayerMain = new CachedBlueLinesLayer({
   minZoom: 0,
