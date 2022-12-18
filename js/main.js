@@ -4,7 +4,7 @@ import { createMap } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
 import { reverseGeocode } from "./util/nominatim.js";
 import { wrapLon } from "./util/geo.js";
-import { TimeMachineControl } from "./map/ui/TimeMachineControl.js";
+import { TimeMachineControl } from "./ui/TimeMachineControl.js";
 
 const RAD2DEG = 180 / Math.PI;
 
