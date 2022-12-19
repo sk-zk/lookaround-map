@@ -24,7 +24,7 @@ To do so, three options are available. Simply install the one you like and it wi
 #3: However, **the fastest option** (that I'm aware of) is my own [`heic2rgb`](https://github.com/sk-zk/heic2rgb/), which is noticeably faster than the previous two. Supports Linux and Windows.
 
 
-### TODO:
+## TODO
 - [ ] Set up dependencies properly
 - [ ] Convert and apply tilt and roll offsets
 - [ ] Render top and bottom faces of panoramas
