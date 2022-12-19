@@ -3,7 +3,7 @@ import { gunzipSync } from "../../../node_modules/fflate/esm/browser.js";
 
 const carLinesStyle = new ol.style.Style({
   stroke: new ol.style.Stroke({
-    color: "rgba(0, 150, 170, 1)",
+    color: "rgba(26, 159, 176, 1)",
     width: 2,
   }),
 });

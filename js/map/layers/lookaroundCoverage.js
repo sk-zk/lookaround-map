@@ -21,7 +21,7 @@ class LookaroundCoverageSource extends ol.source.XYZ {
       url: "z:{z} x:{x} y:{y}",
       minZoom: 17,
       maxZoom: 17,
-      tileLoadFunction: async (tile, ext) => {
+      tileLoadFunction: async (tile, url) => {
         const tileSize = [options.canvasSize, options.canvasSize];
         const ctx = ol.dom.createCanvasContext2D(tileSize[0], tileSize[1]);
 
@@ -48,6 +48,7 @@ class LookaroundCoverageSource extends ol.source.XYZ {
   }
 
   #drawPanos(panos, coords, tileSize, ctx) {
+    ctx.lineWidth = 2;
     for (const pano of panos) {
       if (
         this.#filterSettings.filterByDate &&
@@ -63,10 +64,9 @@ class LookaroundCoverageSource extends ol.source.XYZ {
         ctx.strokeStyle = "rgba(173, 140, 191, 0.8)";
       } else {
         if (!this.#filterSettings.showCars) continue;
-        ctx.fillStyle = "rgba(0, 150, 170, 0.2)";
-        ctx.strokeStyle = "rgba(0, 150, 170, 0.8)";
+        ctx.fillStyle = "rgba(26, 159, 176, 0.2)";
+        ctx.strokeStyle = "rgba(26, 159, 176, 0.8)";
       }
-      ctx.lineWidth = 2;
       const tileCoord = wgs84ToTileCoord(pano.lat, pano.lon, 17);
       const xOffset = (tileCoord.x - coords[1]) * tileSize[0] - 1;
       const yOffset = (tileCoord.y - coords[2]) * tileSize[1] - 1;
