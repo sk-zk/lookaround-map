@@ -122,7 +122,7 @@ function openInGsv() {
 }
 
 async function updatePanoInfo(pano) {
-  document.querySelector("#pano-id").innerHTML = `${pano.panoid} / ${pano.region_id}`;
+  document.querySelector("#pano-id").innerHTML = `${pano.panoid} / ${pano.regionId}`;
   const date = new Date(pano.timestamp);
   const locale = navigator.languages[0] ?? "en-GB";
   const formattedDate = new Intl.DateTimeFormat(locale, {

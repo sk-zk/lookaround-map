@@ -14,7 +14,7 @@ class CustomJSONEncoder(JSONEncoder):
         if isinstance(o, LookaroundPanorama):
             return {
                 "panoid": str(o.panoid),
-                "region_id": str(o.region_id),
+                "regionId": str(o.region_id),
                 "lat": o.lat,
                 "lon": o.lon,
                 "timestamp": o.timestamp,
@@ -22,6 +22,9 @@ class CustomJSONEncoder(JSONEncoder):
                 "heading": o.heading,
                 "coverageType": o.coverage_type,
                 "rawElevation": o.raw_elevation,
-                "projection": { "latitude_size": [x["latitude_size"] for x in o.projection] }
+                "projection": { 
+                    "latitudeSize": o.projection[0].unknown24.latitude_size,
+                    "unknown34": o.projection[0].unknown24.unknown34
+                    }
             }
         return super().default(o)

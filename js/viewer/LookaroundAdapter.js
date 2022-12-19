@@ -26,7 +26,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
 
     this.panorama = this.psv.config.panorama.panorama;
     this.url = this.psv.config.panorama.panorama.url;
-    this.previousThetaLength = this.panorama.projection.latitude_size[0];
+    this.previousLatitudeSize = this.panorama.projection.latitudeSize;
 
     this.SPHERE_HORIZONTAL_SEGMENTS = 32;
 
@@ -96,8 +96,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
   }
 
   __recreateMeshIfNecessary() {
-    const thetaLength = this.panorama.projection.latitude_size[0];
-    if (this.previousThetaLength !== thetaLength) {
+    const latitudeSize = this.panorama.projection.latitudeSize;
+    if (this.previousLatitudeSize !== latitudeSize) {
       this.psv.renderer.scene.remove(this.psv.renderer.meshContainer);
 
       const mesh = this.psv.adapter.createMesh();
@@ -110,7 +110,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
 
       this.psv.renderer.scene.add(meshContainer);
     }
-    this.previousThetaLength = thetaLength;
+    this.previousLatitudeSize = latitudeSize;
   }
 
   /**
@@ -119,13 +119,16 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
   createMesh(scale = 1) {
     const radius = PhotoSphereViewer.CONSTANTS.SPHERE_RADIUS * scale;
 
-    // fix for trekker panos which use a slightly different projection sometimes.
-    // sorry about the weird calculations here; I'm sure there's a more correct way to 
-    // derive it from the projection data in the API response, but, well, it's math, so I'm out.
-    const normalThetaLength = 1.614429558;
-    const normalThetaStart = degToRad(28);
-    const dTheta = this.panorama.projection.latitude_size[0] - normalThetaLength;
-    const sideFacesThetaStart = normalThetaStart - (dTheta / 2);
+    // some weird desperate nonsense to get most panos to render correctly
+    let thetaLength;
+    let thetaStart;
+    if (Math.abs(this.panorama.projection.unknown34 -  degToRad(17.5)) < 0.01) {
+      thetaLength = degToRad(105);
+      thetaStart = degToRad(20);
+    } else {
+      thetaLength = this.panorama.projection.latitudeSize;
+      thetaStart = degToRad(28);
+    }
 
     const faces = [
       // radius, widthSegments, heightSegments,
@@ -136,8 +139,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(0-90),
         degToRad(120),
-        sideFacesThetaStart,
-        this.panorama.projection.latitude_size[0],
+        thetaStart,
+        thetaLength,
       ],
       [
         radius,
@@ -145,8 +148,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(120-90),
         degToRad(60),
-        sideFacesThetaStart,
-        this.panorama.projection.latitude_size[1],
+        thetaStart,
+        thetaLength,
       ],
       [
         radius,
@@ -154,8 +157,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(180-90),
         degToRad(120),
-        sideFacesThetaStart,
-        this.panorama.projection.latitude_size[2],
+        thetaStart,
+        thetaLength,
       ],
       [
         radius,
@@ -163,8 +166,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(300-90),
         degToRad(60),
-        sideFacesThetaStart,
-        this.panorama.projection.latitude_size[3],
+        thetaStart,
+        thetaLength,
       ], /*
       [
         radius,
