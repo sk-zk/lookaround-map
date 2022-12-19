@@ -1,4 +1,4 @@
-**lookaround-map** is an Apple Look Around viewer running in the browser.
+**lookaround-map** is a bootleg Apple Look Around viewer running in the browser.
 
 Live at [lookmap.eu.pythonanywhere.com](https://lookmap.eu.pythonanywhere.com)!
 
@@ -14,7 +14,7 @@ flask run
 ```
 
 ### Decoding
-Since no browser supports the HEIC format (not even Apple's own Safari, funnily enough), images must be converted to JPG before sending them to the client.
+Since no browser natively supports the HEIC format (not even Apple's own Safari, funnily enough), images must be converted to JPG before sending them to the client.
 To do so, three options are available. Simply install the one you like and it will be selected automatically.
 
 #1: By default, `pillow-heif` will be used to decode images. It's the slowest of the group, but runs on every platform.
@@ -23,14 +23,6 @@ To do so, three options are available. Simply install the one you like and it wi
 
 #3: However, **the fastest option** (that I'm aware of) is my own [`heic2rgb`](https://github.com/sk-zk/heic2rgb/), which is noticeably faster than the previous two. Supports Linux and Windows.
 
-
-## Progress
-### Complete:
-- [x] See where coverage exists (at z=16 or higher)
-- [x] Select and view panoramas
-- [x] Compass
-- [x] Simple movement
-- [x] Reverse geocoding with Nominatim
 
 ### TODO:
 - [ ] Set up dependencies properly
