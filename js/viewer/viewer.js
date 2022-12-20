@@ -99,7 +99,7 @@ export function createPanoViewer(config) {
 }
 
 function getAlternativeDates(refPano, nearbyPanos) {
-  const MAX_DISTANCE = 30 / 1000;
+  const MAX_DISTANCE = 20 / 1000;
   const alternativeDates = {};
   const dateTimeFormat = new Intl.DateTimeFormat("en-GB", {
     dateStyle: "short",
