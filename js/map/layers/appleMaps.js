@@ -44,7 +44,7 @@ const appleSatelliteImage = new ol.layer.Tile({
     attributions: "© Apple",
     url:
       `https://sat-cdn{1-4}.apple-mapkit.com/tile?` +
-      `style=7&size=1&scale=1&x={x}&y={y}&z={z}&v=9312`,
+      `style=7&size=1&scale=1&x={x}&y={y}&z={z}&v=9372`,
     tileLoadFunction: tileLoadFunction,
   }),
 });
