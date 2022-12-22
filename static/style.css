@@ -209,3 +209,14 @@ body {
   border-radius: 4px;
   border:1px solid rgba(50, 50, 50, 0.3);
 }
+
+.layer-explanation {
+  color: rgba(90, 90, 90, 1);
+  font-style: italic;
+}
+
+.layer-explanation a {
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1px;
+  color: inherit;
+}

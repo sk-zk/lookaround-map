@@ -110,7 +110,7 @@ class CachedBlueLinesLayer extends ol.layer.VectorTile {
     super({
       title: options.title,
       visible: options.visible,
-      opacity: 0.7,
+      opacity: 0.8,
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
       source: new CachedBlueLinesSource({
@@ -151,7 +151,10 @@ const blueLineLayer15 = new CachedBlueLinesLayer({
 
 const blueLineLayer = new ol.layer.Group({
   visible: false,
-  title: "Apple Look Around cached blue lines<br><em>(not available for all countries)</em>",
+  title: `
+    Apple Look Around cached blue lines<br>
+    <span class="layer-explanation">(<a class='layer-link' href='https://gist.github.com/sk-zk/53dfc36fa70dae7f4848ce812002fd16' target='_blank'>what is this?</a>)</span>
+    `,
   combine: "true",
   layers: [blueLineLayerMain, blueLineLayer15],
 });
