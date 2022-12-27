@@ -1,3 +1,4 @@
+import '../static/style.css';
 import { Api } from "./Api.js";
 import { Authenticator } from "./util/Authenticator.js";
 import { createMap } from "./map/map.js";
@@ -5,6 +6,8 @@ import { createPanoViewer } from "./viewer/viewer.js";
 import { reverseGeocode } from "./util/nominatim.js";
 import { wrapLon } from "./util/geo.js";
 import { TimeMachineControl } from "./ui/TimeMachineControl.js";
+
+import Point from 'ol/geom/Point.js';
 
 const RAD2DEG = 180 / Math.PI;
 
@@ -149,7 +152,7 @@ function updatePanoAddressField(address) {
 async function updateMapMarker(pano) {
   map.getLayers().forEach((layer) => {
     if (layer.get('name') === 'panoMarker') {
-      layer.getSource().getFeatures()[0].setGeometry(new ol.geom.Point([pano.lon, pano.lat]));
+      layer.getSource().getFeatures()[0].setGeometry(new Point([pano.lon, pano.lat]));
     }
   })
 

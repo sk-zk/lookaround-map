@@ -7,24 +7,40 @@ import { Constants } from "./Constants.js";
 import { FilterControl } from "./FilterControl.js";
 import { wrapLon } from "../util/geo.js";
 
-export function createMap(config) {
-  ol.proj.useGeographic();
+import 'ol/ol.css';
+import 'ol-ext/dist/ol-ext.css';
+import { useGeographic } from "ol/proj.js";
+import LayerGroup from 'ol/layer/Group.js';
+import Map from "ol/Map.js";
+import View from 'ol/View.js';
+import { Attribution, defaults as controlDefaults } from 'ol/control.js';
+import Style from 'ol/style/Style.js';
+import Icon from 'ol/style/Icon.js';
+import Feature from 'ol/Feature.js';
+import VectorSource from 'ol/source/Vector.js';
+import VectorLayer from 'ol/layer/Vector.js';
 
-  const baseLayers = new ol.layer.Group({
+import LayerSwitcher from 'ol-layerswitcher';
+
+
+export function createMap(config) {
+  useGeographic();
+
+  const baseLayers = new LayerGroup({
     title: "Base layer",
     layers: [appleRoad, appleRoadDark, appleSatellite, googleRoad, 
       openStreetMap, cartoDbPositron, cartoDbDarkMatter]
   });
 
-  const overlays = new ol.layer.Group({
+  const overlays = new LayerGroup({
     title: "Overlays",
     layers: [lookaroundCoverage, blueLineLayer, googleStreetView]
   });
 
-  const map = new ol.Map({
+  const map = new Map({
     layers: [baseLayers, overlays],
     target: "map",
-    view: new ol.View({
+    view: new View({
       center: [config.center.longitude, config.center.latitude],
       zoom: config.center.zoom,
       minZoom: 2,
@@ -32,7 +48,7 @@ export function createMap(config) {
       constrainResolution: true,
       enableRotation: false,
     }),
-    controls: ol.control.defaults.defaults({
+    controls: controlDefaults({
       zoom: true,
       attribution: false,
       rotate: false,
@@ -45,13 +61,13 @@ export function createMap(config) {
   });
   map.addControl(layerSwitcher);
 
-  const attributionControl = new ol.control.Attribution({
+  const attributionControl = new Attribution({
     collapsible: false,
     collapsed: false,
   });
   map.addControl(attributionControl);
 
-  createContextMenu(map);
+  //createContextMenu(map);
   createFilterControl(map);
   createPanoMarkerLayer(map);
 
@@ -146,8 +162,8 @@ function createContextMenu(map) {
 }
 
 function createPanoMarkerLayer(map) {
-  const markerStyle = new ol.style.Style({
-    image: new ol.style.Icon({
+  const markerStyle = new Style({
+    image: new Icon({
       anchor: [0.5, 1],
       anchorXUnits: 'fraction',
       anchorYUnits: 'fraction',
@@ -155,20 +171,21 @@ function createPanoMarkerLayer(map) {
     }),
   });
 
-  const markerFeature = new ol.Feature({
+  const markerFeature = new Feature({
     geometry: null,
   });
 
   markerFeature.setStyle(markerStyle);
 
-  const mapMarkerSource = new ol.source.Vector({
+  const mapMarkerSource = new VectorSource({
     features: [markerFeature],
   });
 
-  const mapMarkerLayer = new ol.layer.Vector({
+  const mapMarkerLayer = new VectorLayer({
     source: mapMarkerSource,
   });
   mapMarkerLayer.set('name', 'panoMarker');
 
   map.addLayer(mapMarkerLayer);
 }
+

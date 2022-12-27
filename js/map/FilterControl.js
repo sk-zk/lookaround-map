@@ -1,6 +1,11 @@
 import { Constants } from "./Constants";
 
-class FilterControl extends ol.control.Control {
+import Control from 'ol/control/Control.js';
+import GeoJSON from 'ol/format/GeoJSON.js';
+import Event from "ol/events/Event.js";
+import Crop from "ol-ext/filter/Crop.js";
+
+class FilterControl extends Control {
   #filterSettings = Constants.DEFAULT_FILTERS;
 
   constructor(opt_options) {
@@ -58,11 +63,11 @@ class FilterControl extends ol.control.Control {
     const file = e.target.files[0];
     const reader = new FileReader();
     reader.addEventListener("load", (e) => {
-      const geoJson = new ol.format.GeoJSON();
+      const geoJson = new GeoJSON();
       const features = geoJson.readFeatures(e.target.result, {
         featureProjection: "EPSG:3857",
       });
-      const crop = new ol.filter.Crop({
+      const crop = new Crop({
         feature: features[0],
         wrapX: true,
         inner: false,
@@ -136,7 +141,7 @@ class FilterControl extends ol.control.Control {
   }
 }
 
-export class FilterControlEvent extends ol.events.Event {
+export class FilterControlEvent extends Event {
   constructor(type, filterSettings) {
     super(type);
     this.filterSettings = filterSettings;

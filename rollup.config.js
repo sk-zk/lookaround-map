@@ -1,4 +1,6 @@
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { terser } from "rollup-plugin-terser";
+import css from "rollup-plugin-import-css";
 
 const terserConfig = {
   module: true,
@@ -15,7 +17,8 @@ export default [
       file: 'static/dist/main.js',
       format: 'es',
       plugins: [terser(terserConfig)]
-    }
+    },
+    plugins: [css(), nodeResolve()]
   },
   {
     input: 'js/viewer/viewer.js',
@@ -27,6 +30,7 @@ export default [
         file: 'static/dist/viewer.js',
         format: 'es',
         plugins: [terser(terserConfig)]
-      }
+    },
+    plugins: [css(), nodeResolve()]
   }
 ];
