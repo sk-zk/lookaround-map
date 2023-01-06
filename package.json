@@ -8,6 +8,7 @@
     "earcut": "^2.2.4",
     "fflate": "^0.7.4",
     "ol": "^7.2.2",
+    "ol-contextmenu": "^5.1.4",
     "ol-ext": "^4.0.4",
     "ol-layerswitcher": "^4.1.0",
     "pbf": "^3.2.1",

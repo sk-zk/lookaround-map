@@ -144,7 +144,7 @@ function updatePanoAddressField(address) {
   address_[0] = `<strong>${address_[0]}</strong>`;
 
   const html = address_.join("<br>") + 
-    '<div id="nominatim-attribution">© OpenStreetMap contributors</div><hr>';
+    '<div id="nominatim-attribution">Address © OpenStreetMap contributors</div><hr>';
 
   document.querySelector("#pano-address").innerHTML = html;
 }

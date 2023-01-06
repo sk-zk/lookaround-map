@@ -9,6 +9,8 @@ import { wrapLon } from "../util/geo.js";
 
 import 'ol/ol.css';
 import 'ol-ext/dist/ol-ext.css';
+import 'ol-contextmenu/ol-contextmenu.css';
+
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from 'ol/layer/Group.js';
 import Map from "ol/Map.js";
@@ -20,8 +22,8 @@ import Feature from 'ol/Feature.js';
 import VectorSource from 'ol/source/Vector.js';
 import VectorLayer from 'ol/layer/Vector.js';
 
-import LayerSwitcher from 'ol-layerswitcher';
-
+//import LayerSwitcher from 'ol-layerswitcher';
+import ContextMenu from 'ol-contextmenu';
 
 export function createMap(config) {
   useGeographic();
@@ -55,11 +57,11 @@ export function createMap(config) {
     }),
   });
 
-  const layerSwitcher = new LayerSwitcher({
+  /*const layerSwitcher = new LayerSwitcher({
     reverse: false,
     groupSelectStyle: 'group'
   });
-  map.addControl(layerSwitcher);
+  map.addControl(layerSwitcher);*/
 
   const attributionControl = new Attribution({
     collapsible: false,
@@ -67,7 +69,7 @@ export function createMap(config) {
   });
   map.addControl(attributionControl);
 
-  //createContextMenu(map);
+  createContextMenu(map);
   createFilterControl(map);
   createPanoMarkerLayer(map);
 
