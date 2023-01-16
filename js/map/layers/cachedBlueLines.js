@@ -4,17 +4,31 @@ import { gunzipSync } from "../../../node_modules/fflate/esm/browser.js";
 const carLinesStyle = new ol.style.Style({
   stroke: new ol.style.Stroke({
     color: "rgba(26, 159, 176, 1)",
-    width: 2,
+    lineCap: "butt",
   }),
 });
 const trekkerLinesStyle = new ol.style.Style({
   stroke: new ol.style.Stroke({
     color: "rgba(173, 140, 191, 1)",
-    width: 2,
+    lineCap: "butt",
   }),
 });
 
-function styleFeature(feature, resolution, filterSettings) {
+function styleFeature(feature, resolution, filterSettings, map) {
+  const zoom = map.getView().getZoomForResolution(resolution);
+  console.log(zoom);
+
+  let width;
+  if (zoom > 13) {
+    width = 2;
+  } else if (zoom > 9) {
+    width = 1.5;
+  } else {
+    width = 1;
+  }
+  carLinesStyle.getStroke().setWidth(width);
+  trekkerLinesStyle.getStroke().setWidth(width);
+
   if (
     filterSettings.filterByDate &&
     (feature.get("timestamp") < filterSettings.minDate ||
@@ -29,9 +43,7 @@ function styleFeature(feature, resolution, filterSettings) {
     case 3:
       return filterSettings.showTrekkers ? trekkerLinesStyle : null;
     default:
-      console.error(
-        `Coverage type ${feature.get("coverage_type")} has no style`
-      );
+      console.error(`Coverage type ${feature.get("coverage_type")} has no style`);
       return carLinesStyle;
   }
 }
@@ -120,7 +132,7 @@ class CachedBlueLinesLayer extends ol.layer.VectorTile {
       }),
     });
     super.setStyle((feature, resolution) =>
-      styleFeature(feature, resolution, this.#filterSettings)
+      styleFeature(feature, resolution, this.#filterSettings, this.get("map"))
     );
   }
 
