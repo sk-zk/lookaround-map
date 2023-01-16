@@ -10,6 +10,12 @@ import { wrapLon } from "../util/geo.js";
 export function createMap(config) {
   ol.proj.useGeographic();
 
+  const browserIsInDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  if (browserIsInDarkMode) {
+    appleRoad.setVisible(false);
+    appleRoadDark.setVisible(true);
+  }
+
   const baseLayers = new ol.layer.Group({
     title: "Base layer",
     layers: [appleRoad, appleRoadDark, appleSatellite, googleRoad, 
