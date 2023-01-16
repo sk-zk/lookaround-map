@@ -133,7 +133,7 @@ async function updatePanoInfo(pano) {
   document.querySelector("#pano-date").innerHTML = formattedDate;
   const address = await reverseGeocode(pano.lat, pano.lon);
   updatePanoAddressField(address);
-  document.title = `${address[0]} - ${appTitle}`;
+  document.title = `${address[0]} – ${appTitle}`;
 }
 
 function updatePanoAddressField(address) {
