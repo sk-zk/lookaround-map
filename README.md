@@ -7,7 +7,7 @@ Live at [lookmap.eu.pythonanywhere.com](https://lookmap.eu.pythonanywhere.com)!
 git clone https://github.com/sk-zk/lookaround-map.git --recursive
 cd lookaround-map
 pip install -r requirements.txt
-npm i --global rollup@2.79.1
+npm i --global rollup
 npm i
 rollup -c
 flask run
