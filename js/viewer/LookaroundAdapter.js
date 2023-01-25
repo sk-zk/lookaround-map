@@ -1,7 +1,16 @@
 import { ScreenFrustum } from "./ScreenFrustrum.js";
 import "./bufferGeometryUtils.js";
 
-const FACES = 6;
+const RENDER_TOP_AND_BOTTOM_FACES = false;
+const FACES = RENDER_TOP_AND_BOTTOM_FACES ? 6 : 4;
+const Face = Object.freeze({
+	Front: 0,
+	Right: 1,
+  Back: 2,
+  Left: 3,
+  Top: 4,
+  Bottom: 5
+})
 
 function degToRad(deg) {
   return (deg * Math.PI) / 180;
@@ -70,7 +79,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     const promises = [];
     const progress = [0, 0, 0, 0, 0, 0];
     const startZoom = 5;
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < FACES; i++) {
       promises.push(this.__loadOneTexture(startZoom, i, progress));
     }
     return Promise.all(promises).then((texture) => ({ panorama: panoramaMetadata, texture }));
@@ -90,6 +99,11 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       .then((img) => {
         let texture = null;
         texture = PhotoSphereViewer.utils.createTexture(img);
+        if (faceIdx == Face.Top) {
+          // flip and cut off the edges a bit
+          texture.center.set(0.5, 0.5);
+          texture.repeat.set(-0.954, 0.954);
+        }
         texture.userData = { zoom: zoom, url: this.url };
         return texture;
       });
@@ -120,17 +134,17 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     const radius = PhotoSphereViewer.CONSTANTS.SPHERE_RADIUS * scale;
 
     // some weird desperate nonsense to get most panos to render correctly
-    let thetaLength;
-    let thetaStart;
+    let sideFaceThetaLength;
+    let sideFaceThetaStart;
     if (Math.abs(this.panorama.projection.unknown34 -  degToRad(17.5)) < 0.01) {
-      thetaLength = degToRad(105);
-      thetaStart = degToRad(20);
+      sideFaceThetaLength = degToRad(105);
+      sideFaceThetaStart = degToRad(20);
     } else {
-      thetaLength = this.panorama.projection.latitudeSize;
-      thetaStart = degToRad(28);
+      sideFaceThetaLength = this.panorama.projection.latitudeSize;
+      sideFaceThetaStart = degToRad(28);
     }
 
-    const faces = [
+    let faces = [
       // radius, widthSegments, heightSegments,
       // phiStart, phiLength, thetaStart, thetaLength
       [
@@ -139,8 +153,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(0-90),
         degToRad(120),
-        thetaStart,
-        thetaLength,
+        sideFaceThetaStart,
+        sideFaceThetaLength,
       ],
       [
         radius,
@@ -148,8 +162,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(120-90),
         degToRad(60),
-        thetaStart,
-        thetaLength,
+        sideFaceThetaStart,
+        sideFaceThetaLength,
       ],
       [
         radius,
@@ -157,8 +171,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(180-90),
         degToRad(120),
-        thetaStart,
-        thetaLength,
+        sideFaceThetaStart,
+        sideFaceThetaLength,
       ],
       [
         radius,
@@ -166,17 +180,19 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(300-90),
         degToRad(60),
-        thetaStart,
-        thetaLength,
-      ], /*
-      [
+        sideFaceThetaStart,
+        sideFaceThetaLength,
+      ],
+    ];
+    if (RENDER_TOP_AND_BOTTOM_FACES) {
+      faces.push([
         radius,
         36 * 4,
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(0),
         degToRad(360),
         degToRad(0),
-        degToRad(28),
+        sideFaceThetaStart,
       ],
       [
         radius,
@@ -184,23 +200,24 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         this.SPHERE_HORIZONTAL_SEGMENTS,
         degToRad(0),
         degToRad(360),
-        degToRad(28 + 92.5),
-        degToRad(59.5),
-      ], */
-    ];
+        sideFaceThetaStart + sideFaceThetaLength,
+        degToRad(180) - sideFaceThetaStart - sideFaceThetaLength,
+      ]);
+    }
+    console.log(this.panorama.projection);
     const geometries = [];
     this.meshesForFrustum = [];
     for (let i = 0; i < faces.length; i++) {
       const geom = new THREE.SphereGeometry(...faces[i]).scale(-1, 1, 1);
-      if (i < 4) {
+      if (i < Face.Top) {
         this.__setSideUV(geom, i);
       } else {
         this.__setTopBottomUV(geom, i);
       }
-      /*if (i == 4) {
-        geom.rotateY(????);
+      if (i == Face.Top) {
+        geom.rotateY(degToRad(27.5 + 90));
       }
-      else*/ if (i == 5) {
+      else if (i == Face.Bottom) {
         geom.rotateY(degToRad(27.5 - 90));
       }
       geometries.push(geom);
@@ -235,19 +252,21 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
   }
 
   __setTopBottomUV(geom, faceIdx) {
-    if (faceIdx < 4) return;
+    if (faceIdx < Face.Top) return;
 
     const uv = geom.getAttribute("uv");
     const position = geom.getAttribute("position")
     const largestX =
-      faceIdx == 4 ? position.getX(position.count - 1) : position.getX(0);
+      faceIdx == Face.Top 
+        ? position.getX(position.count - 1) 
+        : position.getX(0);
     for (let i = 0; i < uv.count; i++) {
       let u = position.getX(i);
       let v = position.getZ(i);
       u =
-        i == 4
-          ?  u / (2 *  largestX) + 0.5
-          : (u / (2 * -largestX) + 0.5);
+        i == Face.Top
+          ? u / (2 *  largestX) + 0.5
+          : u / (2 * -largestX) + 0.5;
       v = v / (2 * largestX) + 0.5;
       uv.setXY(i, u, v);
     }
