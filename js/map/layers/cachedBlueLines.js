@@ -16,7 +16,6 @@ const trekkerLinesStyle = new ol.style.Style({
 
 function styleFeature(feature, resolution, filterSettings, map) {
   const zoom = map.getView().getZoomForResolution(resolution);
-  console.log(zoom);
 
   let width;
   if (zoom > 13) {
