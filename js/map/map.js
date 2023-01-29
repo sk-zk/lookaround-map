@@ -30,6 +30,7 @@ export function createMap(config) {
     appleRoadDark.setVisible(true);
   }
 
+  const baseLayers = new LayerGroup({
     title: "Base layer",
     layers: [appleRoad, appleRoadDark, appleSatellite, googleRoad, 
       openStreetMap, cartoDbPositron, cartoDbDarkMatter]
