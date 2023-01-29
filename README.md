@@ -26,6 +26,7 @@ To do so, three options are available. Simply install the one you like and it wi
 
 ## TODO
 - [ ] Set up dependencies properly
+   - ol done; psv next
 - [ ] Convert and apply tilt and roll offsets
 - [ ] Render top and bottom faces of panoramas
    - Completely lost as to which projection this is
