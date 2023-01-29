@@ -1,13 +1,17 @@
 import { Constants } from "../Constants.js";
-
 import { Api } from "../../Api.js";
 import { LRUMap } from "../../external/js_lru/lru.js";
 import { wgs84ToTileCoord } from "../../util/geo.js";
 
+import XYZ from 'ol/source/XYZ.js';
+import { createCanvasContext2D } from 'ol/dom.js';
+import TileLayer from 'ol/layer/Tile.js';
+import LayerGroup from 'ol/layer/Group.js';
+
 const coverageTileCache = new LRUMap(2 ** 12);
 const api = new Api();
 
-class LookaroundCoverageSource extends ol.source.XYZ {
+class LookaroundCoverageSource extends XYZ {
   #filterSettings = Constants.DEFAULT_FILTERS;
 
   constructor(options) {
@@ -23,7 +27,7 @@ class LookaroundCoverageSource extends ol.source.XYZ {
       maxZoom: 17,
       tileLoadFunction: async (tile, url) => {
         const tileSize = [options.canvasSize, options.canvasSize];
-        const ctx = ol.dom.createCanvasContext2D(tileSize[0], tileSize[1]);
+        const ctx = createCanvasContext2D(tileSize[0], tileSize[1]);
 
         const panos = await this.#getTile(tile);
         this.#drawPanos(panos, tile.tileCoord, tileSize, ctx);
@@ -82,7 +86,7 @@ class LookaroundCoverageSource extends ol.source.XYZ {
   }
 }
 
-class LookaroundCoverageLayer extends ol.layer.Tile {
+class LookaroundCoverageLayer extends TileLayer {
   #currentPolygonFilter = null;
   #filterSettings = Constants.DEFAULT_FILTERS;
 
@@ -139,7 +143,7 @@ const lookaroundCoverage19 = new LookaroundCoverageLayer({
   minZoom: 18,
   maxZoom: 19,
 });
-const lookaroundCoverage = new ol.layer.Group({
+const lookaroundCoverage = new LayerGroup({
   title: "Apple Look Around (z>=16)",
   visible: true,
   combine: "true",

@@ -1,14 +1,22 @@
 import { Constants } from "../Constants.js";
 import { gunzipSync } from "../../../node_modules/fflate/esm/browser.js";
 
-const carLinesStyle = new ol.style.Style({
-  stroke: new ol.style.Stroke({
+import LayerGroup from 'ol/layer/Group.js';
+import VectorTile from 'ol/source/VectorTile.js';
+import VectorTileLayer from 'ol/layer/VectorTile.js';
+import Style from 'ol/style/Style.js';
+import Stroke from 'ol/style/Stroke.js';
+import MVT from 'ol/format/MVT.js';
+import { createXYZ } from 'ol/tilegrid';
+
+const carLinesStyle = new Style({
+  stroke: new Stroke({
     color: "rgba(26, 159, 176, 1)",
     lineCap: "butt",
   }),
 });
-const trekkerLinesStyle = new ol.style.Style({
-  stroke: new ol.style.Stroke({
+const trekkerLinesStyle = new Style({
+  stroke: new Stroke({
     color: "rgba(173, 140, 191, 1)",
     lineCap: "butt",
   }),
@@ -48,7 +56,7 @@ function styleFeature(feature, resolution, filterSettings, map) {
 }
 
 
-class CachedBlueLinesSource extends ol.source.VectorTile {
+class CachedBlueLinesSource extends VectorTile {
   constructor(options) {
     options = options || {};
     options.tileSize = options.tileSize || 256;
@@ -60,8 +68,8 @@ class CachedBlueLinesSource extends ol.source.VectorTile {
       zDirection: options.zDirection,
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
-      format: new ol.format.MVT(),
-      tileGrid: ol.tilegrid.createXYZ({
+      format: new MVT(),
+      tileGrid: createXYZ({
         minZoom: options.minZoom,
         maxZoom: options.maxZoom,
         tileSize: [options.tileSize, options.tileSize],
@@ -112,7 +120,7 @@ function setFeatures(data, tile, extent, projection) {
 }
 
 
-class CachedBlueLinesLayer extends ol.layer.VectorTile {
+class CachedBlueLinesLayer extends VectorTileLayer {
   #filterSettings = Constants.DEFAULT_FILTERS;
   #currentPolygonFilter = null;
 
@@ -160,7 +168,7 @@ const blueLineLayer15 = new CachedBlueLinesLayer({
   maxZoom: 15,
 });
 
-const blueLineLayer = new ol.layer.Group({
+const blueLineLayer = new LayerGroup({
   visible: false,
   title: `
     Apple Look Around cached blue lines<br>

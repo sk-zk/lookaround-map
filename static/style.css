@@ -162,8 +162,8 @@ body {
 }
 
 .filter-control button {
-  width: 36px;
-  height: 36px;
+  width: 36px !important;
+  height: 36px !important;
   background-image: url("/static/icons/funnel.png");
   background-size: 36px 36px;
   color: black;

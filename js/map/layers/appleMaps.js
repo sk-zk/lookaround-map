@@ -1,15 +1,19 @@
 import { Authenticator } from "../../util/Authenticator.js";
 
+import TileLayer from 'ol/layer/Tile.js';
+import LayerGroup from 'ol/layer/Group.js';
+import XYZ from 'ol/source/XYZ.js';
+
 const auth = new Authenticator();
 
 async function tileLoadFunction(imageTile, src) {
   imageTile.getImage().src = await auth.authenticateUrl(src);
 }
 
-const appleRoad = new ol.layer.Tile({
+const appleRoad = new TileLayer({
   type: "base",
   title: "Apple Maps Road",
-  source: new ol.source.XYZ({
+  source: new XYZ({
     minZoom: 2,
     maxZoom: 19,
     attributions: "© Apple",
@@ -21,11 +25,11 @@ const appleRoad = new ol.layer.Tile({
   }),
 });
 
-const appleRoadDark = new ol.layer.Tile({
+const appleRoadDark = new TileLayer({
   type: "base",
   title: "Apple Maps Road (Dark)",
   visible: false,
-  source: new ol.source.XYZ({
+  source: new XYZ({
     minZoom: 2,
     maxZoom: 19,
     attributions: "© Apple",
@@ -37,8 +41,8 @@ const appleRoadDark = new ol.layer.Tile({
   }),
 });
 
-const appleSatelliteImage = new ol.layer.Tile({
-  source: new ol.source.XYZ({
+const appleSatelliteImage = new TileLayer({
+  source: new XYZ({
     minZoom: 2,
     maxZoom: 19,
     attributions: "© Apple",
@@ -48,8 +52,8 @@ const appleSatelliteImage = new ol.layer.Tile({
     tileLoadFunction: tileLoadFunction,
   }),
 });
-const appleSatelliteOverlay = new ol.layer.Tile({
-  source: new ol.source.XYZ({
+const appleSatelliteOverlay = new TileLayer({
+  source: new XYZ({
     minZoom: 2,
     maxZoom: 19,
     attributions: "© Apple",
@@ -59,7 +63,7 @@ const appleSatelliteOverlay = new ol.layer.Tile({
     tileLoadFunction: tileLoadFunction,
   }),
 });
-const appleSatellite = new ol.layer.Group({
+const appleSatellite = new LayerGroup({
   title: "Apple Maps Satellite",
   type: "base",
   combine: "true",
