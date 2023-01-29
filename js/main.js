@@ -1,4 +1,3 @@
-import '../static/style.css';
 import { Api } from "./Api.js";
 import { Authenticator } from "./util/Authenticator.js";
 import { createMap } from "./map/map.js";
@@ -6,8 +5,13 @@ import { createPanoViewer } from "./viewer/viewer.js";
 import { reverseGeocode } from "./util/nominatim.js";
 import { wrapLon } from "./util/geo.js";
 import { TimeMachineControl } from "./ui/TimeMachineControl.js";
-
 import Point from 'ol/geom/Point.js';
+
+import 'ol/ol.css';
+import 'ol-ext/dist/ol-ext.css';
+import 'ol-contextmenu/ol-contextmenu.css';
+import "./external/ol-layerswitcher/ol-layerswitcher.css";
+import '../static/style.css';
 
 const RAD2DEG = 180 / Math.PI;
 

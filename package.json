@@ -5,6 +5,7 @@
   "type": "module",
   "main": "rollup.config.js",
   "dependencies": {
+    "@rollup/plugin-typescript": "^11.0.0",
     "earcut": "^2.2.4",
     "fflate": "^0.7.4",
     "ol": "^7.2.2",
@@ -14,7 +15,9 @@
     "pbf": "^3.2.1",
     "rollup": "^2.79.0",
     "rollup-plugin-import-css": "^3.1.0",
-    "rollup-plugin-terser": "^7.0.2"
+    "rollup-plugin-terser": "^7.0.2",
+    "tslib": "^2.5.0",
+    "typescript": "^4.9.4"
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.0.1"
