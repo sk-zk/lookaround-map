@@ -5,6 +5,7 @@
   "type": "module",
   "main": "rollup.config.js",
   "dependencies": {
+    "@rollup/plugin-commonjs": "^24.0.1",
     "@rollup/plugin-typescript": "^11.0.0",
     "earcut": "^2.2.4",
     "fflate": "^0.7.4",

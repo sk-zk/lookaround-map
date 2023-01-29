@@ -6,8 +6,7 @@ import VectorTile from 'ol/source/VectorTile.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import Style from 'ol/style/Style.js';
 import Stroke from 'ol/style/Stroke.js';
-// this import fails??
-//import MVT from 'ol/format/MVT.js';
+import MVT from 'ol/format/MVT.js';
 import { createXYZ } from 'ol/tilegrid';
 
 const carLinesStyle = new Style({
@@ -58,7 +57,7 @@ class CachedBlueLinesSource extends VectorTile {
       zDirection: options.zDirection,
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
-      //format: new MVT(),
+      format: new MVT(),
       tileGrid: createXYZ({
         minZoom: options.minZoom,
         maxZoom: options.maxZoom,
