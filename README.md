@@ -28,6 +28,8 @@ To do so, three options are available. Simply install the one you like and it wi
 - [ ] Set up dependencies properly
    - ol done; psv next
 - [ ] Convert and apply tilt and roll offsets
+   - Still can't solve this and I'm slowly losing my damn mind.  
+     `unknown10` is the roll, with values between 0 and 8192 signifying positive roll and values between 16384 and 8193 signifying negative roll. `unknown11` is the tilt, with values above 8192 signifying positive tilt and values below 8192 signifying negative tilt. Figuring out how to convert these back to angles is apparently beyond my abilities. 
 - [ ] Render top and bottom faces of panoramas
    - Completely lost as to which projection this is
 - [ ] Find a raster blue line layer if it exists, or decode the vector layer
