@@ -204,7 +204,6 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         degToRad(180) - sideFaceThetaStart - sideFaceThetaLength,
       ]);
     }
-    console.log(this.panorama.projection);
     const geometries = [];
     this.meshesForFrustum = [];
     for (let i = 0; i < faces.length; i++) {
