@@ -1,5 +1,4 @@
 import { Constants } from "../Constants.js";
-import { gunzipSync } from "../../../node_modules/fflate/esm/browser.js";
 
 import LayerGroup from 'ol/layer/Group.js';
 import VectorTile from 'ol/source/VectorTile.js';
@@ -77,29 +76,8 @@ class CachedBlueLinesSource extends VectorTile {
       tilePixelRatio: 2,
       //url: "http://localhost:8080/maps/lookaround/{z}/{x}/{y}.vector.pbf",
       url: "https://lookmap.eu.pythonanywhere.com/bluelines2/{z}/{x}/{y}/",
-      tileLoadFunction: tileLoadFunction,
     });
   }
-}
-
-function tileLoadFunction(tile, url) {
-  tile.setLoader((extent, resolution, projection) => {
-    fetch(url).then((response) => {
-      response
-        .arrayBuffer()
-        .then((data) => { 
-          if (response.ok) {
-            setFeatures(data, tile, extent, projection);
-          } else {
-            tile.setFeatures([]);
-          }
-        })
-        .catch((e) => {
-          console.log(e);
-          tile.setFeatures([]);
-        });
-    });
-  });
 }
 
 function setFeatures(data, tile, extent, projection) {
