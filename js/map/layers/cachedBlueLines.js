@@ -76,14 +76,7 @@ class CachedBlueLinesSource extends VectorTile {
       }),
       tilePixelRatio: 2,
       //url: "http://localhost:8080/maps/lookaround/{z}/{x}/{y}.vector.pbf",
-      // nh = no Content-Type header.
-      // the static tiles which tegola generates are gzipped, meaning you need
-      // to set the appropriate Content-Type so the browser can deal with it.
-      // unfortunately, pythonanyhwere also applies the header to 404s, which means
-      // that any request to a non-existing tile causes a content encoding error.
-      // to fix this, I've added a second endpoint without Content-Type header
-      // and decompress tiles manually in js.
-      url: "https://lookmap.eu.pythonanywhere.com/bluelines_nh/{z}/{x}/{y}",
+      url: "https://lookmap.eu.pythonanywhere.com/bluelines2/{z}/{x}/{y}/",
       tileLoadFunction: tileLoadFunction,
     });
   }
