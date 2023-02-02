@@ -80,17 +80,6 @@ class CachedBlueLinesSource extends VectorTile {
   }
 }
 
-function setFeatures(data, tile, extent, projection) {
-  const decompressed = gunzipSync(new Uint8Array(data));
-  const format = tile.getFormat();
-  const features = format.readFeatures(decompressed, {
-    extent: extent,
-    featureProjection: projection,
-  });
-  tile.setFeatures(features);
-}
-
-
 class CachedBlueLinesLayer extends VectorTileLayer {
   #filterSettings = Constants.DEFAULT_FILTERS;
   #currentPolygonFilter = null;
