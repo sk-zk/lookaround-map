@@ -1,4 +1,6 @@
 import { Constants } from "../Constants.js";
+import { CoverageType } from "../../enums.js";
+import { determineLineColor, carLineColor, trekkerLineColor } from "./colors.js";
 
 import LayerGroup from 'ol/layer/Group.js';
 import VectorTile from 'ol/source/VectorTile.js';
@@ -10,31 +12,25 @@ import { createXYZ } from 'ol/tilegrid';
 
 const carLinesStyle = new Style({
   stroke: new Stroke({
-    color: "rgba(26, 159, 176, 1)",
+    color: carLineColor,
     lineCap: "butt",
   }),
 });
 const trekkerLinesStyle = new Style({
   stroke: new Stroke({
-    color: "rgba(173, 140, 191, 1)",
+    color: trekkerLineColor,
     lineCap: "butt",
   }),
 });
 
+
 function styleFeature(feature, resolution, filterSettings, map) {
-  const zoom = map.getView().getZoomForResolution(resolution);
-
-  let width;
-  if (zoom > 13) {
-    width = 2;
-  } else if (zoom > 9) {
-    width = 1.5;
-  } else {
-    width = 1;
+  if (feature.get("coverage_type") === CoverageType.Car && !filterSettings.showCars) {
+    return null;
   }
-  carLinesStyle.getStroke().setWidth(width);
-  trekkerLinesStyle.getStroke().setWidth(width);
-
+  if (feature.get("coverage_type") === CoverageType.Trekker && !filterSettings.showTrekkers) {
+    return null;
+  }
   if (
     filterSettings.filterByDate &&
     (feature.get("timestamp") < filterSettings.minDate ||
@@ -43,17 +39,34 @@ function styleFeature(feature, resolution, filterSettings, map) {
     return null;
   }
 
+  const zoom = map.getView().getZoomForResolution(resolution);
+  const width = determineLineWidth(zoom);
+  const color = determineLineColor(filterSettings, feature.get("timestamp"), feature.get("coverage_type"));
+
   switch (feature.get("coverage_type")) {
     case 2:
-      return filterSettings.showCars ? carLinesStyle : null;
+      carLinesStyle.getStroke().setWidth(width);
+      carLinesStyle.getStroke().setColor(color);
+      return carLinesStyle;
     case 3:
-      return filterSettings.showTrekkers ? trekkerLinesStyle : null;
+      trekkerLinesStyle.getStroke().setWidth(width);
+      trekkerLinesStyle.getStroke().setColor(color);
+      return trekkerLinesStyle;
     default:
       console.error(`Coverage type ${feature.get("coverage_type")} has no style`);
       return carLinesStyle;
   }
 }
 
+function determineLineWidth(zoom) {
+  if (zoom > 13) {
+    return 2;
+  } else if (zoom > 9) {
+    return 1.5;
+  } else {
+    return 1;
+  }
+}
 
 class CachedBlueLinesSource extends VectorTile {
   constructor(options) {

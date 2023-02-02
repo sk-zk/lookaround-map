@@ -1,7 +1,10 @@
 import { Constants } from "../Constants.js";
+import { LineColorType, CoverageType } from "../../enums.js";
 import { Api } from "../../Api.js";
 import { LRUMap } from "../../external/js_lru/lru.js";
 import { wgs84ToTileCoord } from "../../util/geo.js";
+import { determineLineColor } from "./colors.js";
+import { rgb } from "d3-color";
 
 import XYZ from 'ol/source/XYZ.js';
 import { createCanvasContext2D } from 'ol/dom.js';
@@ -54,6 +57,8 @@ class LookaroundCoverageSource extends XYZ {
   #drawPanos(panos, coords, tileSize, ctx) {
     ctx.lineWidth = 2;
     for (const pano of panos) {
+      if (pano.coverageType === CoverageType.Car && !this.#filterSettings.showCars) continue;
+      if (pano.coverageType === CoverageType.Trekker && !this.#filterSettings.showTrekkers) continue;
       if (
         this.#filterSettings.filterByDate &&
         (pano.timestamp < this.#filterSettings.minDate ||
@@ -62,15 +67,13 @@ class LookaroundCoverageSource extends XYZ {
         continue;
       }
 
-      if (pano.coverageType === 3) {
-        if (!this.#filterSettings.showTrekkers) continue;
-        ctx.fillStyle = "rgba(173, 140, 191, 0.2)";
-        ctx.strokeStyle = "rgba(173, 140, 191, 0.8)";
-      } else {
-        if (!this.#filterSettings.showCars) continue;
-        ctx.fillStyle = "rgba(26, 159, 176, 0.2)";
-        ctx.strokeStyle = "rgba(26, 159, 176, 0.8)";
-      }
+      let color = determineLineColor(this.#filterSettings, pano.timestamp, pano.coverageType);
+      color = rgb(color);
+      color.opacity = 0.2;
+      ctx.fillStyle = color.formatRgb();
+      color.opacity = 0.8;
+      ctx.strokeStyle = color.formatRgb();
+
       const tileCoord = wgs84ToTileCoord(pano.lat, pano.lon, 17);
       const xOffset = (tileCoord.x - coords[1]) * tileSize[0] - 1;
       const yOffset = (tileCoord.y - coords[2]) * tileSize[1] - 1;

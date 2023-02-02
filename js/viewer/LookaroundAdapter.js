@@ -1,16 +1,9 @@
 import { ScreenFrustum } from "./ScreenFrustrum.js";
+import { Face } from "../enums.js";
 import "./bufferGeometryUtils.js";
 
 const RENDER_TOP_AND_BOTTOM_FACES = false;
 const FACES = RENDER_TOP_AND_BOTTOM_FACES ? 6 : 4;
-const Face = Object.freeze({
-	Front: 0,
-	Right: 1,
-  Back: 2,
-  Left: 3,
-  Top: 4,
-  Bottom: 5
-})
 
 function degToRad(deg) {
   return (deg * Math.PI) / 180;
@@ -217,6 +210,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         geom.rotateY(degToRad(27.5 + 90));
       }
       else if (i == Face.Bottom) {
+        geom.scale(1,1,1.5);
         geom.rotateY(degToRad(27.5 - 90));
       }
       geometries.push(geom);
@@ -267,6 +261,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
           ? u / (2 *  largestX) + 0.5
           : u / (2 * -largestX) + 0.5;
       v = v / (2 * largestX) + 0.5;
+
       uv.setXY(i, u, v);
     }
     uv.needsUpdate = true;

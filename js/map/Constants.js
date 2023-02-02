@@ -1,3 +1,5 @@
+import { LineColorType } from "../enums.js";
+
 const Constants = Object.freeze({
   MAX_ZOOM: 19,
   DEFAULT_FILTERS: {
@@ -7,6 +9,7 @@ const Constants = Object.freeze({
     showCars: true,
     showTrekkers: true,
     polygonFilter: null,
+    lineColorType: LineColorType.CoverageType
   },
 });
 export { Constants };

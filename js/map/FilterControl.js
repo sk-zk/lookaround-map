@@ -1,4 +1,5 @@
 import { Constants } from "./Constants";
+import { LineColorType } from "../enums.js";
 
 import Control from 'ol/control/Control.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
@@ -45,6 +46,15 @@ class FilterControl extends Control {
     menu.querySelector("#show-trekkers").checked = true;
     menu.querySelector("#show-trekkers").addEventListener("change", (e) => {
       this.#filterSettings.showTrekkers = e.target.checked;
+      this.#filtersChanged();
+    });
+
+    menu.querySelector("#color-by-type").addEventListener("change", (e) => {
+      this.#filterSettings.lineColorType = LineColorType.CoverageType;
+      this.#filtersChanged();
+    });
+    menu.querySelector("#color-by-age").addEventListener("change", (e) => {
+      this.#filterSettings.lineColorType = LineColorType.Age;
       this.#filtersChanged();
     });
 
@@ -118,6 +128,11 @@ class FilterControl extends Control {
         <td><input type="date" id="coverage-max-date" name="coverage-max-date" value="2023-01-01"></td>
       </tr>
     </table>
+    </div>
+    <div class="filter-control-group">
+    <h2>Color</h2>
+      <input type="radio" id="color-by-type" name="line-color" checked><label for="color-by-type">Color by coverage type</label><br>
+      <input type="radio" id="color-by-age" name="line-color"><label for="color-by-age">Color by age</label>
     </div>
     <div class="filter-control-group">
     <h2>Crop by GeoJSON polygon</h2>
