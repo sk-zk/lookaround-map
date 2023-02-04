@@ -3,7 +3,7 @@ import gc
 import importlib
 import io
 
-from flask import Blueprint, current_app, jsonify, request, send_file 
+from flask import Blueprint, jsonify, request, send_file
 from flask_cors import cross_origin
 import numpy as np
 from PIL import Image
@@ -19,11 +19,11 @@ def is_package_installed(package_name):
     package = importlib.util.find_spec(package_name)
     return package is not None
 
-# i've decided to remove the cache for `relay_coverage_tile` completely
+
+# I've decided to remove the cache for `relay_coverage_tile` completely
 # because, for god knows what reason, it slowed down the `closest` endpoint
 # quite a bit, even though it never interacted with the map tile cache in any way.
 # top 10 questions scientists still can't answer.
-
 @lru_cache(maxsize=2**6)
 def get_coverage_tile__cached_for_movement(x, y):
     return get_coverage_tile(x, y, session=movement_session)
@@ -34,6 +34,7 @@ pano_session = requests.session()
 movement_session = requests.session()
 map_session = requests.session()
 auth = Authenticator()
+
 
 use_heic2rgb = is_package_installed("heic2rgb")
 if use_heic2rgb:
@@ -54,6 +55,7 @@ else:
 def relay_coverage_tile(x, y):
     panos = get_coverage_tile(x, y, session=map_session)
     return jsonify(panos)
+
 
 @api.route("/closest")
 @cross_origin()
@@ -78,17 +80,18 @@ def closest():
     # fetch panos and sort
     panos = []
     tiles = geo.get_circle_tiles(lat, lon, radius, 17)
-    for (x,y) in tiles:
+    for (x, y) in tiles:
         tile_panos = get_coverage_tile__cached_for_movement(x, y)
         for pano in tile_panos:
             distance = geo.distance(lat, lon, pano.lat, pano.lon)
             if distance < radius:
                 panos.append((pano, distance))
-    panos = sorted(panos, key=lambda x: x[1])
+    panos = sorted(panos, key=lambda p: p[1])
     if limit:
         return jsonify([x[0] for x in panos[:limit]])
     else:
         return jsonify([x[0] for x in panos])
+
 
 # Panorama faces are passed through this server because of CORS.
 @api.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/<int:face>/")
@@ -117,6 +120,7 @@ def relay_pano_segment(panoid, region_id, zoom, face):
     )
     gc.collect()
     return response
+
 
 @api.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/")
 def relay_full_pano(panoid, region_id, zoom):

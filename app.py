@@ -10,6 +10,7 @@ sys.path.append("lookaround")
 from api import api
 from util import CustomJSONEncoder
 
+
 def create_app():
     app = Flask(__name__)
     CORS(app, resources={r"/static/*": {"origins": "*"}})

@@ -1,13 +1,13 @@
-from datetime import datetime
 from flask.json import JSONEncoder
 from timezonefinder import TimezoneFinder
 from lookaround.panorama import LookaroundPanorama
 
-# must be initialized outside of the class because the encoder class doesn't
-# get reused apparently.
-# further, `in_memory` must be set to True because the library would otheriwse
+# Must be initialized outside the class because the encoder class doesn't
+# get reused, apparently.
+# further, `in_memory` must be set to True because the library would otherwise
 # trip over its own feet trying to open the same file in different threads.
 tf = TimezoneFinder(in_memory=True) 
+
 
 class CustomJSONEncoder(JSONEncoder):
     def default(self, o):

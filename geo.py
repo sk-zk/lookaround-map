@@ -14,11 +14,11 @@ def move(lat, lon, azimuth, distance):
     return lats[0], lons[0]
 
 
-def get_circle_tiles(centerLat, centerLon, radius, zoom):
+def get_circle_tiles(center_lat, center_lon, radius, zoom):
     """
     Returns the coordinates of the map tiles which cover a circular area around a point.
     """
-    north, east, south, west = [move(centerLat, centerLon, x, radius) for x in [0, 90, 180, 270]]
+    north, east, south, west = [move(center_lat, center_lon, x, radius) for x in [0, 90, 180, 270]]
     lat_min = north[0]
     lat_max = south[0]
     lon_min = west[1]
