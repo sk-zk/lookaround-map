@@ -57,7 +57,7 @@ function updateHashParams() {
     const view = map.getView();
     const center = view.getCenter();
     const zoom = view.getZoom();
-    let newHash = `c=${zoom}/${center[1].toFixed(5)}/${center[0].toFixed(5)}`;
+    let newHash = `c=${zoom}/${center[1].toFixed(5)}/${wrapLon(center[0]).toFixed(5)}`;
     if (currentPano) {
       // there's no API call known to me which will return metadata for a
       // specific panoid like there is with streetview. this means that to fetch
