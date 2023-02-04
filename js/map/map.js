@@ -47,7 +47,7 @@ export function createMap(config) {
     view: new View({
       center: [config.center.longitude, config.center.latitude],
       zoom: config.center.zoom,
-      minZoom: 2,
+      minZoom: 3,
       maxZoom: Constants.MAX_ZOOM,
       constrainResolution: true,
       enableRotation: false,
@@ -100,6 +100,7 @@ function createContextMenu(map) {
         text: "Copy coordinates to clipboard",
         icon: "/static/icons/copy.png",
         callback: (e) => {
+          e.coordinate[0] = wrapLon(e.coordinate[0]);
           navigator.clipboard.writeText(`${e.coordinate[1]}, ${e.coordinate[0]}`);
         },
       },
