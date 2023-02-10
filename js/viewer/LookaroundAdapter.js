@@ -1,6 +1,12 @@
-import { ScreenFrustum } from "./ScreenFrustrum.js";
+import { Group, Mesh, SphereGeometry, MeshBasicMaterial, Vector3 } from "three";
+import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { CONSTANTS, utils } from "@photo-sphere-viewer/core"
+
+import { AbstractAdapter } from "@photo-sphere-viewer/core";
+
+import { ScreenFrustum } from "./ScreenFrustum.js";
 import { Face } from "../enums.js";
-import "./bufferGeometryUtils.js";
+import { Constants } from "../map/Constants.js";
 
 const RENDER_TOP_AND_BOTTOM_FACES = false;
 const FACES = RENDER_TOP_AND_BOTTOM_FACES ? 6 : 4;
@@ -14,29 +20,27 @@ function degToRad(deg) {
  * @memberof PSV.adapters
  * @extends PSV.adapters.AbstractAdapter
  */
-export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
+export class LookaroundAdapter extends AbstractAdapter {
   static id = "lookaround";
   static supportsDownload = false;
 
-  /**
-   * @param {PSV.Viewer} psv
-   */
   constructor(psv) {
     super(psv);
+    this.psv = psv;
 
-    this.endpoint = this.psv.config.panoData.endpoint;
+    this.endpoint = psv.config.panoData.endpoint;
 
-    this.panorama = this.psv.config.panorama.panorama;
-    this.url = this.psv.config.panorama.panorama.url;
+    this.panorama = psv.config.panorama.panorama;
+    this.url = psv.config.panorama.panorama.url;
     this.previousLatitudeSize = this.panorama.projection.latitudeSize;
 
     this.SPHERE_HORIZONTAL_SEGMENTS = 32;
 
-    this.psv.on(PhotoSphereViewer.CONSTANTS.EVENTS.POSITION_UPDATED, this);
-    this.psv.on(PhotoSphereViewer.CONSTANTS.EVENTS.ZOOM_UPDATED, this);
-    this.psv.on(PhotoSphereViewer.CONSTANTS.EVENTS.BEFORE_ROTATE, this);
+    psv.addEventListener("position-updated", this);
+    psv.addEventListener("zoom-updated", this);
+    psv.addEventListener("before-rotate", this);
 
-    this.screenFrustum = new ScreenFrustum(this.psv);
+    this.screenFrustum = new ScreenFrustum(psv);
 
     this.dynamicLoadingEnabled = true;
   }
@@ -85,13 +89,13 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         if (progress) {
           progress[faceIdx] = p;
           this.psv.loader.setProgress(
-            PhotoSphereViewer.utils.sum(progress) / 4
+            utils.sum(progress) / 4
           );
         }
       })
       .then((img) => {
         let texture = null;
-        texture = PhotoSphereViewer.utils.createTexture(img);
+        texture = utils.createTexture(img);
         if (faceIdx == Face.Top) {
           // flip and cut off the edges a bit
           texture.center.set(0.5, 0.5);
@@ -111,7 +115,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       mesh.userData = { "psvSphere": true };
       this.psv.renderer.mesh = mesh;
 
-      const meshContainer = new THREE.Group();
+      const meshContainer = new Group();
       meshContainer.add(mesh);
       this.psv.renderer.meshContainer = meshContainer;
 
@@ -124,7 +128,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
    * @override
    */
   createMesh(scale = 1) {
-    const radius = PhotoSphereViewer.CONSTANTS.SPHERE_RADIUS * scale;
+    const radius = CONSTANTS.SPHERE_RADIUS * scale;
 
     // some weird desperate nonsense to get most panos to render correctly
     let sideFaceThetaLength;
@@ -200,7 +204,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     const geometries = [];
     this.meshesForFrustum = [];
     for (let i = 0; i < faces.length; i++) {
-      const geom = new THREE.SphereGeometry(...faces[i]).scale(-1, 1, 1);
+      const geom = new SphereGeometry(...faces[i]).scale(-1, 1, 1);
       if (i < Face.Top) {
         this.__setSideUV(geom, i);
       } else {
@@ -214,13 +218,13 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
         geom.rotateY(degToRad(27.5 - 90));
       }
       geometries.push(geom);
-      this.meshesForFrustum.push(new THREE.Mesh(geom, []));
+      this.meshesForFrustum.push(new Mesh(geom, []));
     }
 
-    const mergedGeometry = THREE.BufferGeometryUtils.mergeBufferGeometries(geometries, true);
-    const mesh = new THREE.Mesh(
+    const mergedGeometry = mergeBufferGeometries(geometries, true);
+    const mesh = new Mesh(
       mergedGeometry,
-      Array(FACES).fill(new THREE.MeshBasicMaterial())
+      Array(FACES).fill(new MeshBasicMaterial())
     );
     this.mesh = mesh;
     return mesh;
@@ -273,7 +277,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
   setTexture(mesh, textureData) {
     for (let i = 0; i < FACES; i++) {
       if (textureData.texture[i]) {
-        mesh.material[i] = new THREE.MeshBasicMaterial({
+        mesh.material[i] = new MeshBasicMaterial({
           map: textureData.texture[i],
         });
       }
@@ -303,14 +307,14 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
    */
   handleEvent(e) {
     switch (e.type) {
-      case PhotoSphereViewer.CONSTANTS.EVENTS.BEFORE_ROTATE:
+      case "before-rotate":
         // the rotate() method of the viewer only fires BEFORE_ROTATE
         // and not POSITION_UPDATED, so I had to restort to handling
         // BEFFORE_ROTATE instead and passing the rotation param from it
         // all the way to __getVisibleFaces()
-        this.__refresh(e.args[0]);
+        this.__refresh(e.position);
         break;
-      case PhotoSphereViewer.CONSTANTS.EVENTS.ZOOM_UPDATED:
+      case "zoom-updated":
         this.__refresh();
         break;
     }
@@ -323,7 +327,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
     
     const visibleFaces = this.__getVisibleFaces(position);
     // TODO finetune this
-    if (this.psv.renderer.prop.vFov < 55) {
+    if (this.psv.renderer.state.vFov < 55) {
       this.__refreshFaces(visibleFaces, 0);
     } else {
       this.__refreshFaces(visibleFaces, 2);
@@ -343,7 +347,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
           if (this.mesh.material[faceIdx].map.userData.url == oldUrl) {
             // ^ dumb temp fix to stop faces from loading in
             // after the user has already navigated to a different one
-            this.mesh.material[faceIdx] = new THREE.MeshBasicMaterial({
+            this.mesh.material[faceIdx] = new MeshBasicMaterial({
               map: texture,
             });
             this.mesh.material[faceIdx].map.userData.refreshing = false;
@@ -355,8 +359,8 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
   }
 
   __getVisibleFaces(position=null) {
-    const longitude = position?.longitude ?? null;
-    this.screenFrustum.update(longitude);
+    const yaw = position?.yaw ?? null;
+    this.screenFrustum.update(yaw);
 
     // TODO find a more elegant way to do this
     const visibleFaces = [];
@@ -365,7 +369,7 @@ export class LookaroundAdapter extends PhotoSphereViewer.AbstractAdapter {
       const position = mesh.geometry.getAttribute("position");
       const step = 20;
       for (let i = 0; i < position.count; i += step) {
-        const point = new THREE.Vector3().fromBufferAttribute(position, i);
+        const point = new Vector3().fromBufferAttribute(position, i);
         if (this.screenFrustum.frustum.containsPoint(point)) {
           visibleFaces.push(meshIdx);
           break;

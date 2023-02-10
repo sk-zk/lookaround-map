@@ -1,10 +1,11 @@
 import { Constants } from "../Constants.js";
 import { LineColorType, CoverageType } from "../../enums.js";
 import { Api } from "../../Api.js";
-import { LRUMap } from "../../external/js_lru/lru.js";
-import { wgs84ToTileCoord } from "../../util/geo.js";
+import { wgs84ToTileCoord, wrapLon } from "../../util/geo.js";
 import { determineLineColor } from "./colors.js";
+
 import { rgb } from "d3-color";
+import { LRUMap } from "../../external/js_lru/lru.js";
 
 import XYZ from 'ol/source/XYZ.js';
 import { createCanvasContext2D } from 'ol/dom.js';
@@ -23,7 +24,7 @@ class LookaroundCoverageSource extends XYZ {
     super({
       opaque: false,
       projection: options.projection,
-      wrapX: options.wrapX !== undefined ? options.wrapX : true,
+      wrapX: true,
       zDirection: options.zDirection,
       url: "z:{z} x:{x} y:{y}",
       minZoom: 17,
@@ -38,7 +39,6 @@ class LookaroundCoverageSource extends XYZ {
         tile.setImage(ctx.canvas);
       },
     });
-
     this.markerSize = options.markerSize;
   }
 

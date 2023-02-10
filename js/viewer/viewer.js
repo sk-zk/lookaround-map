@@ -1,20 +1,19 @@
-document.head.innerHTML += `
-  <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.css">
-  <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/compass.css">
-  <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/markers.css">
-`;
-import "https://cdn.jsdelivr.net/npm/three/build/three.min.js";
-import "https://cdn.jsdelivr.net/npm/uevent@2/browser.min.js";
-import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/photo-sphere-viewer.min.js";
-import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/compass.js";
-import "https://cdn.jsdelivr.net/npm/photo-sphere-viewer@4/dist/plugins/markers.js";
+import { Viewer } from '@photo-sphere-viewer/core';
+import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
+import { CompassPlugin } from '@photo-sphere-viewer/compass-plugin';
+
 import { Api } from "../Api.js";
 import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
 import { distanceBetween } from "../util/geo.js";
 
+import "@photo-sphere-viewer/core/index.css";
+import "@photo-sphere-viewer/markers-plugin/index.css";
+import "@photo-sphere-viewer/compass-plugin/index.css";
 
-const LONGITUDE_OFFSET = 1.07992247; // 61.875°, which is the center of face 0
+const YAW_OFFSET = 1.07992247; // 61.875°, which is the center of face 0
+const DEG2RAD = Math.PI / 180;
+const RAD2DEG = 180 / Math.PI;
 
 export const DefaultHeading = Object.freeze({
 	North: 0,
@@ -22,28 +21,31 @@ export const DefaultHeading = Object.freeze({
 })
 
 export function createPanoViewer(config) {
+  //console.log(config.initialPano.dbg);
   const endpoint = config.endpoint ?? "";
   const plugins = configurePlugins(config);
   const defaultHeading = config.defaultHeading ?? DefaultHeading.North;
-  const defaultLong = getHeading(defaultHeading, config.initialPano.heading);
-  const defaultZoomLvl = 10;
+  const defaultYaw = getHeading(defaultHeading, config.initialPano.heading);
+  const defaultZoomLvl = 20;
 
-  const viewer = new PhotoSphereViewer.Viewer({
+  const viewer = new Viewer({
     container: config.container,
     adapter: LookaroundAdapter,
     panorama: { 
       panorama: config.initialPano, 
       url: `/pano/${config.initialPano.panoid}/${config.initialPano.regionId}/`,
     },
-    panoData: { endpoint: endpoint },
+    panoData: { 
+      endpoint: endpoint,
+    },
     minFov: 10,
-    maxFov: 70,
-    defaultLat: 0,
-    defaultLong: defaultLong,
+    maxFov: 100,
+    defaultPitch: 0,
+    defaultYaw: defaultYaw,
     defaultZoomLvl: defaultZoomLvl,
     navbar: null,
     sphereCorrection: {
-      pan: config.initialPano.heading + LONGITUDE_OFFSET,
+      pan: config.initialPano.heading + YAW_OFFSET,
     },
     plugins: plugins,
   });
@@ -56,7 +58,7 @@ export function createPanoViewer(config) {
     // for some reason, setPanorama doesn't appear to store the
     // new sphereCorrection anywhere, so I'm just passing it to the
     // viewer adapter manually
-    viewer.panWorkaround = pano.heading + LONGITUDE_OFFSET;
+    viewer.panWorkaround = pano.heading + YAW_OFFSET;
 
     if (resetView) {
       // temporarily disable dynamic face loading.
@@ -72,13 +74,13 @@ export function createPanoViewer(config) {
     }, {
       showLoader: false,
       sphereCorrection: {
-        pan: pano.heading + LONGITUDE_OFFSET,
+        pan: pano.heading + YAW_OFFSET,
       },
     });
     if (resetView) {
       const heading = getHeading(defaultHeading, pano.heading);
       viewer.zoom(defaultZoomLvl);
-      viewer.rotate({ latitude: 0, longitude: heading });
+      viewer.rotate({ pitch: 0, yaw: heading });
       viewer.adapter.dynamicLoadingEnabled = true;
       viewer.adapter.__refresh();
     }
@@ -127,22 +129,22 @@ function getAlternativeDates(refPano, nearbyPanos) {
 }
 
 function getHeading(defaultHeading, heading) {
-  let defaultLong;
+  let defaultYaw;
   switch (defaultHeading) {
     case DefaultHeading.North:
     default:
-      defaultLong = 0;
+      defaultYaw = 0;
       break;
     case DefaultHeading.Road:
-      defaultLong = -heading;
+      defaultYaw = -heading;
       break;
   }
-  return defaultLong;
+  return defaultYaw;
 }
 
 function configurePlugins(config) {  
   const plugins = [
-    [PhotoSphereViewer.MarkersPlugin, {}],
+    [MarkersPlugin, {}],
     [MovementPlugin, {}],
   ];
 
@@ -150,7 +152,7 @@ function configurePlugins(config) {
   if (compassEnabled) {
     plugins.push(
       [
-        PhotoSphereViewer.CompassPlugin,
+        CompassPlugin,
         { size: "80px" },
       ]);
   }

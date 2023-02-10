@@ -1,11 +1,13 @@
+import { Frustum, Matrix4 } from "three";
+
 export class ScreenFrustum {
     constructor(psv) {
       this.psv = psv;
-      this.frustum = new THREE.Frustum();
-      this.projScreenMatrix = new THREE.Matrix4();
+      this.frustum = new Frustum();
+      this.projScreenMatrix = new Matrix4();
     }
   
-    update(longitude=null) {
+    update(yaw=null) {
       const camera = this.psv.renderer.camera;
       camera.updateMatrix();
       camera.updateMatrixWorld();
@@ -16,10 +18,10 @@ export class ScreenFrustum {
       // for some reason, psv.config.sphereCorrection doesn't get updated when
       // a new pano is loaded, so I worked around it by just making the caller
       // write it into a field on the viewer
-      const rotation = longitude ?? this.#getCurrentNorthOffset();
+      const rotation = yaw ?? this.#getCurrentNorthOffset();
       this.projScreenMatrix.multiplyMatrices(
         this.projScreenMatrix,
-        new THREE.Matrix4().makeRotationY(rotation)
+        new Matrix4().makeRotationY(rotation)
       );
       this.frustum.setFromProjectionMatrix(this.projScreenMatrix);
     }

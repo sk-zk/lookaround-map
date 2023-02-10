@@ -102,7 +102,8 @@ function initPanoViewer(pano) {
   // so I gotta resort to this until I get around to modifying it
   compass.style.top = "calc(100vh - 270px - 90px)";
 
-  panoViewer.plugins.movement.on("moved", async (e, pano) => {
+  panoViewer.plugins.movement.addEventListener("moved", async (e) => {
+    const pano = e.detail;
     currentPano = pano;
     updateMapMarker(pano);
     updatePanoInfo(pano);

@@ -1,5 +1,6 @@
+import { AbstractPlugin } from "@photo-sphere-viewer/core";
 import { geodeticToEnu, enuToPhotoSphere, distanceBetween } from "../util/geo.js";;
-import { ScreenFrustum } from "./ScreenFrustrum.js";
+import { ScreenFrustum } from "./ScreenFrustum.js";
 
 
 const MARKER_ID = "0";
@@ -12,30 +13,33 @@ const CAMERA_HEIGHT = 2.4; // the approximated height of the camera
  * 
  * The `moved` event is triggered when a user has moved to a new location.
  */
-export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
+export class MovementPlugin extends AbstractPlugin {
   static id = "movement";
 
   constructor(psv, options) {
     super(psv);
-    this.marker = this.psv.plugins.markers.addMarker({
+    this.psv = psv;
+
+    psv.plugins.markers.addMarker({
       id: MARKER_ID,
-      longitude: 0,
-      latitude: 0,
+      position: { yaw: 0, pitch: 0 },
+      size: { width: 1, height: 1 },
+      scale: { zoom: [0.5, 1] }, 
       image: `${this.psv.config.panoData.endpoint}/static/marker.png`,
-      width: 1,
-      height: 1,
       opacity: 0.4,
       data: null,
       visible: false,
     });
-    this.psv.container.addEventListener("mousemove", (e) => {
+    // addMarker no longer returns the marker object in psv 5?
+    this.marker = psv.plugins.markers.markers["0"];
+    psv.container.addEventListener("mousemove", (e) => {
       this._onMouseMove(e);
     });
-    this.psv.on("click", async (e, data) => {
-      await this._onClick(e, data);
+    psv.addEventListener("click", async (e) => {
+      await this._onClick(e);
     });
     this.lastMousePosition = null;
-    this.screenFrustum = new ScreenFrustum(this.psv);
+    this.screenFrustum = new ScreenFrustum(psv);
     this.mouseHasMoved = false;
     this.lastProcessedMoveEvent = 0;
     this.movementEnabled = true;
@@ -104,33 +108,31 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
     } else {
       this.psv.plugins.markers.updateMarker({
         id: MARKER_ID,
-        latitude: closest.position.pitch,
-        longitude: closest.position.yaw,
+        position: { pitch: closest.position.pitch, yaw: closest.position.yaw },
         // TODO squish marker according to perspective.
         // width/height properties of a marker will always result in a square image for some reason
-        width: 64 * closest.scale,
-        height: 64 * closest.scale,
+        size: { width: 100 * closest.scale, height: 100 * closest.scale},
         visible: true,
         data: closest.pano,
       });
     }
   }
 
-  async _onClick(e, data) {
-    if (data.rightclick || !this.movementEnabled) {
+  async _onClick(e) {
+    if (e.data.rightclick || !this.movementEnabled) {
       return;
     }
-    if (!this.marker.visible || !this.marker.data) {
+    if (!this.marker.visible || !this.marker.config.data) {
       if (this.mouseHasMoved) {
         return;
       } else {
         // mobile user
-        const position = { latitude: data.latitude, longitude: data.longitude };
+        const position = { pitch: e.data.pitch, yaw: e.data.yaw };
         const closest = this._getClosestPano(position);
         await this._navigateTo(closest.pano);
       }
     } else {
-      const pano = this.marker.data;
+      const pano = this.marker.config.data;
       this._hideMarker();
       this.movementEnabled = false;
       await this._navigateTo(pano);
@@ -142,7 +144,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
 
   async _navigateTo(pano) {
     await this.psv.navigateTo(pano);
-    this.trigger("moved", pano);
+    this.dispatchEvent(new CustomEvent("moved", { detail: pano }));
   }
 
   _getClosestPano(position) {
@@ -153,7 +155,7 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
       // ignore pano markers that aren't even on screen
       if (this._markerPositionIsOffScreen(pano.position)) continue;
       const distance = distanceBetween(
-        position.latitude, position.longitude,
+        position.pitch, position.yaw,
         pano.position.pitch, pano.position.yaw,
         1);
       if (distance < closestDist) {
@@ -166,11 +168,11 @@ export class MovementPlugin extends PhotoSphereViewer.AbstractPlugin {
 
   _markerPositionIsOffScreen(pano_position) {
     const viewerCoords = this.psv.dataHelper.sphericalCoordsToViewerCoords({
-      latitude: pano_position.pitch,
-      longitude: pano_position.yaw,
+      pitch: pano_position.pitch,
+      yaw: pano_position.yaw,
     });
-    return viewerCoords.x > this.psv.prop.size.width  || viewerCoords.x < 0 ||
-           viewerCoords.y > this.psv.prop.size.height || viewerCoords.y < 0;
+    return viewerCoords.x > this.psv.state.size.width  || viewerCoords.x < 0 ||
+           viewerCoords.y > this.psv.state.size.height || viewerCoords.y < 0;
   }
 
   _hideMarker() {

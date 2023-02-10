@@ -38,7 +38,6 @@ export function wrapLon(value) {
   return value - worlds * 360;
 }
 
-
 ///////
 
 // Code based on MapillaryJS
