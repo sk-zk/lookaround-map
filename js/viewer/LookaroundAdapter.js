@@ -1,4 +1,4 @@
-import { Group, Mesh, SphereGeometry, MeshBasicMaterial, Vector3 } from "three";
+import { Group, Mesh, SphereGeometry, Vector3 } from "three";
 import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { CONSTANTS, utils } from "@photo-sphere-viewer/core"
 
@@ -102,6 +102,7 @@ export class LookaroundAdapter extends AbstractAdapter {
           texture.repeat.set(-0.954, 0.954);
         }
         texture.userData = { zoom: zoom, url: this.url };
+
         return texture;
       });
   }
@@ -224,7 +225,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     const mergedGeometry = mergeBufferGeometries(geometries, true);
     const mesh = new Mesh(
       mergedGeometry,
-      Array(FACES).fill(new MeshBasicMaterial())
+      Array(FACES).fill(AbstractAdapter.createOverlayMaterial())
     );
     this.mesh = mesh;
     return mesh;
@@ -277,9 +278,10 @@ export class LookaroundAdapter extends AbstractAdapter {
   setTexture(mesh, textureData) {
     for (let i = 0; i < FACES; i++) {
       if (textureData.texture[i]) {
-        mesh.material[i] = new MeshBasicMaterial({
-          map: textureData.texture[i],
-        });
+        const material = AbstractAdapter.createOverlayMaterial();
+        material.uniforms.panorama.value = textureData.texture[i];
+        //material.needsUpdate = true;
+        mesh.material[i] = material;
       }
     }
     this.__refresh(); // immediately replace the low quality tiles from intial load
@@ -337,20 +339,20 @@ export class LookaroundAdapter extends AbstractAdapter {
   __refreshFaces(faces, zoom) {
     for (const faceIdx of faces) {
       if (
-        this.mesh.material[faceIdx].map &&
-        this.mesh.material[faceIdx].map.userData.zoom > zoom &&
-        !this.mesh.material[faceIdx].map.userData.refreshing
+        this.mesh.material[faceIdx].uniforms.panorama.value &&
+        this.mesh.material[faceIdx].uniforms.panorama.value.userData.zoom > zoom &&
+        !this.mesh.material[faceIdx].uniforms.panorama.value.refreshing
       ) {
-        this.mesh.material[faceIdx].map.userData.refreshing = true;
-        const oldUrl = this.mesh.material[faceIdx].map.userData.url;
+        this.mesh.material[faceIdx].uniforms.panorama.value.userData.refreshing = true;
+        const oldUrl = this.mesh.material[faceIdx].uniforms.panorama.value.userData.url;
         this.__loadOneTexture(zoom, faceIdx).then((texture) => {
-          if (this.mesh.material[faceIdx].map.userData.url == oldUrl) {
+          if (this.mesh.material[faceIdx].uniforms.panorama.value.userData.url == oldUrl) {
             // ^ dumb temp fix to stop faces from loading in
             // after the user has already navigated to a different one
-            this.mesh.material[faceIdx] = new MeshBasicMaterial({
-              map: texture,
-            });
-            this.mesh.material[faceIdx].map.userData.refreshing = false;
+            const material = AbstractAdapter.createOverlayMaterial();
+            material.uniforms.panorama.value = texture;
+            material.userData.refreshing = false;
+            this.mesh.material[faceIdx] = material;
             this.psv.needsUpdate();
           }
         });
