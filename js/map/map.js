@@ -59,7 +59,7 @@ export function createMap(config) {
     view: new View({
       center: [config.center.longitude, config.center.latitude],
       zoom: config.center.zoom,
-      minZoom: 3,
+      minZoom: Constants.MIN_ZOOM,
       maxZoom: Constants.MAX_ZOOM,
       constrainResolution: true,
       enableRotation: false,
@@ -108,7 +108,7 @@ function createFilterControl(map) {
 function updateActiveCachedBlueLineLayer(anyFiltersEnabled) {
   if (anyFiltersEnabled) {
     rasterBlueLineLayer.setVisible(false);
-    vectorBlueLineLayer.setMinZoom(3);
+    vectorBlueLineLayer.setMinZoom(Constants.MIN_ZOOM-1);
   } else {
     rasterBlueLineLayer.setVisible(true);
     vectorBlueLineLayer.setMinZoom(rasterBlueLineLayer.getMaxZoom());

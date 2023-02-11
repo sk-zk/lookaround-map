@@ -1,4 +1,5 @@
 import { Authenticator } from "../../util/Authenticator.js";
+import { Constants } from "../Constants.js";
 
 import TileLayer from 'ol/layer/Tile.js';
 import LayerGroup from 'ol/layer/Group.js';
@@ -14,7 +15,6 @@ const appleRoad = new TileLayer({
   type: "base",
   title: "Apple Maps Road",
   source: new XYZ({
-    minZoom: 2,
     maxZoom: 19,
     attributions: "© Apple",
     url:
@@ -30,7 +30,6 @@ const appleRoadDark = new TileLayer({
   title: "Apple Maps Road (Dark)",
   visible: false,
   source: new XYZ({
-    minZoom: 2,
     maxZoom: 19,
     attributions: "© Apple",
     url:
@@ -43,7 +42,6 @@ const appleRoadDark = new TileLayer({
 
 const appleSatelliteImage = new TileLayer({
   source: new XYZ({
-    minZoom: 2,
     maxZoom: 19,
     attributions: "© Apple",
     url:
@@ -54,7 +52,6 @@ const appleSatelliteImage = new TileLayer({
 });
 const appleSatelliteOverlay = new TileLayer({
   source: new XYZ({
-    minZoom: 2,
     maxZoom: 19,
     attributions: "© Apple",
     url:

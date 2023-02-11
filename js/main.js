@@ -5,6 +5,8 @@ import { createPanoViewer } from "./viewer/viewer.js";
 import { reverseGeocode } from "./util/nominatim.js";
 import { wrapLon } from "./util/geo.js";
 import { TimeMachineControl } from "./ui/TimeMachineControl.js";
+import { Constants } from "./map/Constants.js";
+
 import Point from 'ol/geom/Point.js';
 
 import 'ol/ol.css';
@@ -38,7 +40,7 @@ function parseHashParams() {
       const centerParams = params.get("c").split("/");
       center = { zoom: centerParams[0], latitude: centerParams[1], longitude: centerParams[2] };
   } else {
-      center = { zoom: 3, latitude: 20, longitude: 0 };
+      center = { zoom: Constants.MIN_ZOOM, latitude: 20, longitude: 0 };
   }
 
   let pano = null;

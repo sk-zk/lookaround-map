@@ -47,11 +47,11 @@ function styleFeature(feature, resolution, filterSettings, map) {
   const color = determineLineColor(filterSettings, feature.get("timestamp"), feature.get("coverage_type"));
 
   switch (feature.get("coverage_type")) {
-    case 2:
+    case CoverageType.Car:
       carLinesStyle.getStroke().setWidth(width);
       carLinesStyle.getStroke().setColor(color);
       return carLinesStyle;
-    case 3:
+    case CoverageType.Trekker:
       trekkerLinesStyle.getStroke().setWidth(width);
       trekkerLinesStyle.getStroke().setColor(color);
       return trekkerLinesStyle;
@@ -109,7 +109,7 @@ class CachedBlueLinesLayer extends VectorTileLayer {
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
       source: new CachedBlueLinesSource({
-        minZoom: 0,
+        minZoom: Constants.MIN_ZOOM-1,
         maxZoom: 14,
         tileSize: options.tileSize,
       }),
@@ -134,7 +134,7 @@ class CachedBlueLinesLayer extends VectorTileLayer {
 }
 
 const blueLineLayerMain = new CachedBlueLinesLayer({
-  minZoom: 0,
+  minZoom: Constants.MIN_ZOOM-1,
   maxZoom: 14,
 });
 // my static tiles end at z=14 and the layer that comes directly from apple
@@ -163,10 +163,10 @@ const rasterBlueLineLayer = new TileLayer({
   type: "overlay",
   source: new XYZ({
     url: 'https://lookmap.eu.pythonanywhere.com/bluelines_raster/{z}/{x}/{y}.png',
-    minZoom: 3,
+    minZoom: Constants.MIN_ZOOM,
     maxZoom: 7,
   }),
-  minZoom: 2,
+  minZoom: Constants.MIN_ZOOM-1,
   maxZoom: 7,
 });
 
