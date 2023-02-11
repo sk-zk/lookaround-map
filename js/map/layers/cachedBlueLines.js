@@ -8,7 +8,10 @@ import VectorTileLayer from 'ol/layer/VectorTile.js';
 import Style from 'ol/style/Style.js';
 import Stroke from 'ol/style/Stroke.js';
 import MVT from 'ol/format/MVT.js';
+import XYZ from "ol/source/XYZ.js";
 import { createXYZ } from 'ol/tilegrid';
+import TileLayer from "ol/layer/Tile.js";
+import { FilterSettings } from "../FilterSettings.js";
 
 const carLinesStyle = new Style({
   stroke: new Stroke({
@@ -94,7 +97,7 @@ class CachedBlueLinesSource extends VectorTile {
 }
 
 class CachedBlueLinesLayer extends VectorTileLayer {
-  #filterSettings = Constants.DEFAULT_FILTERS;
+  #filterSettings = new FilterSettings();
   #currentPolygonFilter = null;
 
   constructor(options) {
@@ -141,8 +144,8 @@ const blueLineLayer15 = new CachedBlueLinesLayer({
   maxZoom: 15,
 });
 
-const blueLineLayer = new LayerGroup({
-  visible: false,
+const vectorBlueLineLayer = new LayerGroup({
+  visible: true,
   title: `
     Apple Look Around cached blue lines<br>
     <span class="layer-explanation">(<a class='layer-link' href='https://gist.github.com/sk-zk/53dfc36fa70dae7f4848ce812002fd16' target='_blank'>what is this?</a>)</span>
@@ -150,9 +153,21 @@ const blueLineLayer = new LayerGroup({
   combine: "true",
   layers: [blueLineLayerMain, blueLineLayer15],
 });
-blueLineLayer.setFilterSettings = (filterSettings) => {
+vectorBlueLineLayer.setFilterSettings = (filterSettings) => {
   blueLineLayerMain.setFilterSettings(filterSettings);
   blueLineLayer15.setFilterSettings(filterSettings);
 };
 
-export { blueLineLayer };
+const rasterBlueLineLayer = new TileLayer({
+  visible: true,
+  type: "overlay",
+  source: new XYZ({
+    url: 'https://lookmap.eu.pythonanywhere.com/bluelines_raster/{z}/{x}/{y}.png',
+    minZoom: 3,
+    maxZoom: 7,
+  }),
+  minZoom: 2,
+  maxZoom: 7,
+});
+
+export { rasterBlueLineLayer, vectorBlueLineLayer };

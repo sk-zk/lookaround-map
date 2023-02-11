@@ -1,4 +1,4 @@
-import { blueLineLayer } from "./layers/cachedBlueLines.js";
+import { vectorBlueLineLayer, rasterBlueLineLayer } from "./layers/cachedBlueLines.js";
 import { appleRoad, appleRoadDark, appleSatellite } from "./layers/appleMaps.js";
 import { googleRoad, googleStreetView } from "./layers/googleMaps.js";
 import { openStreetMap, cartoDbPositron, cartoDbDarkMatter } from "./layers/openStreetMap.js";
@@ -36,9 +36,21 @@ export function createMap(config) {
       openStreetMap, cartoDbPositron, cartoDbDarkMatter]
   });
 
+  const cachedBlueLines = new LayerGroup({
+    visible: true,
+    title: `
+    Apple Look Around cached blue lines<br>
+    <span class="layer-explanation">(<a class='layer-link' href='https://gist.github.com/sk-zk/53dfc36fa70dae7f4848ce812002fd16' target='_blank'>what is this?</a>)</span>
+    `,
+    combine: "true",
+    layers: [rasterBlueLineLayer, vectorBlueLineLayer],
+  })
+
+  updateActiveCachedBlueLineLayer(false);
+
   const overlays = new LayerGroup({
     title: "Overlays",
-    layers: [lookaroundCoverage, blueLineLayer, googleStreetView]
+    layers: [lookaroundCoverage, cachedBlueLines, googleStreetView]
   });
 
   const map = new Map({
@@ -80,15 +92,27 @@ export function createMap(config) {
 
 function createFilterControl(map) {
   const filterControl = new FilterControl();
-  blueLineLayer.setFilterSettings(filterControl.getFilterSettings());
+  vectorBlueLineLayer.setFilterSettings(filterControl.getFilterSettings());
   lookaroundCoverage.setFilterSettings(filterControl.getFilterSettings());
   filterControl.on("changed", (e) => {
-    blueLineLayer.setFilterSettings(e.filterSettings);
-    blueLineLayer.getLayers().forEach(l => l.changed());
+    updateActiveCachedBlueLineLayer(!e.filterSettings.isDefault());
+    vectorBlueLineLayer.setFilterSettings(e.filterSettings);
+    vectorBlueLineLayer.getLayers().forEach(l => l.changed());
     lookaroundCoverage.setFilterSettings(e.filterSettings);
     lookaroundCoverage.getLayers().forEach(l => l.getSource().refresh());
+
   });
   map.addControl(filterControl);
+}
+
+function updateActiveCachedBlueLineLayer(anyFiltersEnabled) {
+  if (anyFiltersEnabled) {
+    rasterBlueLineLayer.setVisible(false);
+    vectorBlueLineLayer.setMinZoom(3);
+  } else {
+    rasterBlueLineLayer.setVisible(true);
+    vectorBlueLineLayer.setMinZoom(rasterBlueLineLayer.getMaxZoom());
+  }
 }
 
 function createContextMenu(map) {

@@ -11,12 +11,13 @@ import XYZ from 'ol/source/XYZ.js';
 import { createCanvasContext2D } from 'ol/dom.js';
 import TileLayer from 'ol/layer/Tile.js';
 import LayerGroup from 'ol/layer/Group.js';
+import { FilterSettings } from "../FilterSettings.js";
 
 const coverageTileCache = new LRUMap(2 ** 12);
 const api = new Api();
 
 class LookaroundCoverageSource extends XYZ {
-  #filterSettings = Constants.DEFAULT_FILTERS;
+  #filterSettings = new FilterSettings();
 
   constructor(options) {
     options = options || {};
@@ -91,7 +92,7 @@ class LookaroundCoverageSource extends XYZ {
 
 class LookaroundCoverageLayer extends TileLayer {
   #currentPolygonFilter = null;
-  #filterSettings = Constants.DEFAULT_FILTERS;
+  #filterSettings = new FilterSettings();
 
   constructor(options) {
     options = options || {};

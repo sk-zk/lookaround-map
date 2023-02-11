@@ -1,13 +1,13 @@
-import { Constants } from "./Constants";
 import { LineColorType } from "../enums.js";
 
 import Control from 'ol/control/Control.js';
 import GeoJSON from 'ol/format/GeoJSON.js';
 import Event from "ol/events/Event.js";
 import Crop from "ol-ext/filter/Crop.js";
+import { FilterSettings } from "./FilterSettings";
 
 class FilterControl extends Control {
-  #filterSettings = Constants.DEFAULT_FILTERS;
+  #filterSettings = new FilterSettings();
 
   constructor(opt_options) {
     const options = opt_options || {};
