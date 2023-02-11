@@ -13,6 +13,8 @@ import { createXYZ } from 'ol/tilegrid';
 import TileLayer from "ol/layer/Tile.js";
 import { FilterSettings } from "../FilterSettings.js";
 
+const OPACITY = 0.8;
+
 const carLinesStyle = new Style({
   stroke: new Stroke({
     color: carLineColor,
@@ -105,7 +107,7 @@ class CachedBlueLinesLayer extends VectorTileLayer {
     super({
       title: options.title,
       visible: options.visible,
-      opacity: 0.8,
+      opacity: OPACITY,
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
       source: new CachedBlueLinesSource({
@@ -168,6 +170,7 @@ const rasterBlueLineLayer = new TileLayer({
   }),
   minZoom: Constants.MIN_ZOOM-1,
   maxZoom: 7,
+  opacity: OPACITY,
 });
 
 export { rasterBlueLineLayer, vectorBlueLineLayer };
