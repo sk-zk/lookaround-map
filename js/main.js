@@ -121,8 +121,8 @@ function initPanoViewer(pano) {
 
 function openInGsv() {
   const angle = panoViewer.getPosition();
-  const pan = angle.longitude * RAD2DEG;
-  const pitch = (angle.latitude * RAD2DEG) + 90;
+  const pan = angle.yaw * RAD2DEG;
+  const pitch = (angle.pitch * RAD2DEG) + 90;
   // estimated, but it works well enough
   const zoom = -0.65 * panoViewer.getZoomLevel() + 77.5;
   window.open(
