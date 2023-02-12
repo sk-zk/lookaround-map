@@ -119,6 +119,31 @@ function initPanoViewer(pano) {
   document.querySelector("#open-in-gsv").addEventListener("click", openInGsv);
 }
 
+function closePanoViewer() {
+  if (!panoViewer) return;
+
+  currentPano = null;
+  destroyPanoViewer();
+
+  document.querySelector("#map").classList.remove("pano-overlay");
+  map.updateSize();  
+  map.getLayers().forEach((layer) => {
+    if (layer.get("name") === "panoMarker") {
+      layer.getSource().getFeatures()[0].setGeometry(null);
+    }
+  })
+
+  toggleLayoutControlVisibility(true);
+
+  document.title = appTitle;
+}
+
+function destroyPanoViewer() {
+  if (!panoViewer) return;
+  panoViewer.destroy();
+  panoViewer = null;
+}
+
 function openInGsv() {
   const angle = panoViewer.getPosition();
   const pan = angle.yaw * RAD2DEG;
@@ -184,30 +209,6 @@ function toggleLayoutControlVisibility(isMapLayout) {
   document.querySelector("#pano-info").style.display = isMapLayout ? "none": "block";
 }
 
-function closePanoViewer() {
-  currentPano = null;
-  destroyPanoViewer();
-
-  document.querySelector("#map").classList.remove("pano-overlay");
-  map.updateSize();  
-  map.getLayers().forEach((layer) => {
-    if (layer.get('name') === 'panoMarker') {
-      layer.getSource().getFeatures()[0].setGeometry(null);
-    }
-  })
-
-  toggleLayoutControlVisibility(true);
-
-  document.title = appTitle;
-}
-
-function destroyPanoViewer() {
-  if (panoViewer) {
-    panoViewer.destroy();
-    panoViewer = null;
-  }
-}
-
 function onHashChanged(e) {
   const params = parseHashParams();
   if (params.pano) {
@@ -229,8 +230,14 @@ let panoViewer = null;
 let currentPano = null;
 
 document.title = appTitle;
+
 window.addEventListener("hashchange", onHashChanged);
 document.querySelector("#close-pano").addEventListener("click", (_) => { closePanoViewer(); });
+document.addEventListener('keydown', async (e) => {
+  if (e.code === "Escape") { 
+    closePanoViewer();
+  }
+});
 
 const timeMachineControl = new TimeMachineControl();
 timeMachineControl.panoSelectedCallback = (pano) => {
