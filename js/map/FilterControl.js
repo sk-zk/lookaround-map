@@ -6,7 +6,7 @@ import Event from "ol/events/Event.js";
 import Crop from "ol-ext/filter/Crop.js";
 import { FilterSettings } from "./FilterSettings";
 
-class FilterControl extends Control {
+export class FilterControl extends Control {
   #filterSettings = new FilterSettings();
 
   constructor(opt_options) {
@@ -97,25 +97,25 @@ class FilterControl extends Control {
   }
 
   #setUpControls(parent) {
-    const element = document.createElement("div");
-    element.className = "filter-control ol-unselectable ol-control";
-    parent.appendChild(element);
+    const container = document.createElement("div");
+    container.className = "hover-control filter-control ol-unselectable ol-control";
+    parent.appendChild(container);
 
     const button = document.createElement("button");
-    element.appendChild(button);
+    container.appendChild(button);
 
     const menu = document.createElement("div");
-    menu.className = "filter-control-menu";
+    menu.className = "filter-control-menu hover-control-menu";
     // TODO unfuck this
     menu.innerHTML = `
-    <div class="filter-control-menu-container">
-    <div class="filter-control-group">
+    <div class="hover-control-menu-container">
+    <div class="hover-control-group">
     <h2>Coverage type</h2>
     <input type="checkbox" id="show-cars" name="show-cars" checked><label for="show-cars">Show car footage</label><br>
     <input type="checkbox" id="show-trekkers" name="show-trekkers" checked><label for="show-trekkers">Show trekker
       footage</label>
     </div>
-    <div class="filter-control-group">
+    <div class="hover-control-group">
     <h2>Capture date</h2>
     <input type="checkbox" id="filter-date" name="filter-date"><label for="filter-date">Filter by date:</label>
     <table>
@@ -129,12 +129,12 @@ class FilterControl extends Control {
       </tr>
     </table>
     </div>
-    <div class="filter-control-group">
+    <div class="hover-control-group">
     <h2>Color</h2>
       <input type="radio" id="color-by-type" name="line-color" checked><label for="color-by-type">Color by coverage type</label><br>
       <input type="radio" id="color-by-age" name="line-color"><label for="color-by-age">Color by age</label>
     </div>
-    <div class="filter-control-group">
+    <div class="hover-control-group">
     <h2>Crop by GeoJSON polygon</h2>
       <input type="file" id="polygon-filter" />
       <button id="remove-polygon-filter" style="display:none;">✕</button>
@@ -162,4 +162,3 @@ export class FilterControlEvent extends Event {
     this.filterSettings = filterSettings;
   }
 }
-export { FilterControl };

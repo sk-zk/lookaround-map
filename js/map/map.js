@@ -5,6 +5,7 @@ import { openStreetMap, cartoDbPositron, cartoDbDarkMatter } from "./layers/open
 import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
 import { Constants } from "./Constants.js";
 import { FilterControl } from "./FilterControl.js";
+import { SettingsControl } from "./SettingsControl.js";
 import { wrapLon } from "../util/geo.js";
 
 import { useGeographic } from "ol/proj.js";
@@ -85,6 +86,8 @@ export function createMap(config) {
 
   createContextMenu(map);
   createFilterControl(map);
+  const settingsControl = new SettingsControl();
+  map.addControl(settingsControl);
   createPanoMarkerLayer(map);
 
   return map;

@@ -8,9 +8,6 @@ import { ScreenFrustum } from "./ScreenFrustum.js";
 import { Face } from "../enums.js";
 import { Constants } from "../map/Constants.js";
 
-const RENDER_TOP_AND_BOTTOM_FACES = false;
-const FACES = RENDER_TOP_AND_BOTTOM_FACES ? 6 : 4;
-
 function degToRad(deg) {
   return (deg * Math.PI) / 180;
 }
@@ -27,6 +24,8 @@ export class LookaroundAdapter extends AbstractAdapter {
   constructor(psv) {
     super(psv);
     this.psv = psv;
+    this.renderTopAndBottomFaces = localStorage.getItem("showFullPano") === "true";
+    this.faceAmount = this.renderTopAndBottomFaces ? 6 : 4;
 
     this.endpoint = psv.config.panoData.endpoint;
 
@@ -76,7 +75,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     const promises = [];
     const progress = [0, 0, 0, 0, 0, 0];
     const startZoom = 5;
-    for (let i = 0; i < FACES; i++) {
+    for (let i = 0; i < this.faceAmount; i++) {
       promises.push(this.__loadOneTexture(startZoom, i, progress));
     }
     return Promise.all(promises).then((texture) => ({ panorama: panoramaMetadata, texture }));
@@ -97,9 +96,7 @@ export class LookaroundAdapter extends AbstractAdapter {
         let texture = null;
         texture = utils.createTexture(img);
         if (faceIdx == Face.Top) {
-          // flip and cut off the edges a bit
-          texture.center.set(0.5, 0.5);
-          texture.repeat.set(-0.954, 0.954);
+          texture.flipY = false;
         }
         texture.userData = { zoom: zoom, url: this.url };
 
@@ -182,7 +179,7 @@ export class LookaroundAdapter extends AbstractAdapter {
         sideFaceThetaLength,
       ],
     ];
-    if (RENDER_TOP_AND_BOTTOM_FACES) {
+    if (this.renderTopAndBottomFaces) {
       faces.push([
         radius,
         36 * 4,
@@ -212,7 +209,7 @@ export class LookaroundAdapter extends AbstractAdapter {
         this.__setTopBottomUV(geom, i);
       }
       if (i == Face.Top) {
-        geom.rotateY(degToRad(27.5 + 90));
+        geom.rotateY(degToRad(27.5 - 90));
       }
       else if (i == Face.Bottom) {
         geom.scale(1,1,1.5);
@@ -225,7 +222,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     const mergedGeometry = mergeBufferGeometries(geometries, true);
     const mesh = new Mesh(
       mergedGeometry,
-      Array(FACES).fill(AbstractAdapter.createOverlayMaterial())
+      Array(this.faceAmount).fill(AbstractAdapter.createOverlayMaterial())
     );
     this.mesh = mesh;
     return mesh;
@@ -276,7 +273,7 @@ export class LookaroundAdapter extends AbstractAdapter {
    * @override
    */
   setTexture(mesh, textureData) {
-    for (let i = 0; i < FACES; i++) {
+    for (let i = 0; i < this.faceAmount; i++) {
       if (textureData.texture[i]) {
         const material = AbstractAdapter.createOverlayMaterial();
         material.uniforms.panorama.value = textureData.texture[i];
@@ -291,7 +288,7 @@ export class LookaroundAdapter extends AbstractAdapter {
    * @override
    */
   setTextureOpacity(mesh, opacity) {
-    for (let i = 0; i < FACES; i++) {
+    for (let i = 0; i < this.faceAmount; i++) {
       mesh.material[i].opacity = opacity;
       mesh.material[i].transparent = opacity < 1;
     }

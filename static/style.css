@@ -151,9 +151,8 @@ body {
   color: inherit;
 }
 
-.filter-control {
+.hover-control {
   position: absolute;
-  top: 6.5em;
   right: 0.5em;
   text-align: left;
   background: white;
@@ -161,41 +160,64 @@ body {
   border:1px solid rgba(50, 50, 50, 0.3);
 }
 
-.filter-control button {
+.filter-control {
+  top: 6.5em;
+}
+
+.settings-control {
+  top: 9.5em;
+}
+
+.hover-control button {
   width: 36px !important;
   height: 36px !important;
-  background-image: url("/static/icons/funnel.png");
   background-size: 36px 36px;
   color: black;
   border: none;
 }
 
-.filter-control button:focus,
-.filter-control button:hover {
+.settings-control button {
+  background-image: url("/static/icons/settings.png");
+}
+
+.filter-control button {
+  background-image: url("/static/icons/funnel.png");
+}
+
+.hover-control button:focus,
+.hover-control button:hover {
   background-color: white;
 }
 
-.filter-control-menu {
+.hover-control-menu {
   display: none;
   position: absolute;
-  top: 6.5em;
   right: 0.5em;
   text-align: left;
   background: white;
   border-radius: 4px;
   border:1px solid rgba(50, 50, 50, 0.3);
+  z-index: 5;
 }
 
-.filter-control-menu-container {
+.filter-control-menu {
+  top: 6.5em;
+}
+
+.settings-control-menu {
+  top: 9.5em;
+}
+
+.hover-control-menu-container {
   padding: 1em;
 }
 
-.filter-control-menu-container h2 {
+.hover-control-menu-container h2 {
   margin: 0;
   font-size: 1em;
 }
 
-.filter-control-group {
+.hover-control-group {
   margin-top: 0.5em;
 }
 
