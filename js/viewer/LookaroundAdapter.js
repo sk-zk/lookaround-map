@@ -341,7 +341,7 @@ export class LookaroundAdapter extends AbstractAdapter {
       if (
         this.mesh.material[faceIdx].uniforms.panorama.value &&
         this.mesh.material[faceIdx].uniforms.panorama.value.userData.zoom > zoom &&
-        !this.mesh.material[faceIdx].uniforms.panorama.value.refreshing
+        !this.mesh.material[faceIdx].uniforms.panorama.value.userData.refreshing
       ) {
         this.mesh.material[faceIdx].uniforms.panorama.value.userData.refreshing = true;
         const oldUrl = this.mesh.material[faceIdx].uniforms.panorama.value.userData.url;
