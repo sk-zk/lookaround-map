@@ -198,6 +198,9 @@ body {
   border-radius: 4px;
   border:1px solid rgba(50, 50, 50, 0.3);
   z-index: 5;
+  overflow-y: auto;
+  max-height: inherit;
+  margin: 0;
 }
 
 .filter-control-menu {

@@ -86,11 +86,18 @@ export function createMap(config) {
 
   createContextMenu(map);
   createFilterControl(map);
-  const settingsControl = new SettingsControl();
-  map.addControl(settingsControl);
+  createSettingsControl(map);
   createPanoMarkerLayer(map);
 
   return map;
+}
+
+function createSettingsControl(map) {
+  const settingsControl = new SettingsControl();
+  map.addControl(settingsControl);
+  settingsControl.addEventListener("addrSourceChanged", (_) => {
+    map.dispatchEvent("addrSourceChanged");
+  })
 }
 
 function createFilterControl(map) {

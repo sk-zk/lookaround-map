@@ -2,10 +2,11 @@ import { Api } from "./Api.js";
 import { Authenticator } from "./util/Authenticator.js";
 import { createMap } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
-import { reverseGeocode } from "./util/nominatim.js";
+import { NominatimReverseGeocoder, AppleReverseGeocoder } from "./geocode/geocoders.js";
 import { wrapLon } from "./util/geo.js";
 import { TimeMachineControl } from "./ui/TimeMachineControl.js";
 import { Constants } from "./map/Constants.js";
+import { AddressSource } from "./enums.js";
 
 import Point from 'ol/geom/Point.js';
 
@@ -29,6 +30,9 @@ function initMap() {
     const clickCoordinates = map.getEventCoordinate(e.originalEvent);
     clickCoordinates[0] = wrapLon(clickCoordinates[0]);
     await fetchAndDisplayPanoAt(clickCoordinates[1], clickCoordinates[0]);
+  });
+  map.addEventListener("addrSourceChanged", (_) => {
+    geocoder = constructGeocoder();
   });
 }
 
@@ -81,6 +85,7 @@ async function fetchAndDisplayPanoAt(lat, lon) {
 }
 
 async function displayPano(pano) {
+  updatePanoInfo(pano).then((_) => updateHashParams());
   if (panoViewer) {
     await panoViewer.navigateTo(pano);
   } else {
@@ -88,8 +93,6 @@ async function displayPano(pano) {
     switchMapToPanoLayout(pano);
   }
   updateMapMarker(pano);
-  await updatePanoInfo(pano);
-  updateHashParams();
 }
 
 function initPanoViewer(pano) {
@@ -108,8 +111,7 @@ function initPanoViewer(pano) {
     const pano = e.detail;
     currentPano = pano;
     updateMapMarker(pano);
-    updatePanoInfo(pano);
-    updateHashParams();
+    updatePanoInfo(pano).then((_) => updateHashParams());
   });
 
   panoViewer.alternativeDatesChangedCallback = (dates) => {
@@ -156,29 +158,36 @@ function openInGsv() {
     );
 }
 
+function getUserLocale() {
+  return navigator.languages[0] ?? "en-GB";
+}
+
 async function updatePanoInfo(pano) {
   document.querySelector("#pano-id").innerHTML = `${pano.panoid} / ${pano.regionId}`;
   const date = new Date(pano.timestamp);
-  const locale = navigator.languages[0] ?? "en-GB";
+  const locale = getUserLocale();
   const formattedDate = new Intl.DateTimeFormat(locale, {
     dateStyle: "medium",
     timeStyle: "medium",
     timeZone: pano.timezone,
   }).format(date);
   document.querySelector("#pano-date").innerHTML = formattedDate;
-  const address = await reverseGeocode(pano.lat, pano.lon);
-  updatePanoAddressField(address);
-  document.title = `${address[0]} – ${appTitle}`;
+  fetchAndSetAddress(pano.lat, pano.lon);
 }
 
-function updatePanoAddressField(address) {
+async function fetchAndSetAddress(lat, lon) {
+  const address = await geocoder.reverseGeocode(lat, lon, getUserLocale());
   const address_ = address.slice();
   address_[0] = `<strong>${address_[0]}</strong>`;
 
-  const html = address_.filter(x => x !== "").join("<br>") + 
-    '<div id="nominatim-attribution">Address © OpenStreetMap contributors</div><hr>';
+  let html = address_.filter(x => x !== "").join("<br>");
+  if (geocoder.attributionText) {
+    html += `<div id="nominatim-attribution">${geocoder.attributionText}</div>`;
+  }
+  html += "<hr>";
 
   document.querySelector("#pano-address").innerHTML = html;
+  document.title = `${address[0]} – ${appTitle}`;
 }
 
 async function updateMapMarker(pano) {
@@ -220,6 +229,16 @@ function onHashChanged(e) {
   map.getView().setZoom(params.center.zoom);
 }
 
+function constructGeocoder() {
+  switch (localStorage.getItem("addrSource")) {
+    case AddressSource.Nominatim:
+      return new NominatimReverseGeocoder();
+    case AddressSource.Apple:
+    default:
+      return new AppleReverseGeocoder();
+  }
+}
+
 
 const appTitle = "Apple Look Around Viewer";
 const api = new Api();
@@ -228,6 +247,8 @@ const auth = new Authenticator();
 let map = null;
 let panoViewer = null;
 let currentPano = null;
+
+let geocoder = constructGeocoder();
 
 document.title = appTitle;
 

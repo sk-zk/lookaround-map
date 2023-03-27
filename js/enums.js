@@ -17,4 +17,9 @@ const Face = Object.freeze({
   Bottom: 5
 })
 
-export {CoverageType, LineColorType, Face}
+const AddressSource = Object.freeze({
+  Nominatim: "nominatim",
+  Apple: "apple",
+})
+
+export {CoverageType, LineColorType, Face, AddressSource}

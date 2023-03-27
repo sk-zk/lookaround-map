@@ -10,7 +10,6 @@ from PIL import Image
 import requests
 
 from lookaround.auth import Authenticator
-from lookaround.geo import wgs84_to_tile_coord, tile_coord_to_wgs84
 from lookaround import get_coverage_tile, get_pano_face
 import geo
 
@@ -33,6 +32,7 @@ api = Blueprint('api', __name__, url_prefix='/')
 pano_session = requests.session()
 movement_session = requests.session()
 map_session = requests.session()
+addr_session = requests.session()
 auth = Authenticator()
 
 
@@ -91,6 +91,18 @@ def closest():
         return jsonify([x[0] for x in panos[:limit]])
     else:
         return jsonify([x[0] for x in panos])
+
+
+@api.route("/address")
+def address():
+    lat = request.args.get("lat", default=None, type=float)
+    lon = request.args.get("lon", default=None, type=float)
+    language = request.args.get("lang", default="en-US", type=str)
+    if not lat or not lon:
+        return "Latitude and longitude must be set", 400
+    
+    address = geo.reverse_geocode(lat, lon, language=language, session=addr_session)
+    return jsonify(address)
 
 
 # Panorama faces are passed through this server because of CORS.

@@ -18,7 +18,7 @@ export default [
     output: {
       file: 'static/dist/main.js',
       format: 'es',
-      plugins: [terser(terserConfig)]
+      //plugins: [terser(terserConfig)]
     },
     plugins: [css(), nodeResolve(), typescript({compilerOptions: {target: "es6"}}), commonjs()]
   },

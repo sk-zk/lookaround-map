@@ -18,4 +18,11 @@ export class Api {
     const panos = await response.json();
     return panos;
   }
+
+  async reverseGeocode(lat, lon, language = "en-US") {
+    let url = `${this.endpoint}/address?lat=${lat}&lon=${lon}&lang=${language}`;
+    const response = await fetch(url);
+    const address = await response.json();
+    return address;
+  }
 }

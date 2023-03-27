@@ -7,8 +7,8 @@ import sys
 
 sys.path.append("lookaround")
 
-from api import api
-from util import CustomJSONEncoder
+from routes.api import api
+from misc.CustomJSONEncoder import CustomJSONEncoder
 
 
 def create_app():
