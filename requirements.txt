@@ -1,7 +1,9 @@
 beautifulsoup4~=4.11.1
+cchardet~=2.1.7
 Flask~=2.2.2
 Flask_Compress~=1.12
 Flask_Cors~=3.0.10
+lxml~=4.9.1
 numpy~=1.22.4
 Pillow~=9.2.0
 pillow_heif~=0.10.0
