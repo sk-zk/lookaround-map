@@ -37,6 +37,10 @@ body {
   filter: invert(1);
 }
 
+:root.dark .psv-container {
+  background: var(--map-ui-bg);
+}
+
 /********/
 
 #map {
