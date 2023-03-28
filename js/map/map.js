@@ -4,9 +4,8 @@ import { googleRoad, googleStreetView } from "./layers/googleMaps.js";
 import { openStreetMap, cartoDbPositron, cartoDbDarkMatter } from "./layers/openStreetMap.js";
 import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
 import { Constants } from "./Constants.js";
-import { FilterControl } from "./FilterControl.js";
-import { SettingsControl } from "./SettingsControl.js";
 import { wrapLon } from "../util/geo.js";
+import { Theme } from "../enums.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from 'ol/layer/Group.js';
@@ -22,11 +21,10 @@ import VectorLayer from 'ol/layer/Vector.js';
 import LayerSwitcher from '../external/ol-layerswitcher/ol-layerswitcher.js';
 import ContextMenu from 'ol-contextmenu';
 
-export function createMap(config) {
+export function createMap(config, filterControl) {
   useGeographic();
 
-  const browserIsInDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  if (browserIsInDarkMode) {
+  if (isDarkThemeEnabled()) {
     appleRoad.setVisible(false);
     appleRoadDark.setVisible(true);
   }
@@ -74,9 +72,11 @@ export function createMap(config) {
 
   const layerSwitcher = new LayerSwitcher({
     reverse: false,
-    groupSelectStyle: 'group'
+    groupSelectStyle: "group",
+    startActive: true,
   });
   map.addControl(layerSwitcher);
+  document.querySelector("#sidebar-layers-insert").appendChild(layerSwitcher.panel);
 
   const attributionControl = new Attribution({
     collapsible: false,
@@ -84,35 +84,31 @@ export function createMap(config) {
   });
   map.addControl(attributionControl);
 
+  setUpFilterControl(filterControl);
   createContextMenu(map);
-  createFilterControl(map);
-  createSettingsControl(map);
   createPanoMarkerLayer(map);
 
   return map;
 }
 
-function createSettingsControl(map) {
-  const settingsControl = new SettingsControl();
-  map.addControl(settingsControl);
-  settingsControl.addEventListener("addrSourceChanged", (_) => {
-    map.dispatchEvent("addrSourceChanged");
-  })
+function isDarkThemeEnabled() {
+  return (
+    localStorage.getItem("theme") === Theme.Dark ||
+    (window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches)
+  );
 }
 
-function createFilterControl(map) {
-  const filterControl = new FilterControl();
+function setUpFilterControl(filterControl) {
   vectorBlueLineLayer.setFilterSettings(filterControl.getFilterSettings());
   lookaroundCoverage.setFilterSettings(filterControl.getFilterSettings());
-  filterControl.on("changed", (e) => {
-    updateActiveCachedBlueLineLayer(!e.filterSettings.isDefault());
-    vectorBlueLineLayer.setFilterSettings(e.filterSettings);
+  filterControl.filtersChanged = (filterSettings) => {
+    updateActiveCachedBlueLineLayer(!filterSettings.isDefault());
+    vectorBlueLineLayer.setFilterSettings(filterSettings);
     vectorBlueLineLayer.getLayers().forEach(l => l.changed());
-    lookaroundCoverage.setFilterSettings(e.filterSettings);
+    lookaroundCoverage.setFilterSettings(filterSettings);
     lookaroundCoverage.getLayers().forEach(l => l.getSource().refresh());
-
-  });
-  map.addControl(filterControl);
+  };
 }
 
 function updateActiveCachedBlueLineLayer(anyFiltersEnabled) {
