@@ -59,7 +59,7 @@ class AppleTileSource extends XYZ {
         opts.poi ??= false;
         url =
         `https://sat-cdn{1-4}.apple-mapkit.com/tile?` +
-        `style=7&size=1&scale=1&x={x}&y={y}&z={z}&v=9372&poi=${opts.poi ? "1" : "0"}`;
+        `style=7&size=1&scale=1&x={x}&y={y}&z={z}&v=9372&poi=${opts.poi ? "1" : "0"}`
     }
 
     super({
@@ -99,12 +99,12 @@ class AppleTileLayer extends TileLayer {
         case AppleMapsLayerType.Satellite:
           source = new AppleTileSource({
             tileType: AppleMapsTileType.Satellite,
-            lang: opts.lang,
           });
           break;
       case AppleMapsLayerType.SatelliteOverlay:
           source = new AppleTileSource({
             style: 46,
+            lang: opts.lang,
           });
           break;
     }
