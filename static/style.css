@@ -6,6 +6,7 @@ body {
   margin: 0;
   padding: 0;
   font-size: 16px;
+  line-height: 1.3em;
 }
 
 /********/
@@ -43,10 +44,18 @@ body {
 
 /********/
 
+#pano-info summary {
+  display: inline;
+}
+
+.pano-info-hamburger {
+  display: none;
+}
+
 #map {
   position: absolute;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   z-index: 2;
   background-color: var(--map-bg);
 }
@@ -63,10 +72,14 @@ body {
 #pano {
   position: absolute;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   z-index: 1;
   top: 0;
   left: 0;
+}
+
+.psv-compass {
+  top: calc(100vh - 270px - 90px);
 }
 
 #close-pano {
@@ -94,10 +107,67 @@ body {
   left: 10px;
   background-color: rgba(50, 50, 50, 0.7);
   z-index: 2;
-  padding: 10px;
   color: white;
   max-width: 400px;
-  min-width: 300px;
+  width: calc(100vw - 60px);
+  box-sizing: border-box;
+  padding: 10px;
+}
+
+@media only screen and (orientation: portrait) and (max-width: 600px) {
+  #map.pano-overlay {
+    position: absolute !important;
+    width: 100% !important;
+    height: 22vh !important;
+    left: 0px;
+    bottom: 0px;
+    border: 1px solid rgba(120, 120, 120, 0.7);
+  }
+
+  #pano {
+    position: absolute;
+    width: 100vw;
+    height: calc(100% - 22vh);
+    z-index: 1;
+    top: 0;
+    left: 0;
+  }
+
+  #pano-info {
+    padding: 4.5px;
+    width: revert;
+  }
+
+  .psv-compass {
+    bottom: 0;
+    top: revert;
+  }
+
+  #pano-info details .pano-info-hamburger {
+    display: inline;
+  }
+}
+
+@media only screen and (orientation: landscape) and (max-height: 650px) {
+  #map.pano-overlay {
+    display: none;
+  }
+}
+
+@media only screen and (max-height: 650px) {
+  .psv-compass {
+    bottom: 0;
+    top: revert;
+  }
+
+  #pano-info {
+    padding: 4.5px;
+    width: revert;
+  }
+
+  #pano-info details .pano-info-hamburger {
+    display: inline;
+  }
 }
 
 #pano-info hr {
@@ -206,7 +276,7 @@ body {
   align-items: center;
   z-index: 99;
   box-sizing: border-box;
-  height: 100vh;
+  height: 100%;
 }
 
 #sidebar-toggle {
@@ -228,12 +298,12 @@ body {
 
 #sidebar {
   background: var(--map-ui-bg);
-  height: 100vh;
+  height: 100%;
   width: 300px;
   padding: 15px;
   box-sizing: border-box;
   display: none;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 .layer-switcher {

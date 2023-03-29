@@ -1,8 +1,9 @@
-import { Constants } from "../Constants.js";
-import { LineColorType, CoverageType } from "../../enums.js";
+import { CoverageType } from "../../enums.js";
 import { Api } from "../../Api.js";
 import { wgs84ToTileCoord, wrapLon } from "../../util/geo.js";
 import { determineLineColor } from "./colors.js";
+import { FilterSettings } from "../FilterSettings.js";
+import { getDevicePixelRatio } from "../../util/misc.js";
 
 import { rgb } from "d3-color";
 import { LRUMap } from "../../external/js_lru/lru.js";
@@ -11,7 +12,6 @@ import XYZ from 'ol/source/XYZ.js';
 import { createCanvasContext2D } from 'ol/dom.js';
 import TileLayer from 'ol/layer/Tile.js';
 import LayerGroup from 'ol/layer/Group.js';
-import { FilterSettings } from "../FilterSettings.js";
 
 const coverageTileCache = new LRUMap(2 ** 12);
 const api = new Api();
@@ -22,6 +22,8 @@ class LookaroundCoverageSource extends XYZ {
   constructor(options) {
     options = options || {};
 
+    const pixelRatio = getDevicePixelRatio();
+
     super({
       opaque: false,
       projection: options.projection,
@@ -30,12 +32,13 @@ class LookaroundCoverageSource extends XYZ {
       url: "z:{z} x:{x} y:{y}",
       minZoom: 17,
       maxZoom: 17,
+      tilePixelRatio: pixelRatio,
       tileLoadFunction: async (tile, url) => {
-        const tileSize = [options.canvasSize, options.canvasSize];
+        const tileSize = [options.canvasSize * pixelRatio, options.canvasSize * pixelRatio];
         const ctx = createCanvasContext2D(tileSize[0], tileSize[1]);
 
         const panos = await this.#getTile(tile);
-        this.#drawPanos(panos, tile.tileCoord, tileSize, ctx);
+        this.#drawPanos(panos, tile.tileCoord, tileSize, pixelRatio, ctx);
 
         tile.setImage(ctx.canvas);
       },
@@ -55,8 +58,9 @@ class LookaroundCoverageSource extends XYZ {
     return panos;
   }
 
-  #drawPanos(panos, coords, tileSize, ctx) {
-    ctx.lineWidth = 2;
+  #drawPanos(panos, coords, tileSize, pixelRatio, ctx) {
+    ctx.lineWidth = 2 * pixelRatio;
+
     for (const pano of panos) {
       if (pano.coverageType === CoverageType.Car && !this.#filterSettings.showCars) continue;
       if (pano.coverageType === CoverageType.Trekker && !this.#filterSettings.showTrekkers) continue;
@@ -79,7 +83,7 @@ class LookaroundCoverageSource extends XYZ {
       const xOffset = (tileCoord.x - coords[1]) * tileSize[0] - 1;
       const yOffset = (tileCoord.y - coords[2]) * tileSize[1] - 1;
       ctx.beginPath();
-      ctx.arc(xOffset, yOffset, this.markerSize, 0, 2 * Math.PI, false);
+      ctx.arc(xOffset, yOffset, this.markerSize * pixelRatio, 0, 2 * Math.PI, false);
       ctx.fill();
       ctx.stroke();
     }

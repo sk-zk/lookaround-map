@@ -1,4 +1,5 @@
 import { Authenticator } from "../../util/Authenticator.js";
+import { getDevicePixelRatio } from "../../util/misc.js";
 
 import TileLayer from 'ol/layer/Tile.js';
 import XYZ from 'ol/source/XYZ.js';
@@ -36,6 +37,7 @@ class AppleTileSource extends XYZ {
     opts ??= {};
     opts.tileType ??= AppleMapsTileType.Road;
     opts.lang ??= "en";
+    const pixelRatio = getDevicePixelRatio();
 
     let url;
     switch (opts.tileType) {
@@ -48,7 +50,7 @@ class AppleTileSource extends XYZ {
         opts.style ??= 0;
         url =
         `https://cdn{1-4}.apple-mapkit.com/ti/tile?` +
-        `style=${opts.style}&size=1&x={x}&y={y}&z={z}&v=2303284&scale=1` +
+        `style=${opts.style}&size=1&x={x}&y={y}&z={z}&v=2303284&scale=${pixelRatio}` +
         `&lang=${opts.lang}` + 
         `&poi=${(opts.poi && opts.labels) ? "1" : "0"}` + 
         `&tint=${opts.tint}`+ 
@@ -56,16 +58,16 @@ class AppleTileSource extends XYZ {
         `&labels=${opts.labels ? "1" : "0"}`;
         break;
       case AppleMapsTileType.Satellite:
-        opts.poi ??= false;
         url =
         `https://sat-cdn{1-4}.apple-mapkit.com/tile?` +
-        `style=7&size=1&scale=1&x={x}&y={y}&z={z}&v=9372&poi=${opts.poi ? "1" : "0"}`
+        `style=7&size=${Math.min(2, pixelRatio)}&scale=1&x={x}&y={y}&z={z}&v=9372`;
     }
 
     super({
       maxZoom: 19,
       attributions: "© Apple",
       url: url,     
+      tilePixelRatio: pixelRatio,
       tileLoadFunction: tileLoadFunction,
     });
 
@@ -105,6 +107,7 @@ class AppleTileLayer extends TileLayer {
           source = new AppleTileSource({
             style: 46,
             lang: opts.lang,
+            poi: false,
           });
           break;
     }

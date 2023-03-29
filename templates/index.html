@@ -7,7 +7,7 @@
       <svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22>
           <text y=%22.9em%22 font-size=%2285%22>🍎</text>
       </svg>">
-  <meta name="viewport" content="user-scalable=no" />
+  <meta name="viewport" content="user-scalable=no, initial-scale=1.0, width=device-width" />
   <link rel="stylesheet" href="/static/dist/main.css">
 
   <meta property="og:title" content="Apple Look Around Viewer" />
@@ -20,7 +20,9 @@
   <div id="pano"></div>
 
   <div id="pano-info">
-    <div id="pano-address"></div>
+    <details id="pano-info-details" open>
+    <summary><img class="pano-info-hamburger" src="/static/icons/clock.png" width="16" height="16"> <strong><span id="pano-address-first-line"></span></strong></summary>
+    <div id="pano-address-rest"></div>
     <div id="pano-metadata">
       <div id="time-machine">
         <img src="/static/icons/clock.png" width=16 height=16 class="time-machine-button">
@@ -32,6 +34,7 @@
       <div id="pano-id"></div>
       <div><a href="javascript:void(0);" id="open-in-gsv">Open in Google Street View</a></div>
     </div>
+  </details>
   </div>
 
   <div id="github-link" class="github-link">

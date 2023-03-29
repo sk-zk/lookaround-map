@@ -1,6 +1,8 @@
 import { Constants } from "../Constants.js";
 import { CoverageType } from "../../enums.js";
 import { determineLineColor, carLineColor, trekkerLineColor } from "./colors.js";
+import { getDevicePixelRatio } from "../../util/misc.js";
+import { FilterSettings } from "../FilterSettings.js";
 
 import LayerGroup from 'ol/layer/Group.js';
 import VectorTile from 'ol/source/VectorTile.js';
@@ -11,7 +13,6 @@ import MVT from 'ol/format/MVT.js';
 import XYZ from "ol/source/XYZ.js";
 import { createXYZ } from 'ol/tilegrid';
 import TileLayer from "ol/layer/Tile.js";
-import { FilterSettings } from "../FilterSettings.js";
 
 const OPACITY = 0.8;
 
@@ -76,7 +77,7 @@ function determineLineWidth(zoom) {
 class CachedBlueLinesSource extends VectorTile {
   constructor(options) {
     options = options || {};
-    options.tileSize = options.tileSize || 256;
+    options.tileSize ??= 256;
 
     super({
       opaque: false,
@@ -91,7 +92,7 @@ class CachedBlueLinesSource extends VectorTile {
         maxZoom: options.maxZoom,
         tileSize: [options.tileSize, options.tileSize],
       }),
-      tilePixelRatio: 2,
+      tilePixelRatio: getDevicePixelRatio(),
       //url: "http://localhost:8080/maps/lookaround/{z}/{x}/{y}.vector.pbf",
       url: "https://lookmap.eu.pythonanywhere.com/bluelines2/{z}/{x}/{y}/",
     });
@@ -167,6 +168,8 @@ const rasterBlueLineLayer = new TileLayer({
     url: 'https://lookmap.eu.pythonanywhere.com/bluelines_raster/{z}/{x}/{y}.png',
     minZoom: Constants.MIN_ZOOM,
     maxZoom: 7,
+    // workaround for high dpi displays
+    tileSize: 256 / getDevicePixelRatio(), 
   }),
   minZoom: Constants.MIN_ZOOM-1,
   maxZoom: 7,

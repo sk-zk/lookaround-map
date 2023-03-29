@@ -111,11 +111,6 @@ function initPanoViewer(pano) {
     initialPano: pano,
   });
 
-  const compass = document.getElementsByClassName("psv-compass")[0];
-  // their compass plugin doesn't support directly passing in an absolute position by default,
-  // so I gotta resort to this until I get around to modifying it
-  compass.style.top = "calc(100vh - 270px - 90px)";
-
   panoViewer.plugins.movement.addEventListener("moved", async (e) => {
     const pano = e.detail;
     currentPano = pano;
@@ -184,16 +179,16 @@ async function updatePanoInfo(pano) {
 
 async function fetchAndSetAddress(lat, lon) {
   const address = await geocoder.reverseGeocode(lat, lon, getUserLocale());
-  const address_ = address.slice();
-  address_[0] = `<strong>${address_[0]}</strong>`;
 
-  let html = address_.filter((x) => x !== "").join("<br>");
+  document.querySelector("#pano-address-first-line").innerText = address[0];
+
+  let html = address.slice(1).filter((x) => x !== "").join("<br>");
   if (geocoder.attributionText) {
     html += `<div id="nominatim-attribution">${geocoder.attributionText}</div>`;
   }
   html += "<hr>";
 
-  document.querySelector("#pano-address").innerHTML = html;
+  document.querySelector("#pano-address-rest").innerHTML = html;
   document.title = `${address[0]} – ${appTitle}`;
 }
 
@@ -303,10 +298,15 @@ function setTheme() {
   }
 }
 
-setTheme();
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-  setTheme();
-});
+function updatePanoInfoVisibility() {
+  if (window.matchMedia("only screen and (max-width: 600px)").matches
+    || window.matchMedia("only screen and (max-height: 650px)").matches) {
+    document.querySelector("#pano-info-details").removeAttribute("open");
+  }
+  else {
+    document.querySelector("#pano-info-details").open = true;
+  }
+}
 
 const appTitle = "Apple Look Around Viewer";
 const api = new Api();
@@ -316,11 +316,19 @@ let map = null;
 let panoViewer = null;
 let currentPano = null;
 
-let geocoder = constructGeocoder();
-
 document.title = appTitle;
 
+let geocoder = constructGeocoder();
+
+setTheme();
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (_) => {
+  setTheme();
+});
 initSidebar();
+updatePanoInfoVisibility();
+window.addEventListener("resize", (_) => {
+  updatePanoInfoVisibility();
+});
 
 window.addEventListener("hashchange", onHashChanged);
 document.querySelector("#close-pano").addEventListener("click", (_) => {
@@ -345,3 +353,4 @@ if (params.pano) {
 } else {
   initMap();
 }
+
