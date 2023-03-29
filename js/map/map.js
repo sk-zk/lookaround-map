@@ -6,6 +6,7 @@ import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
 import { Constants } from "./Constants.js";
 import { wrapLon } from "../util/geo.js";
 import { Theme } from "../enums.js";
+import { getUserLocale } from "../util/misc.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from 'ol/layer/Group.js';
@@ -24,14 +25,18 @@ import ContextMenu from 'ol-contextmenu';
 export function createMap(config, filterControl) {
   useGeographic();
 
+  const lang = getUserLocale();
+
   const appleRoad = new AppleTileLayer({
     title: "Apple Maps Road",
     layerType: AppleMapsLayerType.Road,
+    lang: lang,
   });
   
   const appleRoadDark = new AppleTileLayer({
     title: "Apple Maps Road (Dark)",
     layerType: AppleMapsLayerType.RoadDark,
+    lang: lang,
   });
   
   const appleSatelliteImage = new AppleTileLayer({
@@ -39,6 +44,7 @@ export function createMap(config, filterControl) {
   });
   const appleSatelliteOverlay = new AppleTileLayer({
     layerType: AppleMapsLayerType.SatelliteOverlay,
+    lang: lang,
   });
   const appleSatellite = new LayerGroup({
     title: "Apple Maps Satellite",

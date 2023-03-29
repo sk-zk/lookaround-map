@@ -9,6 +9,7 @@ import { Constants } from "./map/Constants.js";
 import { AddressSource, Theme } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
+import { getUserLocale } from "./util/misc.js";
 
 import Point from "ol/geom/Point.js";
 
@@ -164,10 +165,6 @@ function openInGsv() {
     `https://www.google.com/maps/@${currentPano.lat},${currentPano.lon},3a,${zoom}y,${pan}h,${pitch}t/data=!3m1!1e1`,
     "_blank"
   );
-}
-
-function getUserLocale() {
-  return navigator.languages[0] ?? "en-GB";
 }
 
 async function updatePanoInfo(pano) {
