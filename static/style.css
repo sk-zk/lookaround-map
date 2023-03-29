@@ -45,7 +45,11 @@ body {
 /********/
 
 #pano-info summary {
-  display: inline;
+  display: inline-flex;
+  flex-direction: row;
+  align-content: center;
+  align-items: center;
+  gap: 5px;
 }
 
 .pano-info-hamburger {
