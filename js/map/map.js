@@ -1,5 +1,5 @@
 import { vectorBlueLineLayer, rasterBlueLineLayer } from "./layers/cachedBlueLines.js";
-import { appleRoad, appleRoadDark, appleSatellite } from "./layers/appleMaps.js";
+import { AppleTileLayer, AppleMapsLayerType } from "./layers/appleMaps.js";
 import { googleRoad, googleStreetView } from "./layers/googleMaps.js";
 import { openStreetMap, cartoDbPositron, cartoDbDarkMatter } from "./layers/openStreetMap.js";
 import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
@@ -24,9 +24,36 @@ import ContextMenu from 'ol-contextmenu';
 export function createMap(config, filterControl) {
   useGeographic();
 
+  const appleRoad = new AppleTileLayer({
+    title: "Apple Maps Road",
+    layerType: AppleMapsLayerType.Road,
+  });
+  
+  const appleRoadDark = new AppleTileLayer({
+    title: "Apple Maps Road (Dark)",
+    layerType: AppleMapsLayerType.RoadDark,
+  });
+  
+  const appleSatelliteImage = new AppleTileLayer({
+    layerType: AppleMapsLayerType.Satellite,
+  });
+  const appleSatelliteOverlay = new AppleTileLayer({
+    layerType: AppleMapsLayerType.SatelliteOverlay,
+  });
+  const appleSatellite = new LayerGroup({
+    title: "Apple Maps Satellite",
+    type: "base",
+    combine: "true",
+    visible: false,
+    layers: [appleSatelliteImage, appleSatelliteOverlay],
+  });
+
   if (isDarkThemeEnabled()) {
     appleRoad.setVisible(false);
     appleRoadDark.setVisible(true);
+  } else {
+    appleRoad.setVisible(true);
+    appleRoadDark.setVisible(false);
   }
 
   const baseLayers = new LayerGroup({
