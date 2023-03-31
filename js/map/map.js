@@ -1,6 +1,6 @@
 import { vectorBlueLineLayer, rasterBlueLineLayer } from "./layers/cachedBlueLines.js";
 import { AppleTileLayer, AppleMapsLayerType } from "./layers/appleMaps.js";
-import { googleRoad, googleStreetView } from "./layers/googleMaps.js";
+import { GoogleRoadLayer, googleStreetView } from "./layers/googleMaps.js";
 import { openStreetMap, cartoDbPositron, cartoDbDarkMatter } from "./layers/openStreetMap.js";
 import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
 import { Constants } from "./Constants.js";
@@ -25,18 +25,18 @@ import ContextMenu from 'ol-contextmenu';
 export function createMap(config, filterControl) {
   useGeographic();
 
-  const lang = getUserLocale();
+  const languageTag = getUserLocale();
 
   const appleRoad = new AppleTileLayer({
     title: "Apple Maps Road",
     layerType: AppleMapsLayerType.Road,
-    lang: lang,
+    lang: languageTag,
   });
   
   const appleRoadDark = new AppleTileLayer({
     title: "Apple Maps Road (Dark)",
     layerType: AppleMapsLayerType.RoadDark,
-    lang: lang,
+    lang: languageTag,
   });
   
   const appleSatelliteImage = new AppleTileLayer({
@@ -44,7 +44,7 @@ export function createMap(config, filterControl) {
   });
   const appleSatelliteOverlay = new AppleTileLayer({
     layerType: AppleMapsLayerType.SatelliteOverlay,
-    lang: lang,
+    lang: languageTag,
   });
   const appleSatellite = new LayerGroup({
     title: "Apple Maps Satellite",
@@ -61,6 +61,8 @@ export function createMap(config, filterControl) {
     appleRoad.setVisible(true);
     appleRoadDark.setVisible(false);
   }
+
+  const googleRoad = new GoogleRoadLayer(languageTag);
 
   const baseLayers = new LayerGroup({
     title: "Base layer",
