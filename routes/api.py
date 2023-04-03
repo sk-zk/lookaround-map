@@ -101,8 +101,11 @@ def address():
     if not lat or not lon:
         return "Latitude and longitude must be set", 400
     
-    address = geo.reverse_geocode(lat, lon, language=language, session=addr_session)
-    return jsonify(address)
+    try:
+        address = geo.reverse_geocode(lat, lon, language=language, session=addr_session)
+        return jsonify(address)
+    except AttributeError:
+        return jsonify([])
 
 
 # Panorama faces are passed through this server because of CORS.

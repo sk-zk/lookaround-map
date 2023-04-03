@@ -51,6 +51,9 @@ def reverse_geocode(lat: float, lon: float, language: str = "en-US", session: Se
         headers={
             "Accept-Language": language
         })
+    if response.status_code == 404:
+        return []
+    
     html = response.text
     soup = BeautifulSoup(html, "lxml")  
     jsonData = json.loads(soup.find(id="shell-props").text)

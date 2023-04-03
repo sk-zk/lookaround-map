@@ -165,7 +165,9 @@ function openInGsv() {
 async function updatePanoInfo(pano) {
   document.querySelector(
     "#pano-id"
-  ).innerHTML = `${pano.panoid} / ${pano.regionId}`;
+  ).innerHTML = `${pano.panoid} / ${pano.regionId}` /*+
+  `<br>${pano.dbg[0]} ${pano.dbg[1]}` +
+    `<br>${pano.dbg[0] > 8192 ? pano.dbg[0] - 16384 : pano.dbg[0]} ${pano.dbg[1] - 8192}`;*/
   const date = new Date(pano.timestamp);
   const locale = getUserLocale();
   const formattedDate = new Intl.DateTimeFormat(locale, {
@@ -179,17 +181,25 @@ async function updatePanoInfo(pano) {
 
 async function fetchAndSetAddress(lat, lon) {
   const address = await geocoder.reverseGeocode(lat, lon, getUserLocale());
+  if (address.length === 0) {
+    document.querySelector("#pano-address-first-line").innerText = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    document.querySelector("#pano-address-rest").innerHTML = "";
+    document.title = `${appTitle}`;
+  } else {
+    document.querySelector("#pano-address-first-line").innerText = address[0];
 
-  document.querySelector("#pano-address-first-line").innerText = address[0];
+    let html = address
+      .slice(1)
+      .filter((x) => x !== "")
+      .join("<br>");
+    if (geocoder.attributionText) {
+      html += `<div id="nominatim-attribution">${geocoder.attributionText}</div>`;
+    }
+    html += "<hr>";
 
-  let html = address.slice(1).filter((x) => x !== "").join("<br>");
-  if (geocoder.attributionText) {
-    html += `<div id="nominatim-attribution">${geocoder.attributionText}</div>`;
+    document.querySelector("#pano-address-rest").innerHTML = html;
+    document.title = `${address[0]} – ${appTitle}`;
   }
-  html += "<hr>";
-
-  document.querySelector("#pano-address-rest").innerHTML = html;
-  document.title = `${address[0]} – ${appTitle}`;
 }
 
 async function updateMapMarker(pano) {
