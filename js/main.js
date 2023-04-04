@@ -86,7 +86,14 @@ function updateHashParams() {
 }
 
 async function fetchAndDisplayPanoAt(lat, lon) {
-  const pano = (await api.getPanosAroundPoint(lat, lon, 25, 1))[0];
+  const zoom = map.getView().getZoom();
+  let radius;
+  if (zoom > 15) {
+    radius = 20;
+  } else {
+    radius = 100;
+  }
+  const pano = (await api.getPanosAroundPoint(lat, lon, radius, 1))[0];
   currentPano = pano;
   if (pano) {
     displayPano(pano);
