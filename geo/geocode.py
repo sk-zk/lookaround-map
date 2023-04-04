@@ -2,8 +2,11 @@ import struct
 from typing import List
 from requests import Session
 import requests
+from pathlib import Path
+import os
 
-with open("geo/revgeo_request_template.bin", "rb") as f:
+script_path = Path(__file__).parent.resolve()
+with open(os.path.join(script_path, "revgeo_request_template.bin"), "rb") as f:
     _revgeo_template = f.read()
 
 
