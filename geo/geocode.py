@@ -60,7 +60,8 @@ def reverse_geocode(lat: float, lon: float, language: str = "en-US", session: Se
             idx += field_length
             strings.append(str(field_val, encoding="utf-8"))
         elif field_id == 0xaa:
-            idx += 3
+            while response.content[idx] != 0x0a:
+                idx += 1
         elif field_id == 0x12:
             # variable length field (1 or more), advance until the next 0x5a field
             idx += 1
