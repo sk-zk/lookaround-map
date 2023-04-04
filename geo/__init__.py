@@ -9,6 +9,7 @@ import lxml
 import cchardet
 
 from lookaround.geo import wgs84_to_tile_coord
+from .geocode import reverse_geocode
 
 geod = CRS("epsg:4326").get_geod()
 
@@ -40,22 +41,3 @@ def get_circle_tiles(center_lat, center_lon, radius, zoom):
             # This turned out to be trickier than I expected
             tiles.append((x, y))
     return tiles
-
-
-def reverse_geocode(lat: float, lon: float, language: str = "en-US", session: Session = None) -> List[str]:
-    """
-    Gets an address from Apple's reverse geocoder by scraping it from the share link page (`maps.apple.com/place?[...]`).
-    """
-    requester = requests if session is None else session
-    response = requester.get(f"https://maps.apple.com/place?ll={lat},{lon}",
-        headers={
-            "Accept-Language": language
-        })
-    if response.status_code == 404:
-        return []
-    
-    html = response.text
-    soup = BeautifulSoup(html, "lxml")  
-    jsonData = json.loads(soup.find(id="shell-props").text)
-    address = jsonData["initialState"]["placeCache"]["place-ref"]["components"]["address"]["values"][0]["formattedAddressLines"]
-    return address
