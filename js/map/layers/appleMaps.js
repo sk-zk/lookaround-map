@@ -60,7 +60,7 @@ class AppleTileSource extends XYZ {
       case AppleMapsTileType.Satellite:
         url =
         `https://sat-cdn{1-4}.apple-mapkit.com/tile?` +
-        `style=7&size=${Math.min(2, pixelRatio)}&scale=1&x={x}&y={y}&z={z}&v=9372`;
+        `style=7&size=${Math.min(2, pixelRatio)}&scale=1&x={x}&y={y}&z={z}&v=9421`;
     }
 
     super({
