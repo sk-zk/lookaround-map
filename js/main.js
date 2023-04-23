@@ -112,7 +112,7 @@ async function displayPano(pano) {
     await panoViewer.navigateTo(pano);
   } else {
     initPanoViewer(pano);
-    switchMapToPanoLayout(pano);
+    switchMapToPanoLayout();
   }
   updateMapMarker(pano);
 }
