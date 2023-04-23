@@ -9,18 +9,18 @@ import { Theme } from "../enums.js";
 import { getUserLocale } from "../util/misc.js";
 
 import { useGeographic } from "ol/proj.js";
-import LayerGroup from 'ol/layer/Group.js';
+import LayerGroup from "ol/layer/Group.js";
 import Map from "ol/Map.js";
-import View from 'ol/View.js';
-import { Attribution, defaults as controlDefaults } from 'ol/control.js';
-import Style from 'ol/style/Style.js';
-import Icon from 'ol/style/Icon.js';
-import Feature from 'ol/Feature.js';
-import VectorSource from 'ol/source/Vector.js';
-import VectorLayer from 'ol/layer/Vector.js';
+import View from "ol/View.js";
+import { Attribution, defaults as controlDefaults } from "ol/control.js";
+import Style from "ol/style/Style.js";
+import Icon from "ol/style/Icon.js";
+import Feature from "ol/Feature.js";
+import VectorSource from "ol/source/Vector.js";
+import VectorLayer from "ol/layer/Vector.js";
 
-import LayerSwitcher from '../external/ol-layerswitcher/ol-layerswitcher.js';
-import ContextMenu from 'ol-contextmenu';
+import LayerSwitcher from "../external/ol-layerswitcher/ol-layerswitcher.js";
+import ContextMenu from "ol-contextmenu";
 
 export function createMap(config, filterControl) {
   useGeographic();
@@ -198,7 +198,7 @@ function createContextMenu(map) {
       {
         text: "Open in Apple Maps",
         icon: "image:()",
-        callback: (e) => {
+        callback: (_) => {
           const view = map.getView();
           const center = view.getCenter();
           const zoom = view.getZoom();
@@ -211,7 +211,7 @@ function createContextMenu(map) {
       {
         text: "Open in Google Maps",
         icon: "image:()",
-        callback: (e) => {
+        callback: (_) => {
           const view = map.getView();
           const center = view.getCenter();
           const zoom = view.getZoom();
@@ -224,7 +224,7 @@ function createContextMenu(map) {
       {
         text: "Open in OpenStreetMap",
         icon: "image:()",
-        callback: (e) => {
+        callback: (_) => {
           const view = map.getView();
           const center = view.getCenter();
           const zoom = view.getZoom();
@@ -250,9 +250,9 @@ function createPanoMarkerLayer(map) {
   const markerStyle = new Style({
     image: new Icon({
       anchor: [0.5, 1],
-      anchorXUnits: 'fraction',
-      anchorYUnits: 'fraction',
-      src: '/static/marker-icon.png',
+      anchorXUnits: "fraction",
+      anchorYUnits: "fraction",
+      src: "/static/marker-icon.png",
     }),
   });
 
@@ -270,7 +270,7 @@ function createPanoMarkerLayer(map) {
     source: mapMarkerSource,
     zIndex: Constants.MARKERS_ZINDEX,
   });
-  mapMarkerLayer.set('name', 'panoMarker');
+  mapMarkerLayer.set("name", "panoMarker");
 
   map.addLayer(mapMarkerLayer);
 }

@@ -4,14 +4,14 @@ import { determineLineColor, carLineColor, trekkerLineColor } from "./colors.js"
 import { getDevicePixelRatio } from "../../util/misc.js";
 import { FilterSettings } from "../FilterSettings.js";
 
-import LayerGroup from 'ol/layer/Group.js';
-import VectorTile from 'ol/source/VectorTile.js';
-import VectorTileLayer from 'ol/layer/VectorTile.js';
-import Style from 'ol/style/Style.js';
-import Stroke from 'ol/style/Stroke.js';
-import MVT from 'ol/format/MVT.js';
+import LayerGroup from "ol/layer/Group.js";
+import VectorTile from "ol/source/VectorTile.js";
+import VectorTileLayer from "ol/layer/VectorTile.js";
+import Style from "ol/style/Style.js";
+import Stroke from "ol/style/Stroke.js";
+import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ.js";
-import { createXYZ } from 'ol/tilegrid';
+import { createXYZ } from "ol/tilegrid";
 import TileLayer from "ol/layer/Tile.js";
 
 const OPACITY = 0.8;
@@ -165,7 +165,7 @@ const rasterBlueLineLayer = new TileLayer({
   visible: true,
   type: "overlay",
   source: new XYZ({
-    url: 'https://lookmap.eu.pythonanywhere.com/bluelines_raster/{z}/{x}/{y}.png',
+    url: "https://lookmap.eu.pythonanywhere.com/bluelines_raster/{z}/{x}/{y}.png",
     minZoom: Constants.MIN_ZOOM,
     maxZoom: 7,
     // workaround for high dpi displays

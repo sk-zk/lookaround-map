@@ -28,7 +28,7 @@ function initMap() {
     },
     new FilterControl()
   );
-  map.on("moveend", (e) => {
+  map.on("moveend", (_) => {
     updateHashParams();
   });
   map.on("click", async (e) => {
@@ -246,7 +246,7 @@ function toggleLayoutControlVisibility(isMapLayout) {
   document.querySelector("#sidebar-container").style.display = isMapLayout ? "flex" : "none";
 }
 
-function onHashChanged(e) {
+function onHashChanged(_) {
   const params = parseHashParams();
   if (params.pano) {
     fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude);
@@ -300,7 +300,7 @@ function setTheme() {
   switch (localStorage.getItem("theme")) {
     case Theme.Automatic:
     default:
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
         document.documentElement.classList.remove("light");
         document.documentElement.classList.add("dark");
       } else {
@@ -342,7 +342,7 @@ document.title = appTitle;
 let geocoder = constructGeocoder();
 
 setTheme();
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (_) => {
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (_) => {
   setTheme();
 });
 initSidebar();

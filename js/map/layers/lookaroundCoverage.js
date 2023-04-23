@@ -9,10 +9,10 @@ import { getDevicePixelRatio } from "../../util/misc.js";
 import { rgb } from "d3-color";
 import { LRUMap } from "../../external/js_lru/lru.js";
 
-import XYZ from 'ol/source/XYZ.js';
-import { createCanvasContext2D } from 'ol/dom.js';
-import TileLayer from 'ol/layer/Tile.js';
-import LayerGroup from 'ol/layer/Group.js';
+import XYZ from "ol/source/XYZ.js";
+import { createCanvasContext2D } from "ol/dom.js";
+import TileLayer from "ol/layer/Tile.js";
+import LayerGroup from "ol/layer/Group.js";
 
 const coverageTileCache = new LRUMap(2 ** 12);
 const api = new Api();
@@ -34,7 +34,7 @@ class LookaroundCoverageSource extends XYZ {
       minZoom: 17,
       maxZoom: 17,
       tilePixelRatio: pixelRatio,
-      tileLoadFunction: async (tile, url) => {
+      tileLoadFunction: async (tile, _) => {
         const tileSize = [options.canvasSize * pixelRatio, options.canvasSize * pixelRatio];
         const ctx = createCanvasContext2D(tileSize[0], tileSize[1]);
 

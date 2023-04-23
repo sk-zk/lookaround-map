@@ -1,5 +1,5 @@
 import { AbstractPlugin } from "@photo-sphere-viewer/core";
-import { geodeticToEnu, enuToPhotoSphere, distanceBetween } from "../util/geo.js";;
+import { geodeticToEnu, enuToPhotoSphere, distanceBetween } from "../util/geo.js";
 import { ScreenFrustum } from "./ScreenFrustum.js";
 
 

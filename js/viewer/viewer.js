@@ -1,6 +1,6 @@
-import { Viewer } from '@photo-sphere-viewer/core';
-import { MarkersPlugin } from '@photo-sphere-viewer/markers-plugin';
-import { CompassPlugin } from '@photo-sphere-viewer/compass-plugin';
+import { Viewer } from "@photo-sphere-viewer/core";
+import { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
+import { CompassPlugin } from "@photo-sphere-viewer/compass-plugin";
 
 import { Api } from "../Api.js";
 import { LookaroundAdapter } from "./LookaroundAdapter.js";

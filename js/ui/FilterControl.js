@@ -1,7 +1,7 @@
 import { LineColorType } from "../enums.js";
 import { FilterSettings } from "../map/FilterSettings.js";
 
-import GeoJSON from 'ol/format/GeoJSON.js';
+import GeoJSON from "ol/format/GeoJSON.js";
 import Event from "ol/events/Event.js";
 import Crop from "ol-ext/filter/Crop.js";
 
@@ -15,13 +15,13 @@ export class FilterControl {
       this.#filterSettings.filterByDate = e.target.checked;
       this.onFiltersChanged();
     });
-    document.querySelector("#coverage-min-date").addEventListener("blur", (e) => {
+    document.querySelector("#coverage-min-date").addEventListener("blur", (_) => {
       this.#filterSettings.minDate = Math.floor(
         new Date(document.querySelector("#coverage-min-date").value).getTime()
       );
       this.onFiltersChanged();
     });
-    document.querySelector("#coverage-max-date").addEventListener("blur", (e) => {
+    document.querySelector("#coverage-max-date").addEventListener("blur", (_) => {
       this.#filterSettings.maxDate = Math.floor(
         new Date(document.querySelector("#coverage-max-date").value).getTime()
       );
@@ -39,11 +39,11 @@ export class FilterControl {
       this.onFiltersChanged();
     });
 
-    document.querySelector("#color-by-type").addEventListener("change", (e) => {
+    document.querySelector("#color-by-type").addEventListener("change", (_) => {
       this.#filterSettings.lineColorType = LineColorType.CoverageType;
       this.onFiltersChanged();
     });
-    document.querySelector("#color-by-age").addEventListener("change", (e) => {
+    document.querySelector("#color-by-age").addEventListener("change", (_) => {
       this.#filterSettings.lineColorType = LineColorType.Age;
       this.onFiltersChanged();
     });
