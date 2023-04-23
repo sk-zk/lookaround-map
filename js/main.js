@@ -3,7 +3,7 @@ import { Authenticator } from "./util/Authenticator.js";
 import { createMap } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
 import { NominatimReverseGeocoder, AppleReverseGeocoder} from "./util/geocoders.js";
-import { wrapLon } from "./util/geo.js";
+import { wrapLon, RAD2DEG, DEG2RAD } from "./util/geo.js";
 import { TimeMachineControl } from "./ui/TimeMachineControl.js";
 import { Constants } from "./map/Constants.js";
 import { AddressSource, Theme } from "./enums.js";
@@ -12,14 +12,13 @@ import { SettingsControl } from "./ui/SettingsControl.js";
 import { getUserLocale } from "./util/misc.js";
 
 import Point from "ol/geom/Point.js";
+import tinyDebounce from "tiny-debounce";
 
 import "ol/ol.css";
 import "ol-ext/dist/ol-ext.css";
 import "ol-contextmenu/ol-contextmenu.css";
 import "./external/ol-layerswitcher/ol-layerswitcher.css";
 import "../static/style.css";
-
-const RAD2DEG = 180 / Math.PI;
 
 function initMap() {
   map = createMap(
@@ -58,6 +57,10 @@ function parseHashParams() {
   if (params.has("p")) {
     const panoParams = params.get("p").split("/");
     pano = { latitude: panoParams[0], longitude: panoParams[1] };
+    if (params.has("a")) {
+      const position = params.get("a").split("/");
+      pano.position = { yaw: position[0] * DEG2RAD, pitch:  position[1] * DEG2RAD };
+    }
   }
 
   return {
@@ -79,6 +82,9 @@ function updateHashParams() {
     // pano metadata, its location must also be known, so I've decided to use
     // that for permalinks rather than panoids until I have a better solution
     newHash += `&p=${currentPano.lat.toFixed(5)}/${currentPano.lon.toFixed(5)}`;
+
+    const position = panoViewer.getPosition();
+    newHash += `&a=${(position.yaw * RAD2DEG).toFixed(2)}/${(position.pitch * RAD2DEG).toFixed(2)}`
   }
   // instead of setting window.location.hash directly, I set it like this
   // to not trigger a hashchanged event
@@ -125,9 +131,8 @@ function initPanoViewer(pano) {
     updatePanoInfo(pano).then((_) => updateHashParams());
   });
 
-  panoViewer.alternativeDatesChangedCallback = (dates) => {
-    timeMachineControl.setAlternativeDates(dates);
-  };
+  const positionUpdateHandler = tinyDebounce((_) => {updateHashParams()}, 500, {trailing: true, maxWait: 500});
+  panoViewer.addEventListener("position-updated", positionUpdateHandler);
 
   document.querySelector("#open-in-gsv").addEventListener("click", openInGsv);
 }
@@ -256,9 +261,8 @@ function constructGeocoder() {
   switch (localStorage.getItem("addrSource")) {
     case AddressSource.Nominatim:
       return new NominatimReverseGeocoder();
-    case AddressSource.Apple:
-      return new AppleReverseGeocoder();
     default:
+    case AddressSource.Apple:
       return new AppleReverseGeocoder();
   }
 }
@@ -367,6 +371,7 @@ if (params.pano) {
   initMap();
   switchMapToPanoLayout();
   await fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude);
+  panoViewer.rotate(params.pano.position);
 } else {
   initMap();
 }

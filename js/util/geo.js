@@ -53,8 +53,8 @@ export function wrapLon(value) {
 // those who made it possible AND that you mention my name and my URL in your code"
 
 
-const DEG2RAD = Math.PI / 180;
-const RAD2DEG = 180 / Math.PI;
+export const DEG2RAD = Math.PI / 180;
+export const RAD2DEG = 180 / Math.PI;
 const WGS84A = 6378137.0;
 const WGS84B = 6356752.31424518;
 const TAU = 2 * Math.PI;
