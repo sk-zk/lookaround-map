@@ -1,7 +1,7 @@
 import { vectorBlueLineLayer, rasterBlueLineLayer } from "./layers/cachedBlueLines.js";
 import { AppleTileLayer, AppleMapsLayerType } from "./layers/appleMaps.js";
 import { GoogleRoadLayer, googleStreetView } from "./layers/googleMaps.js";
-import { openStreetMap, cartoDarkMatter, cartoPositron } from "./layers/openStreetMap.js";
+import { openStreetMap, cartoDarkMatter, cartoPositron, cartoVoyager } from "./layers/openStreetMap.js";
 import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
 import { Constants } from "./Constants.js";
 import { wrapLon } from "../util/geo.js";
@@ -127,7 +127,7 @@ function setUpBaseLayers(languageTag) {
   const baseLayers = new LayerGroup({
     title: "Base layer",
     layers: [appleRoad, appleRoadDark, appleSatellite, googleRoadLayer,
-      openStreetMap, cartoPositron, cartoDarkMatter]
+      openStreetMap, cartoVoyager, cartoPositron, cartoDarkMatter]
   });
 
   document.addEventListener("labelOrderChanged", (_) => {

@@ -68,4 +68,10 @@ const cartoDarkMatter = new CartoGroup({
   title: "OpenStreetMap (Dark Matter)",
 });
 
-export { openStreetMap,  cartoPositron, cartoDarkMatter };
+const cartoVoyager = new CartoGroup({
+  baseStyle: "rastertiles/voyager_nolabels",
+  labelStyle: "rastertiles/voyager_only_labels",
+  title: "OpenStreetMap (Voyager)",
+});
+
+export { openStreetMap,  cartoPositron, cartoDarkMatter, cartoVoyager };
