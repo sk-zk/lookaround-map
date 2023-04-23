@@ -5,7 +5,6 @@ import { ScreenFrustum } from "./ScreenFrustum.js";
 
 const MARKER_ID = "0";
 const MAX_DISTANCE = 100;
-const LONGITUDE_OFFSET = 1.07992247; // // 61.875°, which is the center of face 0
 const CAMERA_HEIGHT = 2.4; // the approximated height of the camera
 
 /**

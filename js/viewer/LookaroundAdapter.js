@@ -6,7 +6,6 @@ import { AbstractAdapter } from "@photo-sphere-viewer/core";
 
 import { ScreenFrustum } from "./ScreenFrustum.js";
 import { Face } from "../enums.js";
-import { Constants } from "../map/Constants.js";
 
 function degToRad(deg) {
   return (deg * Math.PI) / 180;

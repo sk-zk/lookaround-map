@@ -230,7 +230,7 @@ async function updateMapMarker(pano) {
   });
 }
 
-function switchMapToPanoLayout(pano) {
+function switchMapToPanoLayout() {
   document.querySelector("#map").classList.add("pano-overlay");
   toggleLayoutControlVisibility(false);
   if (map) {

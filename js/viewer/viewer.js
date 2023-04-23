@@ -12,8 +12,6 @@ import "@photo-sphere-viewer/markers-plugin/index.css";
 import "@photo-sphere-viewer/compass-plugin/index.css";
 
 const YAW_OFFSET = 1.07992247; // 61.875°, which is the center of face 0
-const DEG2RAD = Math.PI / 180;
-const RAD2DEG = 180 / Math.PI;
 
 export const DefaultHeading = Object.freeze({
 	North: 0,
