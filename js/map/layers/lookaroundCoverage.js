@@ -1,4 +1,5 @@
 import { CoverageType } from "../../enums.js";
+import { Constants } from "../Constants.js";
 import { Api } from "../../Api.js";
 import { wgs84ToTileCoord, wrapLon } from "../../util/geo.js";
 import { determineLineColor } from "./colors.js";
@@ -108,6 +109,7 @@ class LookaroundCoverageLayer extends TileLayer {
       }),
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
+      zIndex: Constants.BLUE_LINES_ZINDEX,
     });
   }
 

@@ -29,7 +29,6 @@ const trekkerLinesStyle = new Style({
   }),
 });
 
-
 function styleFeature(feature, resolution, filterSettings, map) {
   if (feature.get("coverage_type") === CoverageType.Car && !filterSettings.showCars) {
     return null;
@@ -116,6 +115,7 @@ class CachedBlueLinesLayer extends VectorTileLayer {
         maxZoom: 14,
         tileSize: options.tileSize,
       }),
+      zIndex: Constants.BLUE_LINES_ZINDEX,
     });
     super.setStyle((feature, resolution) =>
       styleFeature(feature, resolution, this.#filterSettings, this.get("map"))

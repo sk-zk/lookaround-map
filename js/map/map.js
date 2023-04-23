@@ -1,7 +1,7 @@
 import { vectorBlueLineLayer, rasterBlueLineLayer } from "./layers/cachedBlueLines.js";
 import { AppleTileLayer, AppleMapsLayerType } from "./layers/appleMaps.js";
 import { GoogleRoadLayer, googleStreetView } from "./layers/googleMaps.js";
-import { openStreetMap, cartoDbPositron, cartoDbDarkMatter } from "./layers/openStreetMap.js";
+import { openStreetMap, cartoDarkMatter, cartoPositron } from "./layers/openStreetMap.js";
 import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
 import { Constants } from "./Constants.js";
 import { wrapLon } from "../util/geo.js";
@@ -27,48 +27,7 @@ export function createMap(config, filterControl) {
 
   const languageTag = getUserLocale();
 
-  const appleRoad = new AppleTileLayer({
-    title: "Apple Maps Road",
-    layerType: AppleMapsLayerType.Road,
-    lang: languageTag,
-  });
-  
-  const appleRoadDark = new AppleTileLayer({
-    title: "Apple Maps Road (Dark)",
-    layerType: AppleMapsLayerType.RoadDark,
-    lang: languageTag,
-  });
-  
-  const appleSatelliteImage = new AppleTileLayer({
-    layerType: AppleMapsLayerType.Satellite,
-  });
-  const appleSatelliteOverlay = new AppleTileLayer({
-    layerType: AppleMapsLayerType.SatelliteOverlay,
-    lang: languageTag,
-  });
-  const appleSatellite = new LayerGroup({
-    title: "Apple Maps Satellite",
-    type: "base",
-    combine: "true",
-    visible: false,
-    layers: [appleSatelliteImage, appleSatelliteOverlay],
-  });
-
-  if (isDarkThemeEnabled()) {
-    appleRoad.setVisible(false);
-    appleRoadDark.setVisible(true);
-  } else {
-    appleRoad.setVisible(true);
-    appleRoadDark.setVisible(false);
-  }
-
-  const googleRoad = new GoogleRoadLayer(languageTag);
-
-  const baseLayers = new LayerGroup({
-    title: "Base layer",
-    layers: [appleRoad, appleRoadDark, appleSatellite, googleRoad, 
-      openStreetMap, cartoDbPositron, cartoDbDarkMatter]
-  });
+  const baseLayers = setUpBaseLayers(languageTag);
 
   const cachedBlueLines = new LayerGroup({
     visible: true,
@@ -78,7 +37,7 @@ export function createMap(config, filterControl) {
     `,
     combine: "true",
     layers: [rasterBlueLineLayer, vectorBlueLineLayer],
-  })
+  });
 
   updateActiveCachedBlueLineLayer(false);
 
@@ -124,6 +83,62 @@ export function createMap(config, filterControl) {
   createPanoMarkerLayer(map);
 
   return map;
+}
+
+function setUpBaseLayers(languageTag) {
+  const appleRoad = new AppleTileLayer({
+    title: "Apple Maps Road",
+    layerType: AppleMapsLayerType.Road,
+    lang: languageTag,
+  });
+
+  const appleRoadDark = new AppleTileLayer({
+    title: "Apple Maps Road (Dark)",
+    layerType: AppleMapsLayerType.RoadDark,
+    lang: languageTag,
+  });
+
+  const appleSatelliteImage = new AppleTileLayer({
+    layerType: AppleMapsLayerType.Satellite,
+  });
+  const appleSatelliteOverlay = new AppleTileLayer({
+    layerType: AppleMapsLayerType.SatelliteOverlay,
+    lang: languageTag,
+  });
+  appleSatelliteOverlay.setZIndex(Constants.LABELS_ZINDEX);
+  const appleSatellite = new LayerGroup({
+    title: "Apple Maps Satellite",
+    type: "base",
+    combine: true,
+    visible: false,
+    layers: [appleSatelliteImage, appleSatelliteOverlay],
+  });
+
+  if (isDarkThemeEnabled()) {
+    appleRoad.setVisible(false);
+    appleRoadDark.setVisible(true);
+  } else {
+    appleRoad.setVisible(true);
+    appleRoadDark.setVisible(false);
+  }
+
+  const googleRoadLayer = new GoogleRoadLayer(languageTag);
+
+  const baseLayers = new LayerGroup({
+    title: "Base layer",
+    layers: [appleRoad, appleRoadDark, appleSatellite, googleRoadLayer,
+      openStreetMap, cartoPositron, cartoDarkMatter]
+  });
+
+  document.addEventListener("labelOrderChanged", (_) => {
+    const labelsOnTop = localStorage.getItem("labelsOnTop") !== "false";
+    appleSatelliteOverlay.setZIndex(labelsOnTop ? Constants.LABELS_ZINDEX : Constants.LABELS_BELOW_ZINDEX);
+    googleRoadLayer.setLabelsOnTop(labelsOnTop);
+    cartoPositron.setLabelsOnTop(labelsOnTop);
+    cartoDarkMatter.setLabelsOnTop(labelsOnTop);
+  })
+
+  return baseLayers;
 }
 
 function isDarkThemeEnabled() {
@@ -253,6 +268,7 @@ function createPanoMarkerLayer(map) {
 
   const mapMarkerLayer = new VectorLayer({
     source: mapMarkerSource,
+    zIndex: Constants.MARKERS_ZINDEX,
   });
   mapMarkerLayer.set('name', 'panoMarker');
 

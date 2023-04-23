@@ -53,6 +53,13 @@ export class SettingsControl {
       localStorage.setItem("theme", Theme.Dark);
       this.#onThemeChanged();
     });
+
+    const labelsOnTop = document.querySelector("#labels-on-top");
+    labelsOnTop.checked = localStorage.getItem("labelsOnTop") !== "false";
+    labelsOnTop.addEventListener("change", (_) => {
+      localStorage.setItem("labelsOnTop", labelsOnTop.checked);
+      this.#onLabelOrderChanged();
+    });
   }
 
   #onAddressSourceChanged() {
@@ -61,5 +68,9 @@ export class SettingsControl {
 
   #onThemeChanged() {
     document.dispatchEvent(new CustomEvent("themeChanged"));
+  }
+
+  #onLabelOrderChanged() {
+    document.dispatchEvent(new CustomEvent("labelOrderChanged"));
   }
 }
