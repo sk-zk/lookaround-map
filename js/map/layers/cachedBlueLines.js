@@ -48,19 +48,23 @@ function styleFeature(feature, resolution, filterSettings, map) {
   const width = determineLineWidth(zoom);
   const color = determineLineColor(filterSettings, feature.get("timestamp"), feature.get("coverage_type"));
 
+  let style;
   switch (feature.get("coverage_type")) {
     case CoverageType.Car:
-      carLinesStyle.getStroke().setWidth(width);
-      carLinesStyle.getStroke().setColor(color);
-      return carLinesStyle;
+      style = carLinesStyle;
+      break;
     case CoverageType.Trekker:
-      trekkerLinesStyle.getStroke().setWidth(width);
-      trekkerLinesStyle.getStroke().setColor(color);
-      return trekkerLinesStyle;
+      style = trekkerLinesStyle;
+      break;
     default:
+      style = carLinesStyle;
       console.error(`Coverage type ${feature.get("coverage_type")} has no style`);
-      return carLinesStyle;
   }
+  style.getStroke().setWidth(width);
+  style.getStroke().setColor(color);
+  // draw newest footage on top for color by age feature
+  style.setZIndex(parseInt(feature.get("timestamp")));
+  return style;
 }
 
 function determineLineWidth(zoom) {
@@ -92,7 +96,7 @@ class CachedBlueLinesSource extends VectorTile {
         tileSize: [options.tileSize, options.tileSize],
       }),
       tilePixelRatio: getDevicePixelRatio(),
-      //url: "http://localhost:8080/maps/lookaround/{z}/{x}/{y}.vector.pbf",
+      //url: "http://localhost:8000/lookaround_cache/lookaround/{z}/{x}/{y}",
       url: "https://lookmap.eu.pythonanywhere.com/bluelines2/{z}/{x}/{y}/",
     });
   }
