@@ -106,17 +106,14 @@ export class LookaroundAdapter extends AbstractAdapter {
   __recreateMeshIfNecessary() {
     const latitudeSize = this.panorama.projection.latitudeSize;
     if (this.previousLatitudeSize !== latitudeSize) {
-      this.psv.renderer.scene.remove(this.psv.renderer.meshContainer);
+      const mesh = this.createMesh();
+      mesh.userData = { ["photoSphereViewer"]: true };
+      mesh.parent = this.psv.renderer.meshContainer;
 
-      const mesh = this.psv.adapter.createMesh();
-      mesh.userData = { "psvSphere": true };
       this.psv.renderer.mesh = mesh;
+      this.psv.renderer.meshContainer.children = [mesh];
 
-      const meshContainer = new Group();
-      meshContainer.add(mesh);
-      this.psv.renderer.meshContainer = meshContainer;
-
-      this.psv.renderer.scene.add(meshContainer);
+      mesh.updateMatrixWorld(true);
     }
     this.previousLatitudeSize = latitudeSize;
   }
