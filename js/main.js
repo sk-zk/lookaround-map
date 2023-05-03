@@ -131,6 +131,10 @@ function initPanoViewer(pano) {
     updatePanoInfo(pano).then((_) => updateHashParams());
   });
 
+  panoViewer.alternativeDatesChangedCallback = (dates) => {
+    timeMachineControl.setAlternativeDates(dates);
+  };
+
   const positionUpdateHandler = tinyDebounce((_) => {updateHashParams()}, 500, {trailing: true, maxWait: 500});
   panoViewer.addEventListener("position-updated", positionUpdateHandler);
 
