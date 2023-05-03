@@ -1,5 +1,5 @@
 import { Constants } from "../Constants.js";
-import { CoverageType } from "../../enums.js";
+import { CoverageType, LineColorType } from "../../enums.js";
 import { determineLineColor, carLineColor, trekkerLineColor } from "./colors.js";
 import { getDevicePixelRatio } from "../../util/misc.js";
 import { FilterSettings } from "../FilterSettings.js";
@@ -62,8 +62,15 @@ function styleFeature(feature, resolution, filterSettings, map) {
   }
   style.getStroke().setWidth(width);
   style.getStroke().setColor(color);
-  // draw newest footage on top for color by age feature
-  style.setZIndex(parseInt(feature.get("timestamp")));
+  // if color by age is activated, draw newest lines on top.
+  // otherwise, draw trekkers on top of car footage
+  if (filterSettings.lineColorType === LineColorType.Age) {
+    style.setZIndex(parseInt(feature.get("timestamp")));
+  }
+  else {  
+    style.setZIndex(feature.get("coverage_type") === CoverageType.Trekker ? 2 : 1);
+  }
+
   return style;
 }
 
