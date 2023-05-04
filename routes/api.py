@@ -111,7 +111,7 @@ def address():
 # Panorama faces are passed through this server because of CORS.
 @api.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/<int:face>/")
 @cross_origin()
-def relay_pano_segment(panoid, region_id, zoom, face):
+def relay_pano_face(panoid, region_id, zoom, face):
     heic_bytes = get_pano_face(panoid, region_id, face, zoom, auth, session=pano_session)
 
     if use_heic2rgb:
