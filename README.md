@@ -28,7 +28,7 @@ To do so, three options are implemented. Simply install the one you like and it 
 \*) except for Safari, which will gain HEIC support in version 17, but since I don't have access to a Mac at the moment, I'm unable to integrate it (plus, if you're on a Mac, you can just launch Apple Maps anyway).
 
 ## TODO
-- [ ] Convert and apply tilt and roll offsets
+- [ ] Convert and apply upright adjustment
    - Still can't solve this and I'm slowly losing my damn mind.  
      `unknown10` is the roll, with values between 0 and 8192 signifying positive roll and values between 16384 and 8193 signifying negative roll. `unknown11` is the tilt, with values above 8192 signifying positive tilt and values below 8192 signifying negative tilt. These two values are somehow not independent of one another though, so we might be looking at a vector of some sort, possibly one which also includes the heading as x.
 - [ ] Render top and bottom faces of panoramas
