@@ -16,7 +16,7 @@ flask run
 ```
 
 ### Decoding
-Since no browser natively supports the HEIC format (not even Apple's own Safari, funnily enough), images must be converted to JPG before sending them to the client.
+Since no browser natively supports the HEIC format\*, images must be converted to JPG before sending them to the client.
 To do so, three options are implemented. Simply install the one you like and it will be selected automatically.
 
 #1: By default, `pillow-heif` will be used to decode images. Supports every platform.
@@ -25,6 +25,7 @@ To do so, three options are implemented. Simply install the one you like and it 
 
 #3: However, **the fastest option** (that I'm aware of) is my own [`heic2rgb`](https://github.com/sk-zk/heic2rgb/), which is noticeably faster than the previous two. Supports Linux and Windows.
 
+\*) except for Safari, which will gain HEIC support in version 17, but since I don't have access to a Mac at the moment, I'm unable to integrate it (plus, if you're on a Mac, you can just launch Apple Maps anyway).
 
 ## TODO
 - [ ] Convert and apply tilt and roll offsets
