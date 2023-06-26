@@ -16,6 +16,8 @@ import TileLayer from "ol/layer/Tile.js";
 
 const OPACITY = 0.8;
 
+const pixelRatio = getDevicePixelRatio();
+
 const carLinesStyle = new Style({
   stroke: new Stroke({
     color: carLineColor,
@@ -102,7 +104,7 @@ class CachedBlueLinesSource extends VectorTile {
         maxZoom: options.maxZoom,
         tileSize: [options.tileSize, options.tileSize],
       }),
-      tilePixelRatio: getDevicePixelRatio(),
+      tilePixelRatio: pixelRatio,
       //url: "http://localhost:8000/lookaround_cache/lookaround/{z}/{x}/{y}",
       url: "https://lookmap.eu.pythonanywhere.com/bluelines2/{z}/{x}/{y}/",
     });
@@ -176,11 +178,10 @@ const rasterBlueLineLayer = new TileLayer({
   visible: true,
   type: "overlay",
   source: new XYZ({
-    url: "https://lookmap.eu.pythonanywhere.com/bluelines_raster/{z}/{x}/{y}.png",
+    url: `https://lookmap.eu.pythonanywhere.com/bluelines_raster${pixelRatio > 1 ? "_2x" : ""}/{z}/{x}/{y}.png`,
     minZoom: Constants.MIN_ZOOM,
     maxZoom: 7,
-    // workaround for high dpi displays
-    tileSize: 256 / getDevicePixelRatio(), 
+    tilePixelRatio: Math.min(2, pixelRatio)
   }),
   minZoom: Constants.MIN_ZOOM-1,
   maxZoom: 7,
