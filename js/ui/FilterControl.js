@@ -15,13 +15,17 @@ export class FilterControl {
       this.#filterSettings.filterByDate = e.target.checked;
       this.onFiltersChanged();
     });
-    document.querySelector("#coverage-min-date").addEventListener("blur", (_) => {
+    const coverageMinDate = document.querySelector("#coverage-min-date");
+    coverageMinDate.value = new Date(this.#filterSettings.minDate).toISOString().split("T")[0];
+    coverageMinDate.addEventListener("blur", (_) => {
       this.#filterSettings.minDate = Math.floor(
         new Date(document.querySelector("#coverage-min-date").value).getTime()
       );
       this.onFiltersChanged();
     });
-    document.querySelector("#coverage-max-date").addEventListener("blur", (_) => {
+    const coverageMaxDate = document.querySelector("#coverage-max-date");
+    coverageMaxDate.value = new Date(this.#filterSettings.maxDate).toISOString().split("T")[0];
+    coverageMaxDate.addEventListener("blur", (_) => {
       this.#filterSettings.maxDate = Math.floor(
         new Date(document.querySelector("#coverage-max-date").value).getTime()
       );
