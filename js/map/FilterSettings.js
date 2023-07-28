@@ -2,8 +2,8 @@ import { LineColorType } from "../enums";
 
 const defaults = {
     filterByDate: false,
-    minDate: Math.floor(new Date("2018-01-01").getTime()),
-    maxDate: Math.floor(new Date("2023-01-01").getTime()),
+    minDate: Math.floor(new Date("2018-06-01").getTime()),
+    maxDate: Math.floor(new Date("2023-06-01").getTime()),
     showCars: true,
     showTrekkers: true,
     polygonFilter: null,
