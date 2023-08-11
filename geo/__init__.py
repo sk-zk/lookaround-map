@@ -1,12 +1,4 @@
-import math
-from pyproj import CRS, Geod
-import json
-from typing import List
-from bs4 import BeautifulSoup
-import requests
-from requests import Session
-import lxml
-import cchardet
+from pyproj import CRS
 
 from lookaround.geo import wgs84_to_tile_coord
 from .geocode import reverse_geocode
