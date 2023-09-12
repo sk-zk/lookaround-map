@@ -28,7 +28,7 @@ def reverse_geocode(lat: float, lon: float, language: str = "en-US", session: Se
     if len(language) == 2:
         language = f"{language}-{language.upper()}"
     elif len(language) != 5:
-        raise ValueError
+        raise ValueError(language)
 
     # insert my params into the request body
     request_body = \
