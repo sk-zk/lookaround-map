@@ -25,10 +25,11 @@ def reverse_geocode(lat: float, lon: float, language: str = "en-US", session: Se
     requester = requests if session is None else session
 
     # keep string length the same
-    if len(language) == 2:
-        language = f"{language}-{language.upper()}"
-    elif len(language) != 5:
-        raise ValueError(language)
+    if len(language) < 5:
+        language = language.ljust(5, "\0")
+    elif len(language) > 5:
+         # on error, fall back to English
+        language = "en-US"
 
     # insert my params into the request body
     request_body = \
