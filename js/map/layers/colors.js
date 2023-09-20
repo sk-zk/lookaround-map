@@ -32,7 +32,7 @@ function determineCircleColor(filterSettings, pano) {
       const min = 511228947; // lowest value discovered since I started scraping
       const max = 2000000000; // highest value plus some breathing room
       const range = max - min;
-      const age = (pano.regionId - min) / range;
+      const age = (pano.batchId - min) / range;
       const color = interpolateTurbo(0.5 - age + 0.5);
       return color;
   }

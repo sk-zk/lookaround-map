@@ -125,10 +125,7 @@ function initPanoViewer(pano) {
   });
 
   panoViewer.plugins.movement.addEventListener("moved", async (e) => {
-    const pano = e.detail;
-    currentPano = pano;
-    updateMapMarker(pano);
-    updatePanoInfo(pano).then((_) => updateHashParams());
+    onPanoChanged(e);
   });
 
   panoViewer.alternativeDatesChangedCallback = (dates) => {
@@ -139,6 +136,13 @@ function initPanoViewer(pano) {
   panoViewer.addEventListener("position-updated", positionUpdateHandler);
 
   document.querySelector("#open-in-gsv").addEventListener("click", openInGsv);
+}
+
+function onPanoChanged(e) {
+  const pano = e.detail;
+  currentPano = pano;
+  updateMapMarker(pano);
+  updatePanoInfo(pano).then((_) => updateHashParams());
 }
 
 function closePanoViewer() {
@@ -181,9 +185,10 @@ function openInGsv() {
 async function updatePanoInfo(pano) {
   document.querySelector(
     "#pano-id"
-  ).innerHTML = `${pano.panoid} / ${pano.regionId}` /*+
-  `<br>${pano.dbg[0]} ${pano.dbg[1]}` +
-    `<br>${pano.dbg[0] > 8192 ? pano.dbg[0] - 16384 : pano.dbg[0]} ${pano.dbg[1] - 8192}`;*/
+  ).innerHTML = `${pano.panoid} / ${pano.batchId}`;/* +
+  `<br>${pano.dbg[1]} ${pano.dbg[2]}` +
+    `<br>Heading: ${pano.heading * RAD2DEG}°` + 
+    `<br>Raw elevation: ${pano.rawElevation}`;*/
   const date = new Date(pano.timestamp);
   const locale = getUserLocale();
   const formattedDate = new Intl.DateTimeFormat(locale, {

@@ -31,7 +31,7 @@ export function createPanoViewer(config) {
     adapter: LookaroundAdapter,
     panorama: { 
       panorama: config.initialPano, 
-      url: `/pano/${config.initialPano.panoid}/${config.initialPano.regionId}/`,
+      url: `/pano/${config.initialPano.panoid}/${config.initialPano.batchId}/`,
     },
     panoData: { 
       endpoint: endpoint,
@@ -68,7 +68,7 @@ export function createPanoViewer(config) {
     }
     await viewer.setPanorama({ 
       panorama: pano, 
-      url: `/pano/${pano.panoid}/${pano.regionId}/`,
+      url: `/pano/${pano.panoid}/${pano.batchId}/`,
     }, {
       showLoader: false,
       sphereCorrection: {

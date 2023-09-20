@@ -14,7 +14,7 @@ class CustomJSONEncoder(JSONEncoder):
         if isinstance(o, LookaroundPanorama):
             return {
                 "panoid": str(o.panoid),
-                "regionId": str(o.region_id),
+                "batchId": str(o.batch_id),
                 "lat": o.lat,
                 "lon": o.lon,
                 "timestamp": o.timestamp,

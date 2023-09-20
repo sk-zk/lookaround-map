@@ -109,10 +109,10 @@ def address():
 
 
 # Panorama faces are passed through this server because of CORS.
-@api.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/<int:face>/")
+@api.route("/pano/<int:panoid>/<int:batch_id>/<int:zoom>/<int:face>/")
 @cross_origin()
-def relay_pano_face(panoid, region_id, zoom, face):
-    heic_bytes = get_pano_face(panoid, region_id, face, zoom, auth, session=pano_session)
+def relay_pano_face(panoid, batch_id, zoom, face):
+    heic_bytes = get_pano_face(panoid, batch_id, face, zoom, auth, session=pano_session)
 
     if use_heic2rgb:
         image = heic2rgb.decode(heic_bytes)
@@ -137,8 +137,8 @@ def relay_pano_face(panoid, region_id, zoom, face):
     return response
 
 
-@api.route("/pano/<int:panoid>/<int:region_id>/<int:zoom>/")
-def relay_full_pano(panoid, region_id, zoom):
+@api.route("/pano/<int:panoid>/<int:batch_id>/<int:zoom>/")
+def relay_full_pano(panoid, batch_id, zoom):
     """
     ! deprecated !
     the viewer doesn't use this, so it hasn't been maintained and will be removed eventually.
@@ -146,7 +146,7 @@ def relay_full_pano(panoid, region_id, zoom):
     heic_array = []
     for i in range(4):
         heic_bytes = get_pano_face(
-            panoid, region_id, i, zoom, auth, session=pano_session)
+            panoid, batch_id, i, zoom, auth, session=pano_session)
         with Image.open(io.BytesIO(heic_bytes)) as image:
             heic_array.append(image)
 
