@@ -1,5 +1,5 @@
 import { Group, Mesh, SphereGeometry, Vector3 } from "three";
-import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { CONSTANTS, utils } from "@photo-sphere-viewer/core"
 
 import { AbstractAdapter } from "@photo-sphere-viewer/core";
@@ -215,7 +215,7 @@ export class LookaroundAdapter extends AbstractAdapter {
       this.meshesForFrustum.push(new Mesh(geom, []));
     }
 
-    const mergedGeometry = mergeBufferGeometries(geometries, true);
+    const mergedGeometry = mergeGeometries(geometries, true);
     const mesh = new Mesh(
       mergedGeometry,
       Array(this.faceAmount).fill(AbstractAdapter.createOverlayMaterial())
