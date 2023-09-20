@@ -2,7 +2,7 @@ import { CoverageType } from "../../enums.js";
 import { Constants } from "../Constants.js";
 import { Api } from "../../Api.js";
 import { wgs84ToTileCoord } from "../../util/geo.js";
-import { determineLineColor } from "./colors.js";
+import { determineCircleColor } from "./colors.js";
 import { FilterSettings } from "../FilterSettings.js";
 import { getDevicePixelRatio } from "../../util/misc.js";
 
@@ -73,7 +73,7 @@ class LookaroundCoverageSource extends XYZ {
         continue;
       }
 
-      let color = determineLineColor(this.#filterSettings, pano.timestamp, pano.coverageType);
+      let color = determineCircleColor(this.#filterSettings, pano);
       color = rgb(color);
       color.opacity = 0.2;
       ctx.fillStyle = color.formatRgb();

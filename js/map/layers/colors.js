@@ -27,4 +27,18 @@ function determineLineColor(filterSettings, timestamp, coverageType) {
   return color;
 }
 
-export { determineLineColor, carLineColor, trekkerLineColor };
+function determineCircleColor(filterSettings, pano) {
+  if (filterSettings.lineColorType === LineColorType.Batch) {
+      const min = 511228947; // lowest value discovered since I started scraping
+      const max = 2000000000; // highest value plus some breathing room
+      const range = max - min;
+      const age = (pano.regionId - min) / range;
+      const color = interpolateTurbo(0.5 - age + 0.5);
+      return color;
+  }
+  else {
+    return determineLineColor(filterSettings, pano.timestamp, pano.coverageType);
+  }
+}
+
+export { determineLineColor, determineCircleColor, carLineColor, trekkerLineColor };

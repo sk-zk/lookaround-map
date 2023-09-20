@@ -6,6 +6,7 @@ const CoverageType = Object.freeze({
 const LineColorType = Object.freeze({
   CoverageType: 0,
   Age: 1,
+  Batch: 2,
 });
 
 const Face = Object.freeze({

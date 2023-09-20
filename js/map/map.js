@@ -5,7 +5,7 @@ import { openStreetMap, cartoDarkMatter, cartoPositron, cartoVoyager } from "./l
 import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
 import { Constants } from "./Constants.js";
 import { wrapLon } from "../util/geo.js";
-import { Theme } from "../enums.js";
+import { LineColorType, Theme } from "../enums.js";
 import { getUserLocale } from "../util/misc.js";
 
 import { useGeographic } from "ol/proj.js";
@@ -39,7 +39,7 @@ export function createMap(config, filterControl) {
     layers: [rasterBlueLineLayer, vectorBlueLineLayer],
   });
 
-  updateActiveCachedBlueLineLayer(false);
+  updateActiveCachedBlueLineLayer(true);
 
   const overlays = new LayerGroup({
     title: "Overlays",
@@ -78,7 +78,7 @@ export function createMap(config, filterControl) {
   });
   map.addControl(attributionControl);
 
-  setUpFilterControl(filterControl);
+  setUpFilterControl(map, filterControl);
   createContextMenu(map);
   createPanoMarkerLayer(map);
 
@@ -149,11 +149,12 @@ function isDarkThemeEnabled() {
   );
 }
 
-function setUpFilterControl(filterControl) {
+function setUpFilterControl(map, filterControl) {
   vectorBlueLineLayer.setFilterSettings(filterControl.getFilterSettings());
   lookaroundCoverage.setFilterSettings(filterControl.getFilterSettings());
   filterControl.filtersChanged = (filterSettings) => {
-    updateActiveCachedBlueLineLayer(!filterSettings.isDefault());
+    const useRasterTiles = filterSettings.isDefault() || (filterSettings.lineColorType === LineColorType.Batch);
+    updateActiveCachedBlueLineLayer(useRasterTiles);
     vectorBlueLineLayer.setFilterSettings(filterSettings);
     vectorBlueLineLayer.getLayers().forEach(l => l.changed());
     lookaroundCoverage.setFilterSettings(filterSettings);
@@ -161,13 +162,13 @@ function setUpFilterControl(filterControl) {
   };
 }
 
-function updateActiveCachedBlueLineLayer(anyFiltersEnabled) {
-  if (anyFiltersEnabled) {
-    rasterBlueLineLayer.setVisible(false);
-    vectorBlueLineLayer.setMinZoom(Constants.MIN_ZOOM-1);
-  } else {
+function updateActiveCachedBlueLineLayer(useRasterTiles) {
+  if (useRasterTiles) {
     rasterBlueLineLayer.setVisible(true);
     vectorBlueLineLayer.setMinZoom(rasterBlueLineLayer.getMaxZoom());
+  } else {
+    rasterBlueLineLayer.setVisible(false);
+    vectorBlueLineLayer.setMinZoom(Constants.MIN_ZOOM-1);
   }
 }
 

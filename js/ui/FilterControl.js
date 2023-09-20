@@ -51,6 +51,10 @@ export class FilterControl {
       this.#filterSettings.lineColorType = LineColorType.Age;
       this.onFiltersChanged();
     });
+    document.querySelector("#color-by-batch").addEventListener("change", (_) => {
+      this.#filterSettings.lineColorType = LineColorType.Batch;
+      this.onFiltersChanged();
+    });
 
     document.querySelector("#polygon-filter").addEventListener("change", (e) => { 
       this.#polygonSelected(e); 
