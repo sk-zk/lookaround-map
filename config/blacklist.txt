@@ -1,0 +1,2 @@
+# Block IPs by placing them in this file.
+# 127.0.0.1

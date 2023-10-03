@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect
 from flask_cors import CORS
 from flask_compress import Compress
 import mimetypes
@@ -10,6 +10,13 @@ sys.path.append("lookaround")
 from routes.api import api
 from misc.CustomJSONEncoder import CustomJSONEncoder
 
+ip_blacklist = []
+with open("config/blacklist.txt", "r") as f:
+    for line in f.readlines():
+        line = line.strip()
+        if not line.startswith("#"):
+            ip_blacklist.append(line)
+print(ip_blacklist)
 
 def create_app():
     app = Flask(__name__)
@@ -36,5 +43,11 @@ def create_app():
     @app.route("/")
     def index():
         return render_template('index.html')
+
+    @app.before_request
+    def you_know_what_you_did():
+        ip = request.environ.get('REMOTE_ADDR')
+        if ip in ip_blacklist:
+            return redirect("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
     return app
