@@ -46,7 +46,7 @@ def create_app():
 
     @app.before_request
     def you_know_what_you_did():
-        ip = request.environ.get('REMOTE_ADDR')
+        ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
         if ip in ip_blacklist:
             return redirect("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
