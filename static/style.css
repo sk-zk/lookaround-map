@@ -42,6 +42,11 @@ body {
   background: var(--map-ui-bg);
 }
 
+:root.dark .ol-search li {
+  background: var(--map-ui-bg);
+  color: var(--map-ui-text-color);
+}
+
 /********/
 
 #pano-info summary {
@@ -349,4 +354,9 @@ body {
 
 .layer-switcher-group-select-style-group {
   display: none;
+}
+
+.ol-search i {
+  display: block;
+  font-size:smaller;
 }

@@ -21,6 +21,7 @@ import VectorLayer from "ol/layer/Vector.js";
 
 import LayerSwitcher from "../external/ol-layerswitcher/ol-layerswitcher.js";
 import ContextMenu from "ol-contextmenu";
+import SearchNominatim from "ol-ext/control/SearchNominatim.js";
 
 export function createMap(config, filterControl) {
   useGeographic();
@@ -78,11 +79,32 @@ export function createMap(config, filterControl) {
   });
   map.addControl(attributionControl);
 
+  setUpSearch(map);
   setUpFilterControl(map, filterControl);
   createContextMenu(map);
   createPanoMarkerLayer(map);
 
   return map;
+}
+
+function setUpSearch(map) {
+  const searchControl = new SearchNominatim({});
+  searchControl.addEventListener("select", (e) => {
+    try {
+      const bounds = e.search.boundingbox;
+      const minY = Math.min(bounds[0], bounds[1]);
+      const maxY = Math.max(bounds[0], bounds[1]);
+      const minX = Math.min(bounds[2], bounds[3]);
+      const maxX = Math.max(bounds[2], bounds[3]);
+      const extent = [minX, minY, maxX, maxY];
+      map.getView().fit(extent);
+    } catch (error) {
+      console.error(error);
+      map.getView().setCenter([e.search.lon, e.search.lat]);
+      map.getView().setZoom(17);
+    }
+  });
+  map.addControl(searchControl);
 }
 
 function setUpBaseLayers(languageTag) {
@@ -153,7 +175,8 @@ function setUpFilterControl(map, filterControl) {
   vectorBlueLineLayer.setFilterSettings(filterControl.getFilterSettings());
   lookaroundCoverage.setFilterSettings(filterControl.getFilterSettings());
   filterControl.filtersChanged = (filterSettings) => {
-    const useRasterTiles = filterSettings.isDefault() || (filterSettings.lineColorType === LineColorType.Batch);
+    const useRasterTiles = filterSettings.isDefault() 
+      || (filterSettings.lineColorType === LineColorType.Batch);
     updateActiveCachedBlueLineLayer(useRasterTiles);
     vectorBlueLineLayer.setFilterSettings(filterSettings);
     vectorBlueLineLayer.getLayers().forEach(l => l.changed());
