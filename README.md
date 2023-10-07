@@ -45,4 +45,4 @@ To do so, three options are implemented. Simply install the one you like and it 
 
 
 ## Credits
-This app uses [eva-icons](https://github.com/akveo/eva-icons) by Akveo.
+This app uses icons by [eva-icons](https://github.com/akveo/eva-icons) and [bqlqn](https://www.flaticon.com/authors/bqlqn/fill?author_id=291&type=standard).

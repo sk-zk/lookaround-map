@@ -1,0 +1,29 @@
+import { Control, defaults as defaultControls } from "ol/control.js";
+
+class GeolocationButton extends Control {
+  constructor(opt_options) {
+    const options = opt_options || {};
+
+    const button = document.createElement("button");
+    const element = document.createElement("div");
+    element.className = "geolocate ol-unselectable ol-control";
+    element.appendChild(button);
+
+    super({
+      element: element,
+      target: options.target,
+    });
+
+    button.addEventListener("click", this.geolocate.bind(this), false);
+  }
+
+  geolocate() {
+    navigator.geolocation.getCurrentPosition((position) => {
+      const view = this.getMap().getView();
+      view.setCenter([position.coords.longitude, position.coords.latitude]);
+      view.setZoom(17);
+    });
+  }
+}
+
+export { GeolocationButton };

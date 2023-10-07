@@ -7,6 +7,7 @@ import { Constants } from "./Constants.js";
 import { wrapLon } from "../util/geo.js";
 import { LineColorType, Theme } from "../enums.js";
 import { getUserLocale } from "../util/misc.js";
+import { GeolocationButton } from "./GeolocationButton.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
@@ -83,6 +84,9 @@ export function createMap(config, filterControl) {
   setUpFilterControl(map, filterControl);
   createContextMenu(map);
   createPanoMarkerLayer(map);
+
+  const geolocationButton = new GeolocationButton();
+  map.addControl(geolocationButton);
 
   return map;
 }

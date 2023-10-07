@@ -47,6 +47,10 @@ body {
   color: var(--map-ui-text-color);
 }
 
+:root.dark .geolocate button {
+  background-image: url("/static/icons/gps-dark.png");
+}
+
 /********/
 
 #pano-info summary {
@@ -359,4 +363,17 @@ body {
 .ol-search i {
   display: block;
   font-size:smaller;
+}
+
+.geolocate {
+  top: 65px;
+  left: .5em;
+}
+.ol-touch .geolocate {
+  top: 80px;
+}
+.geolocate button {
+  background-image: url("/static/icons/gps-light.png");
+  background-repeat: no-repeat;
+  background-position: center;
 }
