@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd'>
+<svg width="6.61mm" height="6.61mm" fill-rule="evenodd" stroke-linejoin="round" stroke-width="28.222" preserveAspectRatio="xMidYMid" version="1.2" viewBox="0 0 661 661" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:ooo="http://xml.openoffice.org/svg/export">
+ <defs class="ClipPathGroup">
+  <clipPath id="a">
+   <rect width="661" height="661"/>
+  </clipPath>
+  
+ </defs>
+ <defs class="TextShapeIndex">
+  
+ </defs>
+ <defs class="EmbeddedBulletChars">
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+ </defs>
+ 
+  <g class="Master_Slide">
+   
+   
+  </g>
+ 
+ <g class="SlideGroup">
+  
+   
+    <g class="Slide" clip-path="url(#a)">
+     <g class="Page">
+      <g class="Graphic">
+       <g>
+        <rect class="BoundingBox" width="661" height="661" fill="none"/>
+        <path d="m100 522 90-89c-6-8-12-16-17-25-18-31-28-67-28-104s10-74 28-106c19-32 46-59 78-77 32-19 68-29 105-29s74 10 106 29c32 18 59 45 77 77 19 32 29 69 29 106s-10 73-29 105c-18 32-45 59-77 78-32 18-69 28-106 28s-73-10-104-28c-9-5-17-11-25-17l-89 90c-2 2-4 3-6 4-4 3-9 4-13 4-5 0-9-1-13-4-2-1-4-2-6-4s-3-4-4-6c-3-4-4-8-4-13 0-4 1-9 4-13 1-2 2-4 4-6zm415-218c0-28-8-56-21-80-14-24-34-44-58-58-24-13-52-21-80-21-27 0-55 8-79 21-24 14-44 34-58 58s-21 52-21 80c0 27 7 55 21 79s34 44 58 58 52 21 79 21c28 0 56-7 80-21s44-34 58-58c13-24 21-52 21-79z" fill="#666"/>
+       </g>
+      </g>
+     </g>
+    </g>
+   
+  
+ </g>
+</svg>

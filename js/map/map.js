@@ -206,7 +206,8 @@ function createContextMenu(map) {
     items: [
       {
         text: "Copy coordinates to clipboard",
-        icon: "/static/icons/copy.png",
+        icon: "image:()",
+        classname: "ctx-copy",
         callback: (e) => {
           e.coordinate[0] = wrapLon(e.coordinate[0]);
           navigator.clipboard.writeText(`${e.coordinate[1]}, ${e.coordinate[0]}`);
