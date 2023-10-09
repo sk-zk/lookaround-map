@@ -153,6 +153,12 @@ const lookaroundCoverage19 = new LookaroundCoverageLayer({
   minZoom: 18,
   maxZoom: 19,
 });
+const lookaroundCoverage20 = new LookaroundCoverageLayer({
+  canvasSize: 2048,
+  markerSize: 6.5,
+  minZoom: 19,
+  maxZoom: 20,
+});
 const lookaroundCoverage = new LayerGroup({
   title: "Apple Look Around (z>=16)",
   visible: true,
@@ -162,6 +168,7 @@ const lookaroundCoverage = new LayerGroup({
     lookaroundCoverage17,
     lookaroundCoverage18,
     lookaroundCoverage19,
+    lookaroundCoverage20,
   ],
 });
 lookaroundCoverage.setFilterSettings = (filterSettings) => {
@@ -169,6 +176,7 @@ lookaroundCoverage.setFilterSettings = (filterSettings) => {
   lookaroundCoverage17.setFilterSettings(filterSettings);
   lookaroundCoverage18.setFilterSettings(filterSettings);
   lookaroundCoverage19.setFilterSettings(filterSettings);
+  lookaroundCoverage20.setFilterSettings(filterSettings);
 };
 
 export { lookaroundCoverage };

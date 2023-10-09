@@ -64,7 +64,7 @@ class AppleTileSource extends XYZ {
     }
 
     super({
-      maxZoom: 19,
+      maxZoom: 20,
       attributions: "© Apple",
       url: url,     
       tilePixelRatio: pixelRatio,
