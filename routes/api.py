@@ -2,12 +2,14 @@ from functools import lru_cache
 import gc
 import importlib
 import io
+import math
 
-from flask import Blueprint, jsonify, request, send_file
+from flask import Blueprint, abort, jsonify, request, send_file
 from flask_cors import cross_origin
 import numpy as np
 from PIL import Image
 import requests
+from requests import HTTPError
 
 from lookaround.auth import Authenticator
 from lookaround import get_coverage_tile, get_pano_face
@@ -70,8 +72,11 @@ def closest():
     lon = request.args.get("lon", default=None, type=float)
     radius = request.args.get("radius", default=100, type=float)
     limit = request.args.get("limit", default=None, type=int)
+
     if not lat or not lon:
-        return "Latitude and longitude must be set", 400
+        abort(400, "Latitude and longitude must be set")
+    if math.isnan(lat) or math.isnan(lon) or math.isnan(radius):
+        abort(400)
     if radius > MAX_RADIUS:
         radius = MAX_RADIUS
     if limit and limit < 1:
@@ -99,7 +104,9 @@ def address():
     lon = request.args.get("lon", default=None, type=float)
     language = request.args.get("lang", default="en-US", type=str)
     if not lat or not lon:
-        return "Latitude and longitude must be set", 400
+        abort(400, "Latitude and longitude must be set")
+    if math.isnan(lat) or math.isnan(lon):
+        abort(400)
     
     try:
         address = geo.reverse_geocode(lat, lon, language=language, session=addr_session)
@@ -112,7 +119,12 @@ def address():
 @api.route("/pano/<int:panoid>/<int:batch_id>/<int:zoom>/<int:face>/")
 @cross_origin()
 def relay_pano_face(panoid, batch_id, zoom, face):
-    heic_bytes = get_pano_face(panoid, batch_id, face, zoom, auth, session=pano_session)
+    try:
+        heic_bytes = get_pano_face(panoid, batch_id, face, zoom, auth, session=pano_session)
+    except ValueError:
+        abort(400)
+    except HTTPError as httpError:
+        abort(httpError.response.status_code)
 
     if use_heic2rgb:
         image = heic2rgb.decode(heic_bytes)
