@@ -10,15 +10,20 @@ sys.path.append("lookaround")
 from routes.api import api
 from misc.CustomJSONEncoder import CustomJSONEncoder
 
-ip_blacklist = []
-with open("config/blacklist.txt", "r") as f:
-    for line in f.readlines():
-        line = line.strip()
-        if not line.startswith("#"):
-            ip_blacklist.append(line)
-print(ip_blacklist)
+
+def load_ip_blacklist() -> set:
+    ip_blacklist = set()
+    with open("config/blacklist.txt", "r") as f:
+        for line in f.readlines():
+            line = line.strip()
+            if not line.startswith("#") and line != "":
+                ip_blacklist.add(line)
+    return ip_blacklist
+
 
 def create_app():
+    ip_blacklist = load_ip_blacklist()
+
     app = Flask(__name__)
     CORS(app, resources={r"/static/*": {"origins": "*"}})
 
@@ -48,6 +53,6 @@ def create_app():
     def you_know_what_you_did():
         ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
         if ip in ip_blacklist:
-            return redirect("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+            return redirect("https://www.youtube.com/watch?v=1NkYwSvWZ_M")
 
     return app
