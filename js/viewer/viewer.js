@@ -5,7 +5,7 @@ import { CompassPlugin } from "@photo-sphere-viewer/compass-plugin";
 import { Api } from "../Api.js";
 import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
-import { distanceBetween } from "../util/geo.js";
+import { distanceBetween } from "../geo/geo.js";
 
 import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";

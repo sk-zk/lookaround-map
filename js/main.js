@@ -2,24 +2,24 @@ import { Api } from "./Api.js";
 import { Authenticator } from "./util/Authenticator.js";
 import { createMap } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
-import { NominatimReverseGeocoder, AppleReverseGeocoder} from "./util/geocoders.js";
-import { wrapLon, RAD2DEG, DEG2RAD } from "./util/geo.js";
+import { NominatimReverseGeocoder, AppleReverseGeocoder} from "./geo/geocoders.js";
+import { wrapLon } from "./geo/geo.js";
 import { TimeMachineControl } from "./ui/TimeMachineControl.js";
-import { Constants } from "./map/Constants.js";
 import { AddressSource, Theme } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
 import { getUserLocale, showNotificationTooltip } from "./util/misc.js";
+import { parseHashParams, updateHashParams, openInGsv } from "./url.js";
 
 import Point from "ol/geom/Point.js";
 import tinyDebounce from "tiny-debounce";
-import { Base64 } from "js-base64";
 
 import "ol/ol.css";
 import "ol-ext/dist/ol-ext.css";
 import "ol-contextmenu/ol-contextmenu.css";
 import "./external/ol-layerswitcher/ol-layerswitcher.css";
 import "../static/style.css";
+import { encodeShareLinkPayload } from "./url.js";
 
 function initMap() {
   map = createMap(
@@ -30,75 +30,13 @@ function initMap() {
     new FilterControl()
   );
   map.on("moveend", (_) => {
-    updateHashParams();
+    updateHashParams(map, currentPano, panoViewer?.getPosition());
   });
   map.on("click", async (e) => {
     const clickCoordinates = map.getEventCoordinate(e.originalEvent);
     clickCoordinates[0] = wrapLon(clickCoordinates[0]);
     await fetchAndDisplayPanoAt(clickCoordinates[1], clickCoordinates[0]);
   });
-}
-
-function parseHashParams() {
-  const params = new URLSearchParams(window.location.hash.substring(1));
-
-  // share link
-  if (params.has("s")) {
-    const payload = decodeShareLinkPayload(params.get("s"));
-    console.log(payload);
-    return {
-      center: { zoom: 18, latitude: payload.lat, longitude: payload.lon },
-      pano: { latitude: payload.lat, longitude: payload.lon, position: { yaw: payload.yaw, pitch: payload.pitch } },
-    };
-  }
-
-  // normal link
-  let center = null;
-  if (params.has("c")) {
-    const centerParams = params.get("c").split("/");
-    center = {
-      zoom: centerParams[0],
-      latitude: centerParams[1],
-      longitude: centerParams[2],
-    };
-  } else {
-    center = { zoom: Constants.MIN_ZOOM, latitude: 20, longitude: 0 };
-  }
-
-  let pano = null;
-  if (params.has("p")) {
-    const panoParams = params.get("p").split("/");
-    pano = { latitude: panoParams[0], longitude: panoParams[1] };
-    if (params.has("a")) {
-      const position = params.get("a").split("/");
-      pano.position = { yaw: position[0] * DEG2RAD, pitch:  position[1] * DEG2RAD };
-    }
-  }
-
-  return {
-    center: center,
-    pano: pano,
-  };
-}
-
-function updateHashParams() {
-  const view = map.getView();
-  const center = view.getCenter();
-  const zoom = view.getZoom();
-  let newHash = `c=${zoom}/${center[1].toFixed(6)}/${wrapLon(center[0]).toFixed(6)}`;
-  if (currentPano) {
-    // there's no API call known to me which will return metadata for a
-    // specific panoid like there is with streetview. this means that to fetch
-    // pano metadata, its location must also be known, so I've decided to use
-    // that for permalinks rather than panoids until I have a better solution
-    newHash += `&p=${currentPano.lat.toFixed(6)}/${currentPano.lon.toFixed(6)}`;
-
-    const position = panoViewer.getPosition();
-    newHash += `&a=${(position.yaw * RAD2DEG).toFixed(2)}/${(position.pitch * RAD2DEG).toFixed(2)}`
-  }
-  // instead of setting window.location.hash directly, I set it like this
-  // to not trigger a hashchanged event
-  history.replaceState(null, null, document.location.pathname + "#" + newHash);
 }
 
 async function fetchAndDisplayPanoAt(lat, lon) {
@@ -117,7 +55,7 @@ async function fetchAndDisplayPanoAt(lat, lon) {
 }
 
 async function displayPano(pano) {
-  updatePanoInfo(pano).then((_) => updateHashParams());
+  updatePanoInfo(pano).then((_) => updateHashParams(map, pano, panoViewer.getPosition()));
   if (panoViewer) {
     await panoViewer.navigateTo(pano);
   } else {
@@ -142,17 +80,22 @@ function initPanoViewer(pano) {
     timeMachineControl.setAlternativeDates(dates);
   };
 
-  const positionUpdateHandler = tinyDebounce((_) => {updateHashParams()}, 500, {trailing: true, maxWait: 500});
+  const positionUpdateHandler = tinyDebounce(
+    (_) => {updateHashParams(map, currentPano, panoViewer.getPosition())}, 
+    500, 
+    { trailing: true, maxWait: 500 });
   panoViewer.addEventListener("position-updated", positionUpdateHandler);
 
-  document.querySelector("#open-in-gsv").addEventListener("click", openInGsv);
+  document.querySelector("#open-in-gsv").addEventListener("click", (_) => { 
+    openInGsv(currentPano.lat, currentPano.lon, panoViewer.getPosition(), panoViewer.getZoomLevel()) 
+  });
 }
 
 function onPanoChanged(e) {
   const pano = e.detail;
   currentPano = pano;
   updateMapMarker(pano);
-  updatePanoInfo(pano).then((_) => updateHashParams());
+  updatePanoInfo(pano).then((_) => updateHashParams(map, pano, panoViewer.getPosition()));
 }
 
 function closePanoViewer() {
@@ -178,18 +121,6 @@ function destroyPanoViewer() {
   if (!panoViewer) return;
   panoViewer.destroy();
   panoViewer = null;
-}
-
-function openInGsv() {
-  const angle = panoViewer.getPosition();
-  const pan = angle.yaw * RAD2DEG;
-  const pitch = angle.pitch * RAD2DEG + 90;
-  // estimated, but it works well enough
-  const zoom = -0.65 * panoViewer.getZoomLevel() + 77.5;
-  window.open(
-    `https://www.google.com/maps/@${currentPano.lat},${currentPano.lon},3a,${zoom}y,${pan}h,${pitch}t/data=!3m1!1e1`,
-    "_blank"
-  );
 }
 
 async function updatePanoInfo(pano) {
@@ -348,27 +279,6 @@ function updatePanoInfoVisibility() {
   }
 }
 
-function encodeShareLinkPayload(lat, lon, yaw, pitch) {
-  const floats = new Float32Array(4);
-  floats[0] = lat;
-  floats[1] = lon;
-  floats[2] = yaw;
-  floats[3] = pitch;
-  const bytes = new Uint8Array(floats.buffer);
-  return Base64.fromUint8Array(bytes, true);
-}
-
-function decodeShareLinkPayload(payload) {
-  const bytes = Base64.toUint8Array(payload, true);
-  const floats = new Float32Array(bytes.buffer);
-  return {
-    lat: floats[0],
-    lon: floats[1],
-    yaw: floats[2],
-    pitch: floats[3],
-  }
-}
-
 function writeShareLinkToClipboard() {
   const position = panoViewer.getPosition();
   const payload = encodeShareLinkPayload(currentPano.lat, currentPano.lon, position.yaw, position.pitch);
@@ -380,9 +290,9 @@ const appTitle = "Apple Look Around Viewer";
 const api = new Api();
 const auth = new Authenticator();
 
-let map = null;
-let panoViewer = null;
-let currentPano = null;
+export let map = null;
+export let panoViewer = null;
+export let currentPano = null;
 
 document.title = appTitle;
 
@@ -427,4 +337,3 @@ if (params.pano) {
 } else {
   initMap();
 }
-

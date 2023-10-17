@@ -4,7 +4,7 @@ import { GoogleRoadLayer, googleStreetView } from "./layers/googleMaps.js";
 import { openStreetMap, cartoDarkMatter, cartoPositron, cartoVoyager } from "./layers/openStreetMap.js";
 import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
 import { Constants } from "./Constants.js";
-import { wrapLon } from "../util/geo.js";
+import { wrapLon } from "../geo/geo.js";
 import { LineColorType, Theme } from "../enums.js";
 import { getUserLocale } from "../util/misc.js";
 import { GeolocationButton } from "./GeolocationButton.js";

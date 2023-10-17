@@ -1,7 +1,7 @@
 import { CoverageType } from "../../enums.js";
 import { Constants } from "../Constants.js";
 import { Api } from "../../Api.js";
-import { wgs84ToTileCoord } from "../../util/geo.js";
+import { wgs84ToTileCoord } from "../../geo/geo.js";
 import { determineCircleColor } from "./colors.js";
 import { FilterSettings } from "../FilterSettings.js";
 import { getDevicePixelRatio } from "../../util/misc.js";
