@@ -73,15 +73,13 @@ function updateHashParams() {
   const view = map.getView();
   const center = view.getCenter();
   const zoom = view.getZoom();
-  let newHash = `c=${zoom}/${center[1].toFixed(5)}/${wrapLon(center[0]).toFixed(
-    5
-  )}`;
+  let newHash = `c=${zoom}/${center[1].toFixed(6)}/${wrapLon(center[0]).toFixed(6)}`;
   if (currentPano) {
     // there's no API call known to me which will return metadata for a
     // specific panoid like there is with streetview. this means that to fetch
     // pano metadata, its location must also be known, so I've decided to use
     // that for permalinks rather than panoids until I have a better solution
-    newHash += `&p=${currentPano.lat.toFixed(5)}/${currentPano.lon.toFixed(5)}`;
+    newHash += `&p=${currentPano.lat.toFixed(6)}/${currentPano.lon.toFixed(6)}`;
 
     const position = panoViewer.getPosition();
     newHash += `&a=${(position.yaw * RAD2DEG).toFixed(2)}/${(position.pitch * RAD2DEG).toFixed(2)}`
@@ -203,7 +201,7 @@ async function updatePanoInfo(pano) {
 async function fetchAndSetAddress(lat, lon) {
   const address = await geocoder.reverseGeocode(lat, lon, getUserLocale());
   if (address.length === 0) {
-    document.querySelector("#pano-address-first-line").innerText = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+    document.querySelector("#pano-address-first-line").innerText = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
     document.querySelector("#pano-address-rest").innerHTML = "";
     document.title = `${appTitle}`;
   } else {
@@ -384,4 +382,3 @@ if (params.pano) {
 } else {
   initMap();
 }
-
