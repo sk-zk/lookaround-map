@@ -21,7 +21,14 @@
 
   <div id="pano-info">
     <details id="pano-info-details" open>
-    <summary><img class="pano-info-hamburger" src="/static/icons/menu.svg" width="20" height="20"> <strong><span id="pano-address-first-line"></span></strong></summary>
+    <summary>
+      <img class="pano-info-hamburger" src="/static/icons/menu.svg" width="20" height="20" title="View more"> <strong><span id="pano-address-first-line"></span></strong>
+      <div id="pano-share-container">
+        <a href="javascript:void(0);" id="pano-share">
+          <img class="pano-share-icon" src="/static/icons/share.svg" width="20" height="20" title="Share this location">
+        </a>
+      </div>
+    </summary>
     <div id="pano-address-rest"></div>
     <div id="pano-metadata">
       <div id="time-machine">

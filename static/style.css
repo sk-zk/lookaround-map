@@ -79,6 +79,7 @@ body {
   align-content: center;
   align-items: center;
   gap: 5px;
+  width: 100%;
 }
 
 .pano-info-hamburger {
@@ -145,6 +146,7 @@ body {
   width: calc(100vw - 60px);
   box-sizing: border-box;
   padding: 10px;
+  width: 100%;
 }
 
 @media only screen and (orientation: portrait) and (max-width: 600px) {
@@ -424,4 +426,25 @@ body {
   cursor: pointer;
   background-color: #555;
   color: var(--map-ui-bg);
+}
+
+#pano-share-container {
+  flex-grow: 1;
+  text-align: right;
+  height: 20px;
+  display: none;
+}
+
+#pano-info-details[open] summary #pano-share-container {
+  display: inline;
+}
+
+.notification-tooltip {
+  position: absolute;
+  z-index: 999;
+  color: white;
+  font-size: smaller;
+  pointer-events:none;
+  background-color: rgba(50, 50, 50, 0.7);
+  padding: 5px;
 }

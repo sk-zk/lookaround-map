@@ -9,10 +9,11 @@ import { Constants } from "./map/Constants.js";
 import { AddressSource, Theme } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
-import { getUserLocale } from "./util/misc.js";
+import { getUserLocale, showNotificationTooltip } from "./util/misc.js";
 
 import Point from "ol/geom/Point.js";
 import tinyDebounce from "tiny-debounce";
+import { Base64 } from "js-base64";
 
 import "ol/ol.css";
 import "ol-ext/dist/ol-ext.css";
@@ -41,6 +42,17 @@ function initMap() {
 function parseHashParams() {
   const params = new URLSearchParams(window.location.hash.substring(1));
 
+  // share link
+  if (params.has("s")) {
+    const payload = decodeShareLinkPayload(params.get("s"));
+    console.log(payload);
+    return {
+      center: { zoom: 18, latitude: payload.lat, longitude: payload.lon },
+      pano: { latitude: payload.lat, longitude: payload.lon, position: { yaw: payload.yaw, pitch: payload.pitch } },
+    };
+  }
+
+  // normal link
   let center = null;
   if (params.has("c")) {
     const centerParams = params.get("c").split("/");
@@ -336,6 +348,34 @@ function updatePanoInfoVisibility() {
   }
 }
 
+function encodeShareLinkPayload(lat, lon, yaw, pitch) {
+  const floats = new Float32Array(4);
+  floats[0] = lat;
+  floats[1] = lon;
+  floats[2] = yaw;
+  floats[3] = pitch;
+  const bytes = new Uint8Array(floats.buffer);
+  return Base64.fromUint8Array(bytes, true);
+}
+
+function decodeShareLinkPayload(payload) {
+  const bytes = Base64.toUint8Array(payload, true);
+  const floats = new Float32Array(bytes.buffer);
+  return {
+    lat: floats[0],
+    lon: floats[1],
+    yaw: floats[2],
+    pitch: floats[3],
+  }
+}
+
+function writeShareLinkToClipboard() {
+  const position = panoViewer.getPosition();
+  const payload = encodeShareLinkPayload(currentPano.lat, currentPano.lon, position.yaw, position.pitch);
+  const link = `${document.location.protocol}//${document.location.host}${document.location.pathname}#s=${payload}`;
+  navigator.clipboard.writeText(link);
+}
+
 const appTitle = "Apple Look Around Viewer";
 const api = new Api();
 const auth = new Authenticator();
@@ -373,6 +413,11 @@ timeMachineControl.panoSelectedCallback = (pano) => {
   displayPano(pano);
 };
 
+document.querySelector("#pano-share").addEventListener("click", (e) => {
+  writeShareLinkToClipboard();
+  showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500);
+});
+
 const params = parseHashParams();
 if (params.pano) {
   initMap();
@@ -382,3 +427,4 @@ if (params.pano) {
 } else {
   initMap();
 }
+
