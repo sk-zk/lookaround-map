@@ -2,7 +2,7 @@
 
 It also features a more detailed coverage map, showing all covered roads at all zoom levels, and the exact position of panoramas when zooming in. This layer can also be filtered and colored by various criteria.
 
-Live at [lookmap.eu.pythonanywhere.com](https://lookmap.eu.pythonanywhere.com)!
+Please don't make automated requests against prod. Check if my Python library [streetlevel](https://github.com/sk-zk/streetlevel) satisfies your usecase, and if not, set up a local instance of the server to make requests against instead.
 
 ## Setup
 ```sh
