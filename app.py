@@ -8,17 +8,9 @@ import sys
 sys.path.append("lookaround")
 
 from routes.api import api
+from config import config
+from misc.util import load_ip_blacklist
 from misc.CustomJSONEncoder import CustomJSONEncoder
-
-
-def load_ip_blacklist() -> set:
-    ip_blacklist = set()
-    with open("config/blacklist.txt", "r") as f:
-        for line in f.readlines():
-            line = line.strip()
-            if not line.startswith("#") and line != "":
-                ip_blacklist.add(line)
-    return ip_blacklist
 
 
 def create_app():
@@ -53,6 +45,6 @@ def create_app():
     def you_know_what_you_did():
         ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
         if ip in ip_blacklist:
-            return redirect("https://www.youtube.com/watch?v=1NkYwSvWZ_M")
+            return redirect(config.IP_BLACKLIST_REDIRECT_URL)
 
     return app
