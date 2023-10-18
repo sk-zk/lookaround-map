@@ -1,8 +1,8 @@
 import { DEG2RAD, RAD2DEG, wrapLon } from "./geo/geo.js";
 import { Constants } from "./map/Constants.js";
+import "./proto/MuninViewState_pb.js";
 
 import { Base64 } from "js-base64";
-
 
 export function parseHashParams() {
   const params = new URLSearchParams(window.location.hash.substring(1));
@@ -66,14 +66,27 @@ export function updateHashParams(map, currentPano, panoViewerPosition) {
 }
 
 export function openInGsv(lat, lon, position, zoom) {
-  const pan = position.yaw * RAD2DEG;
+  const yaw = position.yaw * RAD2DEG;
   const pitch = position.pitch * RAD2DEG + 90;
   // estimated, but it works well enough
   zoom = -0.65 * zoom + 77.5;
   window.open(
-    `https://www.google.com/maps/@${lat},${lon},3a,${zoom}y,${pan}h,${pitch}t/data=!3m1!1e1`,
+    `https://www.google.com/maps/@${lat},${lon},3a,${zoom}y,${yaw}h,${pitch}t/data=!3m1!1e1`,
     "_blank"
   );
+}
+
+export function generateAppleMapsUrl(lat, lon, heading, position) {
+  console.log(heading, position);
+  const message = new proto.MuninViewState();
+  const viewState = new proto.MuninViewState.ViewState();
+  viewState.setLatitude(lat);
+  viewState.setLongitude(lon);
+  viewState.setYaw(position.yaw * RAD2DEG);
+  viewState.setPitch(-position.pitch * RAD2DEG);
+  message.setViewstate(viewState);
+  const mvsParameter = Base64.fromUint8Array(message.serializeBinary());
+  return `https://maps.apple.com/?ll=${lat},${lon}&_mvs=${mvsParameter}`;
 }
 
 export function encodeShareLinkPayload(lat, lon, yaw, pitch) {

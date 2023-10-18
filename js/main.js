@@ -3,13 +3,13 @@ import { Authenticator } from "./util/Authenticator.js";
 import { createMap } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
 import { NominatimReverseGeocoder, AppleReverseGeocoder} from "./geo/geocoders.js";
-import { wrapLon } from "./geo/geo.js";
+import { wrapLon, RAD2DEG } from "./geo/geo.js";
 import { TimeMachineControl } from "./ui/TimeMachineControl.js";
 import { AddressSource, Theme } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
-import { getUserLocale, showNotificationTooltip } from "./util/misc.js";
-import { parseHashParams, updateHashParams, openInGsv } from "./url.js";
+import { getUserLocale, showNotificationTooltip, isAppleDevice } from "./util/misc.js";
+import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsUrl, encodeShareLinkPayload } from "./url.js";
 
 import Point from "ol/geom/Point.js";
 import tinyDebounce from "tiny-debounce";
@@ -19,7 +19,6 @@ import "ol-ext/dist/ol-ext.css";
 import "ol-contextmenu/ol-contextmenu.css";
 import "./external/ol-layerswitcher/ol-layerswitcher.css";
 import "../static/style.css";
-import { encodeShareLinkPayload } from "./url.js";
 
 function initMap() {
   map = createMap(
@@ -87,7 +86,17 @@ function initPanoViewer(pano) {
   panoViewer.addEventListener("position-updated", positionUpdateHandler);
 
   document.querySelector("#open-in-gsv").addEventListener("click", (_) => { 
-    openInGsv(currentPano.lat, currentPano.lon, panoViewer.getPosition(), panoViewer.getZoomLevel()) 
+    openInGsv(currentPano.lat, currentPano.lon, panoViewer.getPosition(), panoViewer.getZoomLevel());
+  });
+
+  document.querySelector("#open-in-apple-maps").addEventListener("click", (e) => { 
+    const url = generateAppleMapsUrl(currentPano.lat, currentPano.lon, currentPano.heading, panoViewer.getPosition());
+    if (isRunningOnAppleDevice) {
+      window.open(url, "_blank");
+    } else {
+      showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500)
+      navigator.clipboard.writeText(url);
+    }
   });
 }
 
@@ -126,10 +135,9 @@ function destroyPanoViewer() {
 async function updatePanoInfo(pano) {
   document.querySelector(
     "#pano-id"
-  ).innerHTML = `${pano.panoid} / ${pano.batchId}`;/* +
-  `<br>${pano.dbg[1]} ${pano.dbg[2]}` +
-    `<br>Heading: ${pano.heading * RAD2DEG}°` + 
-    `<br>Raw elevation: ${pano.rawElevation}`;*/
+  ).innerHTML = `${pano.panoid} / ${pano.batchId}`; /* + 
+    `<br>${pano.dbg[0]} ${pano.dbg[1]} ${pano.dbg[2]}` +
+    `<br>Heading: ${pano.heading * RAD2DEG}°`;*/
   const date = new Date(pano.timestamp);
   const locale = getUserLocale();
   const formattedDate = new Intl.DateTimeFormat(locale, {
@@ -286,17 +294,16 @@ function writeShareLinkToClipboard() {
   navigator.clipboard.writeText(link);
 }
 
+
 const appTitle = "Apple Look Around Viewer";
+document.title = appTitle;
 const api = new Api();
 const auth = new Authenticator();
-
-export let map = null;
-export let panoViewer = null;
-export let currentPano = null;
-
-document.title = appTitle;
-
+let map = null;
+let panoViewer = null;
+let currentPano = null;
 let geocoder = constructGeocoder();
+const isRunningOnAppleDevice = isAppleDevice();
 
 setTheme();
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (_) => {

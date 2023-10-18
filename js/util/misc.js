@@ -17,3 +17,14 @@ export function showNotificationTooltip(text, xPos, yPos, duration) {
     document.body.removeChild(notification);
   }, duration);
 }
+
+export function isAppleDevice() {
+  const ua = navigator.userAgent.toLowerCase();
+  const appleIndicators = ["mac os", "macintosh", "iphone", "ipad", "darwin", "webkit", "apple"];
+  for (const indicator of appleIndicators) {
+    if (ua.indexOf(indicator) > -1) {
+      return true;
+    }
+  }
+  return false;
+}

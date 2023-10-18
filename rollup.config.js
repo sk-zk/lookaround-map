@@ -18,8 +18,14 @@ export default [
     output: {
       file: 'static/dist/main.js',
       format: 'es',
-      plugins: [terser(terserConfig)]
+      plugins: [terser(terserConfig)],
     },
+    onwarn: function onwarn(message, warn) {
+        // Ignore eval warning - Google's official protobuf implementation uses it
+        // and I don't need to be informed of that every single time
+        if (message.code === 'EVAL') return;
+        warn(message);
+      },
     plugins: [css(), nodeResolve(), typescript({compilerOptions: {target: "es6"}}), commonjs()]
   },
   {
