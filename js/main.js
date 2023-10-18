@@ -84,20 +84,6 @@ function initPanoViewer(pano) {
     500, 
     { trailing: true, maxWait: 500 });
   panoViewer.addEventListener("position-updated", positionUpdateHandler);
-
-  document.querySelector("#open-in-gsv").addEventListener("click", (_) => { 
-    openInGsv(currentPano.lat, currentPano.lon, panoViewer.getPosition(), panoViewer.getZoomLevel());
-  });
-
-  document.querySelector("#open-in-apple-maps").addEventListener("click", (e) => { 
-    const url = generateAppleMapsUrl(currentPano.lat, currentPano.lon, currentPano.heading, panoViewer.getPosition());
-    if (isRunningOnAppleDevice) {
-      window.open(url, "_blank");
-    } else {
-      showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500)
-      navigator.clipboard.writeText(url);
-    }
-  });
 }
 
 function onPanoChanged(e) {
@@ -130,6 +116,22 @@ function destroyPanoViewer() {
   if (!panoViewer) return;
   panoViewer.destroy();
   panoViewer = null;
+}
+
+function hookUpOpenLinks() {
+  document.querySelector("#open-in-gsv").addEventListener("click", (_) => { 
+    openInGsv(currentPano.lat, currentPano.lon, panoViewer.getPosition(), panoViewer.getZoomLevel());
+  });
+
+  document.querySelector("#open-in-apple-maps").addEventListener("click", (e) => { 
+    const url = generateAppleMapsUrl(currentPano.lat, currentPano.lon, currentPano.heading, panoViewer.getPosition());
+    if (isRunningOnAppleDevice) {
+      window.open(url, "_blank");
+    } else {
+      showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500)
+      navigator.clipboard.writeText(url);
+    }
+  });
 }
 
 async function updatePanoInfo(pano) {
@@ -334,6 +336,7 @@ document.querySelector("#pano-share").addEventListener("click", (e) => {
   writeShareLinkToClipboard();
   showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500);
 });
+hookUpOpenLinks();
 
 const params = parseHashParams();
 if (params.pano) {
