@@ -1,8 +1,6 @@
 import { Group, Mesh, SphereGeometry, Vector3 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { CONSTANTS, utils } from "@photo-sphere-viewer/core"
-
-import { AbstractAdapter } from "@photo-sphere-viewer/core";
+import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core"
 
 import { ScreenFrustum } from "./ScreenFrustum.js";
 import { Face } from "../enums.js";
@@ -23,9 +21,10 @@ export class LookaroundAdapter extends AbstractAdapter {
   constructor(psv) {
     super(psv);
     this.psv = psv;
+
     this.renderTopAndBottomFaces = localStorage.getItem("showFullPano") === "true";
     this.faceAmount = this.renderTopAndBottomFaces ? 6 : 4;
-
+    this.useHeic = psv.config.panoData.useHeic;
     this.endpoint = psv.config.panoData.endpoint;
 
     this.panorama = psv.config.panorama.panorama;
@@ -81,7 +80,10 @@ export class LookaroundAdapter extends AbstractAdapter {
   }
 
   async __loadOneTexture(zoom, faceIdx, progress = null) {
-    const faceUrl = `${this.endpoint}${this.url}${zoom}/${faceIdx}/`;
+    let faceUrl = `${this.endpoint}${this.url}${zoom}/${faceIdx}/`;
+    if (this.useHeic) {
+      faceUrl += "?heic=1";
+    }
     return await this.psv.textureLoader
       .loadImage(faceUrl, (p) => {
         if (progress) {

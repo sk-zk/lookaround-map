@@ -49,24 +49,25 @@ async function fetchAndDisplayPanoAt(lat, lon) {
   const pano = (await api.getPanosAroundPoint(lat, lon, radius, 1))[0];
   currentPano = pano;
   if (pano) {
-    displayPano(pano);
+    await displayPano(pano);
   }
 }
 
 async function displayPano(pano) {
-  updatePanoInfo(pano).then((_) => updateHashParams(map, pano, panoViewer.getPosition()));
+  await updatePanoInfo(pano);
+  updateHashParams(map, pano, panoViewer?.getPosition());
   if (panoViewer) {
     await panoViewer.navigateTo(pano);
   } else {
-    initPanoViewer(pano);
+    await initPanoViewer(pano);
     switchMapToPanoLayout();
   }
   updateMapMarker(pano);
 }
 
-function initPanoViewer(pano) {
+async function initPanoViewer(pano) {
   const container = document.querySelector("#pano");
-  panoViewer = createPanoViewer({
+  panoViewer = await createPanoViewer({
     container: container,
     initialPano: pano,
   });

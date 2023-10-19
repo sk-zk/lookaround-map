@@ -57,8 +57,9 @@ export function updateHashParams(map, currentPano, panoViewerPosition) {
     // that for permalinks rather than panoids until I have a better solution
     newHash += `&p=${currentPano.lat.toFixed(6)}/${currentPano.lon.toFixed(6)}`;
 
-    const position = panoViewerPosition;
-    newHash += `&a=${(position.yaw * RAD2DEG).toFixed(2)}/${(position.pitch * RAD2DEG).toFixed(2)}`;
+    if (panoViewerPosition) {
+      newHash += `&a=${(panoViewerPosition.yaw * RAD2DEG).toFixed(2)}/${(panoViewerPosition.pitch * RAD2DEG).toFixed(2)}`;
+    }
   }
   // instead of setting window.location.hash directly, I set it like this
   // to not trigger a hashchanged event
