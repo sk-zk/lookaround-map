@@ -22,7 +22,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     super(psv);
     this.psv = psv;
 
-    this.renderTopAndBottomFaces = localStorage.getItem("showFullPano") === "true";
+    this.renderTopAndBottomFaces = localStorage.getItem("showFullPano") !== "false";
     this.faceAmount = this.renderTopAndBottomFaces ? 6 : 4;
     this.useHeic = psv.config.panoData.useHeic;
     this.endpoint = psv.config.panoData.endpoint;

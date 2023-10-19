@@ -3,7 +3,7 @@ import { AddressSource, Theme } from "../enums.js";
 export class SettingsControl {
   constructor() {
     const showFullPano = document.querySelector("#show-full-pano");
-    showFullPano.checked = localStorage.getItem("showFullPano") === "true";
+    showFullPano.checked = localStorage.getItem("showFullPano") !== "false";
     showFullPano.addEventListener("change", (_) => localStorage.setItem("showFullPano", showFullPano.checked));
 
     const addrNominatim = document.querySelector("#addr-nominatim");
