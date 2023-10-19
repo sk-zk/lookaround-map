@@ -21,7 +21,7 @@ class GeolocationButton extends Control {
     navigator.geolocation.getCurrentPosition((position) => {
       const view = this.getMap().getView();
       view.setCenter([position.coords.longitude, position.coords.latitude]);
-      view.setZoom(17);
+      view.setZoom(19);
     });
   }
 }
