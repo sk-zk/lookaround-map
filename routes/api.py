@@ -15,6 +15,7 @@ from lookaround.auth import Authenticator
 from lookaround import get_coverage_tile, get_pano_face
 import geo
 from config import config
+from misc.util import to_bool
 
 
 def is_package_installed(package_name):
@@ -125,6 +126,11 @@ def relay_pano_face(panoid, batch_id, zoom, face):
         abort(400)
     except HTTPError as httpError:
         abort(httpError.response.status_code)
+
+    relay_without_converting = request.args.get("heic", default=False, type=to_bool)
+    print(relay_without_converting)
+    if relay_without_converting:
+        return send_file(io.BytesIO(heic_bytes), mimetype='image/heic')
 
     if use_heic2rgb:
         image = heic2rgb.decode(heic_bytes)
