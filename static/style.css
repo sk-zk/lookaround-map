@@ -448,3 +448,7 @@ body {
   background-color: rgba(50, 50, 50, 0.7);
   padding: 5px;
 }
+
+summary::marker {
+  content: "";
+}
