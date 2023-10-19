@@ -1,8 +1,10 @@
+# lookaround-map
+
 **lookaround-map** is a web app for viewing Apple Look Around imagery on any platform, using reverse-engineered requests to Apple's internal API.
 
 It also features a more detailed coverage map, showing all covered roads at all zoom levels, and the exact position of panoramas when zooming in. This layer can also be filtered and colored by various criteria.
 
-Please don't make automated requests against prod. Check if my Python library [streetlevel](https://github.com/sk-zk/streetlevel) satisfies your usecase, and if not, set up a local instance of the server to make requests against instead.
+**Please don't make automated requests against prod.** Check if my Python library [streetlevel](https://github.com/sk-zk/streetlevel) satisfies your usecase, and if not, set up a local instance of the server to make requests against instead.
 
 ## Setup
 ```sh
@@ -16,16 +18,14 @@ flask run
 ```
 
 ### Decoding
-Since no browser natively supports the HEIC format\*, images must be converted to JPG before sending them to the client.
+For browsers which don't natively support HEIC - which is every browser except Safari 17 - the panorama faces must be converted to JPEG before sending them to the client.
 To do so, three options are implemented. Simply install the one you like and it will be selected automatically.
 
-#1: By default, `pillow-heif` will be used to decode images. Supports every platform.
+#1: By default, [pillow-heif](https://github.com/bigcat88/pillow_heif) will be used to decode images. Supports every platform.
 
-#2: [`pyheif`](https://github.com/carsales/pyheif) used to be faster than `pillow-heif` and is supported for this reason. Supports Linux and Mac.
+#2: [pyheif](https://github.com/carsales/pyheif) used to be faster than pillow-heif and is supported for this reason. Supports Linux and Mac.
 
-#3: However, **the fastest option** (that I'm aware of) is my own [`heic2rgb`](https://github.com/sk-zk/heic2rgb/), which is noticeably faster than the previous two. Supports Linux and Windows.
-
-\*) except for Safari, which will gain HEIC support in version 17, but since I don't have access to a Mac at the moment, I'm unable to integrate it (plus, if you're on a Mac, you can just launch Apple Maps anyway).
+#3: However, **the fastest option** (that I'm aware of) is my own [heic2rgb](https://github.com/sk-zk/heic2rgb/), which is noticeably faster than the previous two. Supports Linux and Windows.
 
 ## TODO
 - [ ] Convert and apply upright adjustment
