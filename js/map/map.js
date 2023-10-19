@@ -105,7 +105,7 @@ function setUpSearch(map) {
     } catch (error) {
       console.error(error);
       map.getView().setCenter([e.search.lon, e.search.lat]);
-      map.getView().setZoom(17);
+      map.getView().setZoom(19);
     }
   });
   map.addControl(searchControl);
