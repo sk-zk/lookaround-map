@@ -6,6 +6,7 @@ import { Api } from "../Api.js";
 import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
 import { distanceBetween } from "../geo/geo.js";
+import { isHeicSupported } from "../util/misc.js";
 
 import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
@@ -18,13 +19,13 @@ export const DefaultHeading = Object.freeze({
 	Road: 1,
 })
 
-export function createPanoViewer(config) {
-  //console.log(config.initialPano.dbg);
+export async function createPanoViewer(config) { 
   const endpoint = config.endpoint ?? "";
   const plugins = configurePlugins(config);
   const defaultHeading = config.defaultHeading ?? DefaultHeading.North;
   const defaultYaw = getHeading(defaultHeading, config.initialPano.heading);
   const defaultZoomLvl = 20;
+  const useHeic = await isHeicSupported();
 
   const viewer = new Viewer({
     container: config.container,
@@ -35,6 +36,7 @@ export function createPanoViewer(config) {
     },
     panoData: { 
       endpoint: endpoint,
+      useHeic: useHeic,
     },
     minFov: 10,
     maxFov: 100,
