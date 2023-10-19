@@ -451,4 +451,10 @@ body {
 
 summary::marker {
   content: "";
+  display: none;
+}
+
+summary::-webkit-details-marker {
+  content: "";
+  display: none;
 }
