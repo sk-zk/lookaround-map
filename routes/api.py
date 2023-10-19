@@ -128,7 +128,6 @@ def relay_pano_face(panoid, batch_id, zoom, face):
         abort(httpError.response.status_code)
 
     relay_without_converting = request.args.get("heic", default=False, type=to_bool)
-    print(relay_without_converting)
     if relay_without_converting:
         return send_file(io.BytesIO(heic_bytes), mimetype='image/heic')
 
