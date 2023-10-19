@@ -449,12 +449,12 @@ body {
   padding: 5px;
 }
 
-summary::marker {
+#pano-info summary::marker {
   content: "";
   display: none;
 }
 
-summary::-webkit-details-marker {
+#pano-info summary::-webkit-details-marker {
   content: "";
   display: none;
 }
