@@ -29,8 +29,9 @@ To do so, three options are implemented. Simply install the one you like and it 
 
 ## TODO
 - [ ] Convert and apply upright adjustment
-   - Still can't solve this and I'm slowly losing my damn mind.  
-     `unknown10` is the roll, with values between 0 and 8192 signifying positive roll and values between 16384 and 8193 signifying negative roll. `unknown11` is the tilt, with values above 8192 signifying positive tilt and values below 8192 signifying negative tilt. These two values are somehow not independent of one another though, so we might be looking at a vector of some sort, possibly one which also includes the heading as x.
+   - The yaw/pitch/roll values returned by the API continue to make absolutely no sense whatsoever. I've tracked down the function 
+     which converts the values returned by the protobuf response into another object, but all that happens there is (n / 16383.0) * 2 * PI, 
+     so I'm still missing the actual conversion
 - [ ] Render top and bottom faces of panoramas
    - Completely lost as to which projection this is
 - [ ] Find a raster blue line layer if it exists, or decode the vector layer
