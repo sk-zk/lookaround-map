@@ -138,9 +138,9 @@ function hookUpOpenLinks() {
 async function updatePanoInfo(pano) {
   document.querySelector(
     "#pano-id"
-  ).innerHTML = `${pano.panoid} / ${pano.batchId}`; /* + 
-    `<br>${pano.dbg[0]} ${pano.dbg[1]} ${pano.dbg[2]}` +
-    `<br>Heading: ${pano.heading * RAD2DEG}°`;*/
+  ).innerHTML = `${pano.panoid} / ${pano.buildId}` /*+ 
+    `<br>h:${pano.heading * RAD2DEG}°` +
+    `<br>Y:${pano.dbg[0]} P:${pano.dbg[1]} R:${pano.dbg[2]}`;*/
   const date = new Date(pano.timestamp);
   const locale = getUserLocale();
   const formattedDate = new Intl.DateTimeFormat(locale, {

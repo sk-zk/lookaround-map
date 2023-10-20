@@ -180,7 +180,7 @@ function setUpFilterControl(map, filterControl) {
   lookaroundCoverage.setFilterSettings(filterControl.getFilterSettings());
   filterControl.filtersChanged = (filterSettings) => {
     const useRasterTiles = filterSettings.isDefault() 
-      || (filterSettings.lineColorType === LineColorType.Batch);
+      || (filterSettings.lineColorType === LineColorType.BuildId);
     updateActiveCachedBlueLineLayer(useRasterTiles);
     vectorBlueLineLayer.setFilterSettings(filterSettings);
     vectorBlueLineLayer.getLayers().forEach(l => l.changed());

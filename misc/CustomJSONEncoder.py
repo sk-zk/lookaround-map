@@ -14,17 +14,17 @@ class CustomJSONEncoder(JSONEncoder):
         if isinstance(o, LookaroundPanorama):
             return {
                 "panoid": str(o.panoid),
-                "batchId": str(o.batch_id),
+                "buildId": str(o.build_id),
                 "lat": o.lat,
                 "lon": o.lon,
                 "timestamp": o.timestamp,
                 "timezone": tf.timezone_at(lat=o.lat, lng=o.lon),
                 "heading": o.heading,
                 "coverageType": o.coverage_type,
-                "rawElevation": o.raw_elevation,
-                "projection": { 
-                    "latitudeSize": o.projection[0].unknown24.latitude_size,
-                    "unknown34": o.projection[0].unknown24.unknown34
-                    }
+                "rawAltitude": o.raw_altitude,
+                "lensProjection": { 
+                    "fovH": o.camera_metadata[0].lens_projection.fov_h,
+                    "cy": o.camera_metadata[0].lens_projection.cy
+                    },
             }
         return super().default(o)

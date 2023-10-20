@@ -51,8 +51,8 @@ export class FilterControl {
       this.#filterSettings.lineColorType = LineColorType.Age;
       this.onFiltersChanged();
     });
-    document.querySelector("#color-by-batch").addEventListener("change", (_) => {
-      this.#filterSettings.lineColorType = LineColorType.Batch;
+    document.querySelector("#color-by-build-id").addEventListener("change", (_) => {
+      this.#filterSettings.lineColorType = LineColorType.BuildId;
       this.onFiltersChanged();
     });
 

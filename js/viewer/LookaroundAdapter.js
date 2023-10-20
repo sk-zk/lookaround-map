@@ -29,7 +29,7 @@ export class LookaroundAdapter extends AbstractAdapter {
 
     this.panorama = psv.config.panorama.panorama;
     this.url = psv.config.panorama.panorama.url;
-    this.previousLatitudeSize = this.panorama.projection.latitudeSize;
+    this.previousFovH = this.panorama.lensProjection.fovH;
 
     this.SPHERE_HORIZONTAL_SEGMENTS = 32;
 
@@ -106,8 +106,8 @@ export class LookaroundAdapter extends AbstractAdapter {
   }
 
   __recreateMeshIfNecessary() {
-    const latitudeSize = this.panorama.projection.latitudeSize;
-    if (this.previousLatitudeSize !== latitudeSize) {
+    const fovH = this.panorama.lensProjection.fovH;
+    if (this.previousFovH !== fovH) {
       const mesh = this.createMesh();
       mesh.userData = { ["photoSphereViewer"]: true };
       mesh.parent = this.psv.renderer.meshContainer;
@@ -117,7 +117,7 @@ export class LookaroundAdapter extends AbstractAdapter {
 
       mesh.updateMatrixWorld(true);
     }
-    this.previousLatitudeSize = latitudeSize;
+    this.previousFovH = fovH;
   }
 
   /**
@@ -129,11 +129,11 @@ export class LookaroundAdapter extends AbstractAdapter {
     // some weird desperate nonsense to get most panos to render correctly
     let sideFaceThetaLength;
     let sideFaceThetaStart;
-    if (Math.abs(this.panorama.projection.unknown34 -  degToRad(17.5)) < 0.01) {
+    if (Math.abs(this.panorama.lensProjection.cy -  degToRad(17.5)) < 0.01) {
       sideFaceThetaLength = degToRad(105);
       sideFaceThetaStart = degToRad(20);
     } else {
-      sideFaceThetaLength = this.panorama.projection.latitudeSize;
+      sideFaceThetaLength = this.panorama.lensProjection.fovH;
       sideFaceThetaStart = degToRad(28);
     }
 
