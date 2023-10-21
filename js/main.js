@@ -8,7 +8,7 @@ import { TimeMachineControl } from "./ui/TimeMachineControl.js";
 import { AddressSource, Theme } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
-import { getUserLocale, showNotificationTooltip, isAppleDevice } from "./util/misc.js";
+import { getUserLocale, showNotificationTooltip, isAppleDevice, approxEqual } from "./util/misc.js";
 import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsUrl, encodeShareLinkPayload } from "./url.js";
 
 import Point from "ol/geom/Point.js";
@@ -210,13 +210,27 @@ function toggleLayoutControlVisibility(isMapLayout) {
 
 function onHashChanged(_) {
   const params = parseHashParams();
-  if (params.pano) {
-    fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude);
-  } else {
-    closePanoViewer();
-  }
+
   map.getView().setCenter([params.center.longitude, params.center.latitude]);
   map.getView().setZoom(params.center.zoom);
+
+  if (!params.pano) {
+    closePanoViewer();
+    return;
+  }
+
+  if (approxEqual(params.pano.latitude, currentPano.lat) && 
+      approxEqual(params.pano.longitude, currentPano.lon) && 
+      params.pano.position) {
+    panoViewer.rotate(params.pano.position);
+  } else {
+    fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude)
+    .then(() => {
+      if (params.pano.position) {
+        panoViewer.rotate(params.pano.position);
+      }
+    });
+  }
 }
 
 function constructGeocoder() {

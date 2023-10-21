@@ -40,3 +40,7 @@ export async function isHeicSupported() {
     return false;
   }
 }
+
+export function approxEqual(a, b, epsilon=1e-6) {
+  return Math.abs(a - b) < epsilon;
+}
