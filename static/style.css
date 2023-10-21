@@ -458,3 +458,15 @@ body {
   content: "";
   display: none;
 }
+
+#pano-technical-container {
+  display: grid; 
+  grid-template-columns: auto 1fr 0.5fr 1fr; 
+  grid-template-rows: 1fr 1fr; 
+}
+
+.pano-technical-desc {
+  text-align: right;
+  color: #d8d8d8;
+  padding-right: 0.5em;
+}

@@ -21,7 +21,7 @@ class CustomJSONEncoder(JSONEncoder):
                 "timezone": tf.timezone_at(lat=o.lat, lng=o.lon),
                 "heading": o.heading,
                 "coverageType": o.coverage_type,
-                "rawAltitude": o.raw_altitude,
+                "elevation": o.elevation,
                 "lensProjection": { 
                     "fovH": o.camera_metadata[0].lens_projection.fov_h,
                     "cy": o.camera_metadata[0].lens_projection.cy

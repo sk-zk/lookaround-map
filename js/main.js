@@ -136,11 +136,12 @@ function hookUpOpenLinks() {
 }
 
 async function updatePanoInfo(pano) {
-  document.querySelector(
-    "#pano-id"
-  ).innerHTML = `${pano.panoid} / ${pano.buildId}` /*+ 
-    `<br>h:${pano.heading * RAD2DEG}°` +
-    `<br>Y:${pano.dbg[0]} P:${pano.dbg[1]} R:${pano.dbg[2]}`;*/
+  document.querySelector("#pano-id").innerHTML = `${pano.panoid}`; 
+  document.querySelector("#pano-build-id").innerHTML = `${pano.buildId}`; 
+  document.querySelector("#pano-pos").innerHTML = `${pano.lat.toFixed(6)}, ${pano.lon.toFixed(6)}`; 
+  document.querySelector("#pano-ele").innerHTML = `${pano.elevation.toFixed(2)} m`; 
+    /*`<br>h:${pano.heading * RAD2DEG}°` +
+    `<br>Y:${pano.dbg[0]} P:${pano.dbg[1]} R:${pano.dbg[2]}`*/
   const date = new Date(pano.timestamp);
   const locale = getUserLocale();
   const formattedDate = new Intl.DateTimeFormat(locale, {

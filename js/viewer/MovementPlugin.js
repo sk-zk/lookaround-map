@@ -56,14 +56,9 @@ export class MovementPlugin extends AbstractPlugin {
         continue;
       }
 
-      // calculate height difference between this pano and the current one.
-      // I can't make enough sense of the altitude value to just convert it
-      // to meters first, but I can at least get a delta that's accurate enough
-      // within a small area
-      const deltaAltitude = (pano.rawAltitude - refPano.rawAltitude) / 80;
-
+      const deltaEle = pano.elevation - refPano.elevation;
       const enu = geodeticToEnu(
-        pano.lon, pano.lat, deltaAltitude,
+        pano.lon, pano.lat, deltaEle,
         refPano.lon, refPano.lat, CAMERA_HEIGHT
       );
       const position = enuToPhotoSphere(enu, 0);
