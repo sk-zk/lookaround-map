@@ -296,7 +296,7 @@ function setTheme() {
 }
 
 function updatePanoInfoVisibility() {
-  if (window.matchMedia("only screen and (max-width: 600px)").matches
+  if (window.matchMedia("only screen and (max-width: 1000px)").matches
     || window.matchMedia("only screen and (max-height: 650px)").matches) {
     document.querySelector("#pano-info-details").removeAttribute("open");
   }
