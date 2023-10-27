@@ -81,15 +81,15 @@ export function createMap(config, filterControl) {
   });
   map.addControl(attributionControl);
 
-  const coverageColorer = new CoverageColorer();
-
   setUpSearch(map);
-  setUpFilterControl(map, filterControl, coverageColorer);
   createContextMenu(map);
   createPanoMarkerLayer(map);
 
   const geolocationButton = new GeolocationButton();
   map.addControl(geolocationButton);
+
+  const coverageColorer = new CoverageColorer();
+  setUpFilterControl(map, filterControl, coverageColorer);
 
   return map;
 }
@@ -134,7 +134,6 @@ function setUpBaseLayers(languageTag) {
     layerType: AppleMapsLayerType.SatelliteOverlay,
     lang: languageTag,
   });
-  appleSatelliteOverlay.setZIndex(Constants.LABELS_ZINDEX);
   const appleSatellite = new LayerGroup({
     title: "Apple Maps Satellite",
     type: "base",
@@ -161,11 +160,17 @@ function setUpBaseLayers(languageTag) {
 
   document.addEventListener("labelOrderChanged", (_) => {
     const labelsOnTop = localStorage.getItem("labelsOnTop") !== "false";
+    updateLabelZIndex(labelsOnTop);
+  });
+  updateLabelZIndex(localStorage.getItem("labelsOnTop") !== "false");
+
+  function updateLabelZIndex(labelsOnTop) {
     appleSatelliteOverlay.setZIndex(labelsOnTop ? Constants.LABELS_ZINDEX : Constants.LABELS_BELOW_ZINDEX);
     googleRoadLayer.setLabelsOnTop(labelsOnTop);
     cartoPositron.setLabelsOnTop(labelsOnTop);
     cartoDarkMatter.setLabelsOnTop(labelsOnTop);
-  })
+    cartoVoyager.setLabelsOnTop(labelsOnTop);
+  }
 
   return baseLayers;
 }

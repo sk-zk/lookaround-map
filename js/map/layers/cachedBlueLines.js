@@ -196,6 +196,7 @@ const rasterBlueLineLayer = new TileLayer({
   minZoom: Constants.MIN_ZOOM-1,
   maxZoom: 7,
   opacity: OPACITY,
+  zIndex: Constants.BLUE_LINES_ZINDEX,
 });
 
 export { rasterBlueLineLayer, vectorBlueLineLayer };
