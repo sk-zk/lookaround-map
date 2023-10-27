@@ -2,14 +2,14 @@ import { Api } from "./Api.js";
 import { Authenticator } from "./util/Authenticator.js";
 import { MapManager } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
-import { NominatimReverseGeocoder, AppleReverseGeocoder} from "./geo/geocoders.js";
 import { wrapLon, RAD2DEG } from "./geo/geo.js";
 import { TimeMachineControl } from "./ui/TimeMachineControl.js";
-import { AddressSource, Theme } from "./enums.js";
+import { Theme } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
-import { getUserLocale, showNotificationTooltip, isAppleDevice, approxEqual } from "./util/misc.js";
+import { showNotificationTooltip, isAppleDevice, approxEqual } from "./util/misc.js";
 import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsUrl, encodeShareLinkPayload } from "./url.js";
+import { PanoMetadataBox } from "./ui/PanoMetadataBox.js";
 
 import Point from "ol/geom/Point.js";
 import tinyDebounce from "tiny-debounce";
@@ -28,16 +28,18 @@ class Application {
   currentPano;
   api;
   auth;
-  geocoder;
   isRunningOnAppleDevice;
+
+  settingsControl;
   timeMachineControl;
+  panoMetadataBox;
 
   constructor() {
     document.title = this.appTitle;
     this.api = new Api();
     this.auth = new Authenticator();
     this.isRunningOnAppleDevice = isAppleDevice();
-    this.geocoder = this.#constructGeocoder();
+    this.panoMetadataBox = new PanoMetadataBox(this.appTitle);
 
     this.#setTheme();
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (_) => {
@@ -45,9 +47,9 @@ class Application {
     });
 
     this.#initSidebar();
-    this.#updatePanoInfoVisibility();
+    this.panoMetadataBox.updateVisibility();
     window.addEventListener("resize", (_) => {
-      this.#updatePanoInfoVisibility();
+      this.panoMetadataBox.updateVisibility();
     });
 
     window.addEventListener("hashchange", this.#onHashChanged);
@@ -142,7 +144,7 @@ class Application {
   }
 
   async #displayPano(pano) {
-    await this.#updatePanoInfo(pano);
+    await this.panoMetadataBox.update(pano);
     updateHashParams(this.map, pano, this.panoViewer?.getPosition());
     if (this.panoViewer) {
       await this.panoViewer.navigateTo(pano);
@@ -157,7 +159,9 @@ class Application {
     const pano = e.detail;
     this.currentPano = pano;
     this.#updateMapMarker(pano);
-    this.#updatePanoInfo(pano).then((_) => updateHashParams(this.map, pano, this.panoViewer.getPosition()));
+    this.panoMetadataBox.update(pano).then((_) => 
+      updateHashParams(this.map, pano, this.panoViewer.getPosition())
+    );
   }
 
   #closePanoViewer() {
@@ -200,51 +204,6 @@ class Application {
         navigator.clipboard.writeText(url);
       }
     });
-  }
-
-  async #updatePanoInfo(pano) {
-    document.querySelector("#pano-id").innerHTML = `${pano.panoid}`; 
-    document.querySelector("#pano-build-id").innerHTML = `${pano.buildId}`; 
-    document.querySelector("#pano-pos").innerHTML = `${pano.lat.toFixed(6)}, ${pano.lon.toFixed(6)}`; 
-    document.querySelector("#pano-ele").innerHTML = `${pano.elevation.toFixed(2)} m`; 
-    /*document.querySelector("#dbg").innerHTML = 
-      `h:${pano.heading * RAD2DEG}°` +
-      `<br>tX:${pano.tilePos[0]} tY:${pano.tilePos[1]}` + 
-      `<br>x:${pano.rawPos[0]} y:${pano.rawPos[1]}` + 
-      `<br>Y:${pano.dbg[0]} P:${pano.dbg[1]} R:${pano.dbg[2]}` + 
-      `<br>alt:${pano.rawAltitude}`;*/
-    const date = new Date(pano.timestamp);
-    const locale = getUserLocale();
-    const formattedDate = new Intl.DateTimeFormat(locale, {
-      dateStyle: "medium",
-      timeStyle: "medium",
-      timeZone: pano.timezone,
-    }).format(date);
-    document.querySelector("#pano-date").innerHTML = formattedDate;
-    this.#fetchAndSetAddress(pano.lat, pano.lon);
-  }
-
-  async #fetchAndSetAddress(lat, lon) {
-    const address = await this.geocoder.reverseGeocode(lat, lon, getUserLocale());
-    if (address.length === 0) {
-      document.querySelector("#pano-address-first-line").innerText = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-      document.querySelector("#pano-address-rest").innerHTML = "";
-      document.title = `${this.appTitle}`;
-    } else {
-      document.querySelector("#pano-address-first-line").innerText = address[0];
-  
-      let html = address
-        .slice(1)
-        .filter((x) => x !== "")
-        .join("<br>");
-      if (this.geocoder.attributionText) {
-        html += `<div id="nominatim-attribution">${this.geocoder.attributionText}</div>`;
-      }
-      html += "<hr>";
-  
-      document.querySelector("#pano-address-rest").innerHTML = html;
-      document.title = `${address[0]} – ${this.appTitle}`;
-    }
   }
 
   async #updateMapMarker(pano) {
@@ -304,16 +263,6 @@ class Application {
     }
   }
 
-  #constructGeocoder() {
-    switch (localStorage.getItem("addrSource")) {
-      case AddressSource.Nominatim:
-        return new NominatimReverseGeocoder();
-      default:
-      case AddressSource.Apple:
-        return new AppleReverseGeocoder();
-    }
-  }
-
   #initSidebar() {
     const sidebar = document.querySelector("#sidebar");
     const sidebarToggle = document.querySelector("#sidebar-toggle");
@@ -334,9 +283,9 @@ class Application {
   }
 
   #createSettingsControl() {
-    const settingsControl = new SettingsControl();
+    this.settingsControl = new SettingsControl();
     document.addEventListener("addrSourceChanged", (_) => {
-      this.geocoder = this.#constructGeocoder();
+      this.panoMetadataBox.addressSourceChanged();
     })
     document.addEventListener("themeChanged", (_) => {
       this.#setTheme();
@@ -363,16 +312,6 @@ class Application {
         document.documentElement.classList.remove("light");
         document.documentElement.classList.add("dark");
         break;
-    }
-  }
-
-  #updatePanoInfoVisibility() {
-    if (window.matchMedia("only screen and (max-width: 1000px)").matches
-      || window.matchMedia("only screen and (max-height: 650px)").matches) {
-      document.querySelector("#pano-info-details").removeAttribute("open");
-    }
-    else {
-      document.querySelector("#pano-info-details").open = true;
     }
   }
 
