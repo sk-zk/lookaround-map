@@ -53,7 +53,7 @@ class Application {
       this.panoMetadataBox.updateVisibility();
     });
 
-    window.addEventListener("hashchange", this.#onHashChanged);
+    window.addEventListener("hashchange", (_) => this.#onHashChanged());
     document.querySelector("#close-pano").addEventListener("click", (_) => {
       this.#closePanoViewer();
     });
