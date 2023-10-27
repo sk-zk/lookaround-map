@@ -209,7 +209,7 @@ class MapManager {
     vectorBlueLineLayer.setCoverageColorer(this.#coverageColorer);
     lookaroundCoverage.setFilterSettings(this.#filterControl.getFilterSettings());
     lookaroundCoverage.setCoverageColorer(this.#coverageColorer);
-    this.#filterControl.filtersChanged = this.#onFiltersChanged;
+    this.#filterControl.filtersChanged = (filterSettings) => this.#onFiltersChanged(filterSettings);
   }
 
   #onFiltersChanged(filterSettings) {

@@ -20,352 +20,370 @@ import "ol-contextmenu/ol-contextmenu.css";
 import "./external/ol-layerswitcher/ol-layerswitcher.css";
 import "../static/style.css";
 
-function initMap() {
-  const mapMgr = new MapManager(
-    {
-      center: params.center,
-      auth: auth,
-    },
-    new FilterControl()
-  );
-  map = mapMgr.getMap();
-  map.on("moveend", (_) => {
-    updateHashParams(map, currentPano, panoViewer?.getPosition());
-  });
-  map.on("click", async (e) => {
-    const clickCoordinates = map.getEventCoordinate(e.originalEvent);
-    clickCoordinates[0] = wrapLon(clickCoordinates[0]);
-    await fetchAndDisplayPanoAt(clickCoordinates[1], clickCoordinates[0]);
-  });
-}
+class Application {
+  appTitle = "Apple Look Around Viewer";
 
-async function fetchAndDisplayPanoAt(lat, lon) {
-  const zoom = map.getView().getZoom();
-  let radius;
-  if (zoom > 15) {
-    radius = 20;
-  } else {
-    radius = 100;
+  map;
+  panoViewer;
+  currentPano;
+  api;
+  auth;
+  geocoder;
+  isRunningOnAppleDevice;
+  timeMachineControl;
+
+  constructor() {
+    document.title = this.appTitle;
+    this.api = new Api();
+    this.auth = new Authenticator();
+    this.isRunningOnAppleDevice = isAppleDevice();
+    this.geocoder = this.#constructGeocoder();
+
+    this.#setTheme();
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (_) => {
+      this.#setTheme();
+    });
+
+    this.#initSidebar();
+    this.#updatePanoInfoVisibility();
+    window.addEventListener("resize", (_) => {
+      this.#updatePanoInfoVisibility();
+    });
+
+    window.addEventListener("hashchange", this.#onHashChanged);
+    document.querySelector("#close-pano").addEventListener("click", (_) => {
+      this.#closePanoViewer();
+    });
+    document.addEventListener("keydown", async (e) => {
+      if (e.code === "Escape") {
+        this.#closePanoViewer();
+      }
+    });
+
+    this.timeMachineControl = new TimeMachineControl();
+    this.timeMachineControl.panoSelectedCallback = (pano) => {
+      this.#displayPano(pano);
+    };
+    
+    document.querySelector("#pano-share").addEventListener("click", (e) => {
+      this.#writeShareLinkToClipboard();
+      showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500);
+    });
+    this.#hookUpOpenLinks();
   }
-  const pano = (await api.getPanosAroundPoint(lat, lon, radius, 1))[0];
-  currentPano = pano;
-  if (pano) {
-    await displayPano(pano);
-  }
-}
 
-async function displayPano(pano) {
-  await updatePanoInfo(pano);
-  updateHashParams(map, pano, panoViewer?.getPosition());
-  if (panoViewer) {
-    await panoViewer.navigateTo(pano);
-  } else {
-    await initPanoViewer(pano);
-    switchMapToPanoLayout();
-  }
-  updateMapMarker(pano);
-}
-
-async function initPanoViewer(pano) {
-  const container = document.querySelector("#pano");
-  panoViewer = await createPanoViewer({
-    container: container,
-    initialPano: pano,
-  });
-
-  panoViewer.plugins.movement.addEventListener("moved", async (e) => {
-    onPanoChanged(e);
-  });
-
-  panoViewer.alternativeDatesChangedCallback = (dates) => {
-    timeMachineControl.setAlternativeDates(dates);
-  };
-
-  const positionUpdateHandler = tinyDebounce(
-    (_) => {updateHashParams(map, currentPano, panoViewer.getPosition())}, 
-    500, 
-    { trailing: true, maxWait: 500 });
-  panoViewer.addEventListener("position-updated", positionUpdateHandler);
-}
-
-function onPanoChanged(e) {
-  const pano = e.detail;
-  currentPano = pano;
-  updateMapMarker(pano);
-  updatePanoInfo(pano).then((_) => updateHashParams(map, pano, panoViewer.getPosition()));
-}
-
-function closePanoViewer() {
-  if (!panoViewer) return;
-
-  currentPano = null;
-  destroyPanoViewer();
-
-  document.querySelector("#map").classList.remove("pano-overlay");
-  map.updateSize();
-  map.getLayers().forEach((layer) => {
-    if (layer.get("name") === "panoMarker") {
-      layer.getSource().getFeatures()[0].setGeometry(null);
-    }
-  });
-
-  toggleLayoutControlVisibility(true);
-
-  document.title = appTitle;
-}
-
-function destroyPanoViewer() {
-  if (!panoViewer) return;
-  panoViewer.destroy();
-  panoViewer = null;
-}
-
-function hookUpOpenLinks() {
-  document.querySelector("#open-in-gsv").addEventListener("click", (_) => { 
-    openInGsv(currentPano.lat, currentPano.lon, panoViewer.getPosition(), panoViewer.getZoomLevel());
-  });
-
-  document.querySelector("#open-in-apple-maps").addEventListener("click", (e) => { 
-    const url = generateAppleMapsUrl(currentPano.lat, currentPano.lon, currentPano.heading, panoViewer.getPosition());
-    if (isRunningOnAppleDevice) {
-      window.open(url, "_blank");
+  async init() {       
+    const params = parseHashParams();
+    if (params.pano) {
+      this.#initMap(params);
+      this.#switchMapToPanoLayout();
+      await this.#fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude);
+      this.panoViewer.rotate(params.pano.position);
     } else {
-      showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500)
-      navigator.clipboard.writeText(url);
+      this.#initMap(params);
     }
-  });
-}
-
-async function updatePanoInfo(pano) {
-  document.querySelector("#pano-id").innerHTML = `${pano.panoid}`; 
-  document.querySelector("#pano-build-id").innerHTML = `${pano.buildId}`; 
-  document.querySelector("#pano-pos").innerHTML = `${pano.lat.toFixed(6)}, ${pano.lon.toFixed(6)}`; 
-  document.querySelector("#pano-ele").innerHTML = `${pano.elevation.toFixed(2)} m`; 
-  /*document.querySelector("#dbg").innerHTML = 
-    `h:${pano.heading * RAD2DEG}°` +
-    `<br>tX:${pano.tilePos[0]} tY:${pano.tilePos[1]}` + 
-    `<br>x:${pano.rawPos[0]} y:${pano.rawPos[1]}` + 
-    `<br>Y:${pano.dbg[0]} P:${pano.dbg[1]} R:${pano.dbg[2]}` + 
-    `<br>alt:${pano.rawAltitude}`;*/
-  const date = new Date(pano.timestamp);
-  const locale = getUserLocale();
-  const formattedDate = new Intl.DateTimeFormat(locale, {
-    dateStyle: "medium",
-    timeStyle: "medium",
-    timeZone: pano.timezone,
-  }).format(date);
-  document.querySelector("#pano-date").innerHTML = formattedDate;
-  fetchAndSetAddress(pano.lat, pano.lon);
-}
-
-async function fetchAndSetAddress(lat, lon) {
-  const address = await geocoder.reverseGeocode(lat, lon, getUserLocale());
-  if (address.length === 0) {
-    document.querySelector("#pano-address-first-line").innerText = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
-    document.querySelector("#pano-address-rest").innerHTML = "";
-    document.title = `${appTitle}`;
-  } else {
-    document.querySelector("#pano-address-first-line").innerText = address[0];
-
-    let html = address
-      .slice(1)
-      .filter((x) => x !== "")
-      .join("<br>");
-    if (geocoder.attributionText) {
-      html += `<div id="nominatim-attribution">${geocoder.attributionText}</div>`;
-    }
-    html += "<hr>";
-
-    document.querySelector("#pano-address-rest").innerHTML = html;
-    document.title = `${address[0]} – ${appTitle}`;
-  }
-}
-
-async function updateMapMarker(pano) {
-  map.getLayers().forEach((layer) => {
-    if (layer.get("name") === "panoMarker") {
-      layer
-        .getSource()
-        .getFeatures()[0]
-        .setGeometry(new Point([pano.lon, pano.lat]));
-    }
-  });
-
-  map.getView().animate({
-    center: [pano.lon, pano.lat],
-    duration: 100,
-  });
-}
-
-function switchMapToPanoLayout() {
-  document.querySelector("#map").classList.add("pano-overlay");
-  toggleLayoutControlVisibility(false);
-  if (map) {
-    map.updateSize();
-  }
-}
-
-function toggleLayoutControlVisibility(isMapLayout) {
-  document.querySelector(".ol-overlaycontainer-stopevent").style.display = isMapLayout ? "block" : "none";
-  document.querySelector("#github-link").style.display = isMapLayout ? "block" : "none";
-  document.querySelector("#close-pano").style.display = isMapLayout ? "none" : "flex";
-  document.querySelector("#pano-info").style.display = isMapLayout ? "none" : "block";
-  document.querySelector("#sidebar-container").style.display = isMapLayout ? "flex" : "none";
-}
-
-function onHashChanged(_) {
-  const params = parseHashParams();
-
-  map.getView().setCenter([params.center.longitude, params.center.latitude]);
-  map.getView().setZoom(params.center.zoom);
-
-  if (!params.pano) {
-    closePanoViewer();
-    return;
   }
 
-  if (approxEqual(params.pano.latitude, currentPano.lat) && 
-      approxEqual(params.pano.longitude, currentPano.lon) && 
-      params.pano.position) {
-    panoViewer.rotate(params.pano.position);
-  } else {
-    fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude)
-    .then(() => {
-      if (params.pano.position) {
-        panoViewer.rotate(params.pano.position);
+  #initMap(params) {
+    const mapMgr = new MapManager(
+      {
+        center: params.center,
+        auth: this.auth,
+      },
+      new FilterControl()
+    );
+    this.map = mapMgr.getMap();
+    this.map.on("moveend", (_) => {
+      updateHashParams(this.map, this.currentPano, this.panoViewer?.getPosition());
+    });
+    this.map.on("click", async (e) => {
+      const clickCoordinates = this.map.getEventCoordinate(e.originalEvent);
+      clickCoordinates[0] = wrapLon(clickCoordinates[0]);
+      await this.#fetchAndDisplayPanoAt(clickCoordinates[1], clickCoordinates[0]);
+    });
+  }
+
+  async #initPanoViewer(pano) {
+    const container = document.querySelector("#pano");
+    this.panoViewer = await createPanoViewer({
+      container: container,
+      initialPano: pano,
+    });
+  
+    this.panoViewer.plugins.movement.addEventListener("moved", async (e) => {
+      this.#onPanoChanged(e);
+    });
+  
+    this.panoViewer.alternativeDatesChangedCallback = (dates) => {
+      this.timeMachineControl.setAlternativeDates(dates);
+    };
+  
+    const positionUpdateHandler = tinyDebounce(
+      (_) => {updateHashParams(this.map, this.currentPano, this.panoViewer.getPosition())}, 
+      500, 
+      { trailing: true, maxWait: 500 }
+      );
+    this.panoViewer.addEventListener("position-updated", positionUpdateHandler);
+  }
+
+  async #fetchAndDisplayPanoAt(lat, lon) {
+    const zoom = this.map.getView().getZoom();
+    let radius;
+    if (zoom > 15) {
+      radius = 20;
+    } else {
+      radius = 100;
+    }
+    const pano = (await this.api.getPanosAroundPoint(lat, lon, radius, 1))[0];
+    this.currentPano = pano;
+    if (pano) {
+      await this.#displayPano(pano);
+    }
+  }
+
+  async #displayPano(pano) {
+    await this.#updatePanoInfo(pano);
+    updateHashParams(this.map, pano, this.panoViewer?.getPosition());
+    if (this.panoViewer) {
+      await this.panoViewer.navigateTo(pano);
+    } else {
+      await this.#initPanoViewer(pano);
+      this.#switchMapToPanoLayout();
+    }
+    this.#updateMapMarker(pano);
+  }
+
+  #onPanoChanged(e) {
+    const pano = e.detail;
+    this.currentPano = pano;
+    this.#updateMapMarker(pano);
+    this.#updatePanoInfo(pano).then((_) => updateHashParams(this.map, pano, this.panoViewer.getPosition()));
+  }
+
+  #closePanoViewer() {
+    if (!this.panoViewer) return;
+  
+    this.currentPano = null;
+    this.#destroyPanoViewer();
+  
+    document.querySelector("#map").classList.remove("pano-overlay");
+    this.map.updateSize();
+    this.map.getLayers().forEach((layer) => {
+      if (layer.get("name") === "panoMarker") {
+        layer.getSource().getFeatures()[0].setGeometry(null);
+      }
+    });
+  
+    this.#toggleLayoutControlVisibility(true);
+  
+    document.title = this.appTitle;
+  }
+
+  #destroyPanoViewer() {
+    if (!this.panoViewer) return;
+    this.panoViewer.destroy();
+    this.panoViewer = null;
+  }
+
+  #hookUpOpenLinks() {
+    document.querySelector("#open-in-gsv").addEventListener("click", (_) => { 
+      openInGsv(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition(), this.panoViewer.getZoomLevel());
+    });
+  
+    document.querySelector("#open-in-apple-maps").addEventListener("click", (e) => { 
+      const url = generateAppleMapsUrl(this.currentPano.lat, this.currentPano.lon, 
+        this.currentPano.heading, this.panoViewer.getPosition());
+      if (this.isRunningOnAppleDevice) {
+        window.open(url, "_blank");
+      } else {
+        showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500)
+        navigator.clipboard.writeText(url);
       }
     });
   }
-}
 
-function constructGeocoder() {
-  switch (localStorage.getItem("addrSource")) {
-    case AddressSource.Nominatim:
-      return new NominatimReverseGeocoder();
-    default:
-    case AddressSource.Apple:
-      return new AppleReverseGeocoder();
+  async #updatePanoInfo(pano) {
+    document.querySelector("#pano-id").innerHTML = `${pano.panoid}`; 
+    document.querySelector("#pano-build-id").innerHTML = `${pano.buildId}`; 
+    document.querySelector("#pano-pos").innerHTML = `${pano.lat.toFixed(6)}, ${pano.lon.toFixed(6)}`; 
+    document.querySelector("#pano-ele").innerHTML = `${pano.elevation.toFixed(2)} m`; 
+    /*document.querySelector("#dbg").innerHTML = 
+      `h:${pano.heading * RAD2DEG}°` +
+      `<br>tX:${pano.tilePos[0]} tY:${pano.tilePos[1]}` + 
+      `<br>x:${pano.rawPos[0]} y:${pano.rawPos[1]}` + 
+      `<br>Y:${pano.dbg[0]} P:${pano.dbg[1]} R:${pano.dbg[2]}` + 
+      `<br>alt:${pano.rawAltitude}`;*/
+    const date = new Date(pano.timestamp);
+    const locale = getUserLocale();
+    const formattedDate = new Intl.DateTimeFormat(locale, {
+      dateStyle: "medium",
+      timeStyle: "medium",
+      timeZone: pano.timezone,
+    }).format(date);
+    document.querySelector("#pano-date").innerHTML = formattedDate;
+    this.#fetchAndSetAddress(pano.lat, pano.lon);
   }
-}
 
-function initSidebar() {
-  const sidebar = document.querySelector("#sidebar");
-  const sidebarToggle = document.querySelector("#sidebar-toggle");
-
-  sidebarToggle.addEventListener("click", (_) => {
-    if (!sidebar.style.display || sidebar.style.display === "none") {
-      sidebar.style.display = "block";
-      sidebarToggle.innerText = ">";
-      sidebarToggle.classList.remove("sidebar-toggle-transparent");
+  async #fetchAndSetAddress(lat, lon) {
+    const address = await this.geocoder.reverseGeocode(lat, lon, getUserLocale());
+    if (address.length === 0) {
+      document.querySelector("#pano-address-first-line").innerText = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+      document.querySelector("#pano-address-rest").innerHTML = "";
+      document.title = `${this.appTitle}`;
     } else {
-      sidebar.style.display = "none";
-      sidebarToggle.innerText = "<";
-      sidebarToggle.classList.add("sidebar-toggle-transparent");
+      document.querySelector("#pano-address-first-line").innerText = address[0];
+  
+      let html = address
+        .slice(1)
+        .filter((x) => x !== "")
+        .join("<br>");
+      if (this.geocoder.attributionText) {
+        html += `<div id="nominatim-attribution">${this.geocoder.attributionText}</div>`;
+      }
+      html += "<hr>";
+  
+      document.querySelector("#pano-address-rest").innerHTML = html;
+      document.title = `${address[0]} – ${this.appTitle}`;
     }
-  });
+  }
 
-  createSettingsControl();
-}
+  async #updateMapMarker(pano) {
+    this.map.getLayers().forEach((layer) => {
+      if (layer.get("name") === "panoMarker") {
+        layer
+          .getSource()
+          .getFeatures()[0]
+          .setGeometry(new Point([pano.lon, pano.lat]));
+      }
+    });
+  
+    this.map.getView().animate({
+      center: [pano.lon, pano.lat],
+      duration: 100,
+    });
+  }
 
-function createSettingsControl() {
-  const settingsControl = new SettingsControl();
-  document.addEventListener("addrSourceChanged", (_) => {
-    geocoder = constructGeocoder();
-  })
-  document.addEventListener("themeChanged", (_) => {
-    setTheme();
-  })
-}
+  #switchMapToPanoLayout() {
+    document.querySelector("#map").classList.add("pano-overlay");
+    this.#toggleLayoutControlVisibility(false);
+    if (this.map) {
+      this.map.updateSize();
+    }
+  }
 
-function setTheme() {
-  switch (localStorage.getItem("theme")) {
-    case Theme.Automatic:
-    default:
-      if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-        document.documentElement.classList.remove("light");
-        document.documentElement.classList.add("dark");
+  #toggleLayoutControlVisibility(isMapLayout) {
+    document.querySelector(".ol-overlaycontainer-stopevent").style.display = isMapLayout ? "block" : "none";
+    document.querySelector("#github-link").style.display = isMapLayout ? "block" : "none";
+    document.querySelector("#close-pano").style.display = isMapLayout ? "none" : "flex";
+    document.querySelector("#pano-info").style.display = isMapLayout ? "none" : "block";
+    document.querySelector("#sidebar-container").style.display = isMapLayout ? "flex" : "none";
+  }
+
+  #onHashChanged(_) {
+    const params = parseHashParams();
+  
+    this.map.getView().setCenter([params.center.longitude, params.center.latitude]);
+    this.map.getView().setZoom(params.center.zoom);
+  
+    if (!params.pano) {
+      this.#closePanoViewer();
+      return;
+    }
+  
+    if (approxEqual(params.pano.latitude, this.currentPano.lat) && 
+        approxEqual(params.pano.longitude, this.currentPano.lon) && 
+        params.pano.position) {
+          this.panoViewer.rotate(params.pano.position);
+    } else {
+      this.#fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude)
+      .then(() => {
+        if (params.pano.position) {
+          this.panoViewer.rotate(params.pano.position);
+        }
+      });
+    }
+  }
+
+  #constructGeocoder() {
+    switch (localStorage.getItem("addrSource")) {
+      case AddressSource.Nominatim:
+        return new NominatimReverseGeocoder();
+      default:
+      case AddressSource.Apple:
+        return new AppleReverseGeocoder();
+    }
+  }
+
+  #initSidebar() {
+    const sidebar = document.querySelector("#sidebar");
+    const sidebarToggle = document.querySelector("#sidebar-toggle");
+  
+    sidebarToggle.addEventListener("click", (_) => {
+      if (!sidebar.style.display || sidebar.style.display === "none") {
+        sidebar.style.display = "block";
+        sidebarToggle.innerText = ">";
+        sidebarToggle.classList.remove("sidebar-toggle-transparent");
       } else {
+        sidebar.style.display = "none";
+        sidebarToggle.innerText = "<";
+        sidebarToggle.classList.add("sidebar-toggle-transparent");
+      }
+    });
+  
+    this.#createSettingsControl();
+  }
+
+  #createSettingsControl() {
+    const settingsControl = new SettingsControl();
+    document.addEventListener("addrSourceChanged", (_) => {
+      this.geocoder = this.#constructGeocoder();
+    })
+    document.addEventListener("themeChanged", (_) => {
+      this.#setTheme();
+    })
+  }
+  
+  #setTheme() {
+    switch (localStorage.getItem("theme")) {
+      case Theme.Automatic:
+      default:
+        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+          document.documentElement.classList.remove("light");
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+          document.documentElement.classList.add("light");
+        }
+        break;
+      case Theme.Light:
         document.documentElement.classList.remove("dark");
         document.documentElement.classList.add("light");
-      }
-      break;
-    case Theme.Light:
-      document.documentElement.classList.remove("dark");
-      document.documentElement.classList.add("light");
-      break;
-    case Theme.Dark:
-      document.documentElement.classList.remove("light");
-      document.documentElement.classList.add("dark");
-      break;
+        break;
+      case Theme.Dark:
+        document.documentElement.classList.remove("light");
+        document.documentElement.classList.add("dark");
+        break;
+    }
   }
-}
 
-function updatePanoInfoVisibility() {
-  if (window.matchMedia("only screen and (max-width: 1000px)").matches
-    || window.matchMedia("only screen and (max-height: 650px)").matches) {
-    document.querySelector("#pano-info-details").removeAttribute("open");
+  #updatePanoInfoVisibility() {
+    if (window.matchMedia("only screen and (max-width: 1000px)").matches
+      || window.matchMedia("only screen and (max-height: 650px)").matches) {
+      document.querySelector("#pano-info-details").removeAttribute("open");
+    }
+    else {
+      document.querySelector("#pano-info-details").open = true;
+    }
   }
-  else {
-    document.querySelector("#pano-info-details").open = true;
+
+  #writeShareLinkToClipboard() {
+    const position = this.panoViewer.getPosition();
+    const payload = encodeShareLinkPayload(this.currentPano.lat, this.currentPano.lon, position.yaw, position.pitch);
+    const link = `${document.location.protocol}//${document.location.host}${document.location.pathname}#s=${payload}`;
+    navigator.clipboard.writeText(link);
   }
-}
 
-function writeShareLinkToClipboard() {
-  const position = panoViewer.getPosition();
-  const payload = encodeShareLinkPayload(currentPano.lat, currentPano.lon, position.yaw, position.pitch);
-  const link = `${document.location.protocol}//${document.location.host}${document.location.pathname}#s=${payload}`;
-  navigator.clipboard.writeText(link);
-}
+} 
 
-
-const appTitle = "Apple Look Around Viewer";
-document.title = appTitle;
-const api = new Api();
-const auth = new Authenticator();
-let map = null;
-let panoViewer = null;
-let currentPano = null;
-let geocoder = constructGeocoder();
-const isRunningOnAppleDevice = isAppleDevice();
-
-setTheme();
-window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (_) => {
-  setTheme();
-});
-initSidebar();
-updatePanoInfoVisibility();
-window.addEventListener("resize", (_) => {
-  updatePanoInfoVisibility();
-});
-
-window.addEventListener("hashchange", onHashChanged);
-document.querySelector("#close-pano").addEventListener("click", (_) => {
-  closePanoViewer();
-});
-document.addEventListener("keydown", async (e) => {
-  if (e.code === "Escape") {
-    closePanoViewer();
-  }
-});
-
-const timeMachineControl = new TimeMachineControl();
-timeMachineControl.panoSelectedCallback = (pano) => {
-  displayPano(pano);
-};
-
-document.querySelector("#pano-share").addEventListener("click", (e) => {
-  writeShareLinkToClipboard();
-  showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500);
-});
-hookUpOpenLinks();
-
-const params = parseHashParams();
-if (params.pano) {
-  initMap();
-  switchMapToPanoLayout();
-  await fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude);
-  panoViewer.rotate(params.pano.position);
-} else {
-  initMap();
-}
-
+const app = new Application();
+await app.init();
