@@ -1,9 +1,10 @@
 import { Group, Mesh, SphereGeometry, Vector3 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core"
-
+import { settings } from "../settings.js";
 import { ScreenFrustum } from "./ScreenFrustum.js";
 import { Face } from "../enums.js";
+
+import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core"
 
 function degToRad(deg) {
   return (deg * Math.PI) / 180;
@@ -22,7 +23,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     super(psv);
     this.psv = psv;
 
-    this.renderTopAndBottomFaces = localStorage.getItem("showFullPano") !== "false";
+    this.renderTopAndBottomFaces = settings.get("showFullPano");
     this.faceAmount = this.renderTopAndBottomFaces ? 6 : 4;
     this.useHeic = psv.config.panoData.useHeic;
     this.endpoint = psv.config.panoData.endpoint;

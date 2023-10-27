@@ -10,6 +10,7 @@ import { SettingsControl } from "./ui/SettingsControl.js";
 import { showNotificationTooltip, isAppleDevice, approxEqual } from "./util/misc.js";
 import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsUrl, encodeShareLinkPayload } from "./url.js";
 import { PanoMetadataBox } from "./ui/PanoMetadataBox.js";
+import { settings } from "./settings.js";
 
 import Point from "ol/geom/Point.js";
 import tinyDebounce from "tiny-debounce";
@@ -284,16 +285,13 @@ class Application {
 
   #createSettingsControl() {
     this.settingsControl = new SettingsControl();
-    document.addEventListener("addrSourceChanged", (_) => {
-      this.panoMetadataBox.addressSourceChanged();
-    })
-    document.addEventListener("themeChanged", (_) => {
-      this.#setTheme();
+    document.addEventListener("settingChanged", (e) => {
+      if (e.setting[0] === "theme") { this.#setTheme(); }
     })
   }
   
   #setTheme() {
-    switch (localStorage.getItem("theme")) {
+    switch (settings.get("theme")) {
       case Theme.Automatic:
       default:
         if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
@@ -321,7 +319,6 @@ class Application {
     const link = `${document.location.protocol}//${document.location.host}${document.location.pathname}#s=${payload}`;
     navigator.clipboard.writeText(link);
   }
-
 } 
 
 const app = new Application();

@@ -9,6 +9,7 @@ import { Theme } from "../enums.js";
 import { getUserLocale } from "../util/misc.js";
 import { GeolocationButton } from "./GeolocationButton.js";
 import { CoverageColorer } from "./layers/colors.js";
+import { settings } from "../settings.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
@@ -77,6 +78,11 @@ class MapManager {
     this.#createPanoMarkerLayer();
     this.#setUpFilterControl();
     this.#createGeolocationButton();
+
+    document.addEventListener("settingChanged", (e) => {
+      if (e.setting[0] === "labelsOnTop") { this.#updateLabelZIndex(e.setting[1]); }
+    })
+
   }
 
   getMap() {
@@ -127,11 +133,7 @@ class MapManager {
         openStreetMap, cartoVoyager, cartoPositron, cartoDarkMatter]
     });
   
-    document.addEventListener("labelOrderChanged", (_) => {
-      const labelsOnTop = localStorage.getItem("labelsOnTop") !== "false";
-      this.#updateLabelZIndex(labelsOnTop);
-    });
-    this.#updateLabelZIndex(localStorage.getItem("labelsOnTop") !== "false");
+    this.#updateLabelZIndex(settings.get("labelsOnTop"));
   }
 
   #setUpOverlays() {
@@ -341,7 +343,7 @@ class MapManager {
 
 function isDarkThemeEnabled() {
   return (
-    localStorage.getItem("theme") === Theme.Dark ||
+    settings.get("theme") === Theme.Dark ||
     (window.matchMedia &&
       window.matchMedia("(prefers-color-scheme: dark)").matches)
   );

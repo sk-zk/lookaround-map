@@ -1,14 +1,15 @@
 import { AddressSource, Theme } from "../enums.js";
+import { settings } from "../settings.js";
 
 export class SettingsControl {
   constructor() {
     const showFullPano = document.querySelector("#show-full-pano");
-    showFullPano.checked = localStorage.getItem("showFullPano") !== "false";
-    showFullPano.addEventListener("change", (_) => localStorage.setItem("showFullPano", showFullPano.checked));
+    showFullPano.checked = settings.get("showFullPano");
+    showFullPano.addEventListener("change", (_) => settings.set("showFullPano", showFullPano.checked));
 
     const addrNominatim = document.querySelector("#addr-nominatim");
     const addrApple = document.querySelector("#addr-apple");
-    switch (localStorage.getItem("addrSource")) {
+    switch (settings.get("addressSource")) {
       case AddressSource.Nominatim:
         addrNominatim.checked = true;
         break;
@@ -18,18 +19,16 @@ export class SettingsControl {
         break;
     }
     addrNominatim.addEventListener("change", (_) => {
-      localStorage.setItem("addrSource", AddressSource.Nominatim);
-      this.#onAddressSourceChanged();
+      settings.set("addressSource", AddressSource.Nominatim);
     });
     addrApple.addEventListener("change", (_) => {
-      localStorage.setItem("addrSource", AddressSource.Apple);
-      this.#onAddressSourceChanged();
+      settings.set("addressSource", AddressSource.Apple);
     });
 
     const themeAuto = document.querySelector("#theme-auto");
     const themeLight = document.querySelector("#theme-light");
     const themeDark = document.querySelector("#theme-dark");
-    switch (localStorage.getItem("theme")) {
+    switch (settings.get("theme")) {
       case Theme.Automatic:
       default:
         themeAuto.checked = true;
@@ -42,35 +41,19 @@ export class SettingsControl {
         break;
     }
     themeAuto.addEventListener("change", (_) => {
-      localStorage.setItem("theme", Theme.Automatic);
-      this.#onThemeChanged();
+      settings.set("theme", Theme.Automatic);
     });
     themeLight.addEventListener("change", (_) => {
-      localStorage.setItem("theme", Theme.Light);
-      this.#onThemeChanged();
+      settings.set("theme", Theme.Light);
     });
     themeDark.addEventListener("change", (_) => {
-      localStorage.setItem("theme", Theme.Dark);
-      this.#onThemeChanged();
+      settings.set("theme", Theme.Dark);
     });
 
     const labelsOnTop = document.querySelector("#labels-on-top");
-    labelsOnTop.checked = localStorage.getItem("labelsOnTop") !== "false";
+    labelsOnTop.checked = settings.get("labelsOnTop");
     labelsOnTop.addEventListener("change", (_) => {
-      localStorage.setItem("labelsOnTop", labelsOnTop.checked);
-      this.#onLabelOrderChanged();
+      settings.set("labelsOnTop", labelsOnTop.checked);
     });
-  }
-
-  #onAddressSourceChanged() {
-    document.dispatchEvent(new CustomEvent("addrSourceChanged"));
-  }
-
-  #onThemeChanged() {
-    document.dispatchEvent(new CustomEvent("themeChanged"));
-  }
-
-  #onLabelOrderChanged() {
-    document.dispatchEvent(new CustomEvent("labelOrderChanged"));
   }
 }

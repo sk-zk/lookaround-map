@@ -1,6 +1,7 @@
 import { getUserLocale } from "../util/misc.js";
 import { NominatimReverseGeocoder, AppleReverseGeocoder } from "../geo/geocoders.js";
 import { AddressSource } from "../enums.js";
+import { settings } from "../settings.js";
 
 export class PanoMetadataBox {
   #appTitle;
@@ -23,10 +24,15 @@ export class PanoMetadataBox {
     this.#date = document.querySelector("#pano-date");
     this.#addressFirstLine = document.querySelector("#pano-address-first-line");
     this.#addressRest = document.querySelector("#pano-address-rest");
+    document.addEventListener("settingChanged", (e) => {
+        if (e.setting[0] === "addressSource") {
+            this.#geocoder = this.#constructGeocoder();
+        }
+    });
   }
 
   #constructGeocoder() {
-    switch (localStorage.getItem("addrSource")) {
+    switch (settings.get("addressSource")) {
       case AddressSource.Nominatim:
         return new NominatimReverseGeocoder();
       default:
@@ -89,9 +95,5 @@ export class PanoMetadataBox {
     } else {
       document.querySelector("#pano-info-details").open = true;
     }
-  }
-
-  addressSourceChanged() {
-    this.#geocoder = this.#constructGeocoder();
   }
 }

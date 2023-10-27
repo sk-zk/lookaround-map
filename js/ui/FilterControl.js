@@ -2,7 +2,6 @@ import { LineColorType } from "../enums.js";
 import { FilterSettings } from "../map/FilterSettings.js";
 
 import GeoJSON from "ol/format/GeoJSON.js";
-import Event from "ol/events/Event.js";
 import Crop from "ol-ext/filter/Crop.js";
 
 export class FilterControl {
@@ -92,12 +91,5 @@ export class FilterControl {
 
   onFiltersChanged() {
     this.filtersChanged(this.#filterSettings);
-  }
-}
-
-export class FilterControlEvent extends Event {
-  constructor(type, filterSettings) {
-    super(type);
-    this.filterSettings = filterSettings;
   }
 }
