@@ -188,10 +188,7 @@ function setUpFilterControl(map, filterControl, coverageColorer) {
 
 function onFiltersChanged(filterSettings, coverageColorer) {
   coverageColorer.filterSettingsChanged(filterSettings);
-  const useRasterTiles =
-    filterSettings.isDefault() ||
-    filterSettings.lineColorType === LineColorType.BuildId;
-  updateActiveCachedBlueLineLayer(useRasterTiles);
+  updateActiveCachedBlueLineLayer(filterSettings.canUseRasterTiles());
   vectorBlueLineLayer.setFilterSettings(filterSettings);
   vectorBlueLineLayer.getLayers().forEach((l) => l.changed());
   lookaroundCoverage.setFilterSettings(filterSettings);

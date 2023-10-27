@@ -18,8 +18,15 @@ export class FilterSettings {
     isDefault() {
         return this.filterByDate === defaults.filterByDate
             && this.showCars === defaults.showCars
-            && this.showCars === defaults.showTrekkers
+            && this.showTrekkers === defaults.showTrekkers
             && this.polygonFilter === defaults.polygonFilter
             && this.lineColorType === defaults.lineColorType;
+    }
+
+    canUseRasterTiles() {
+        return this.filterByDate === defaults.filterByDate
+            && this.showCars === defaults.showCars
+            && this.showTrekkers === defaults.showTrekkers
+            && this.lineColorType !== LineColorType.Age;
     }
 }
