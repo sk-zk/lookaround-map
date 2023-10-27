@@ -2,23 +2,24 @@ import { CoverageType } from "../../enums.js";
 import { Constants } from "../Constants.js";
 import { Api } from "../../Api.js";
 import { wgs84ToTileCoord } from "../../geo/geo.js";
-import { determineCircleColor } from "./colors.js";
+import { CoverageColorer } from "./colors.js";
 import { FilterSettings } from "../FilterSettings.js";
 import { getDevicePixelRatio } from "../../util/misc.js";
 
-import { rgb } from "d3-color";
 import { LRUMap } from "../../external/js_lru/lru.js";
 
 import XYZ from "ol/source/XYZ.js";
 import { createCanvasContext2D } from "ol/dom.js";
 import TileLayer from "ol/layer/Tile.js";
 import LayerGroup from "ol/layer/Group.js";
+import { rgb } from "d3-color";
 
 const coverageTileCache = new LRUMap(2 ** 12);
 const api = new Api();
 
 class LookaroundCoverageSource extends XYZ {
   #filterSettings = new FilterSettings();
+  #coverageColorer = null;
 
   constructor(options) {
     options = options || {};
@@ -73,8 +74,7 @@ class LookaroundCoverageSource extends XYZ {
         continue;
       }
 
-      let color = determineCircleColor(this.#filterSettings, pano);
-      color = rgb(color);
+      let color = rgb(this.#coverageColorer.determineCircleColor(pano));
       color.opacity = 0.2;
       ctx.fillStyle = color.formatRgb();
       color.opacity = 0.8;
@@ -92,6 +92,10 @@ class LookaroundCoverageSource extends XYZ {
 
   setFilterSettings(filterSettings) {
     this.#filterSettings = filterSettings;
+  }
+
+  setCoverageColorer(coverageColorer) {
+    this.#coverageColorer = coverageColorer;
   }
 }
 
@@ -126,6 +130,10 @@ class LookaroundCoverageLayer extends TileLayer {
       this.addFilter(this.#filterSettings.polygonFilter);
     }
   } 
+
+  setCoverageColorer(coverageColorer) {
+    this.getSource().setCoverageColorer(coverageColorer);
+  }
 }
 
 // doing it this way to prevent openlayers from scaling
@@ -177,6 +185,13 @@ lookaroundCoverage.setFilterSettings = (filterSettings) => {
   lookaroundCoverage18.setFilterSettings(filterSettings);
   lookaroundCoverage19.setFilterSettings(filterSettings);
   lookaroundCoverage20.setFilterSettings(filterSettings);
+};
+lookaroundCoverage.setCoverageColorer = (coverageColorer) => {
+  lookaroundCoverage16.setCoverageColorer(coverageColorer);
+  lookaroundCoverage17.setCoverageColorer(coverageColorer);
+  lookaroundCoverage18.setCoverageColorer(coverageColorer);
+  lookaroundCoverage19.setCoverageColorer(coverageColorer);
+  lookaroundCoverage20.setCoverageColorer(coverageColorer);
 };
 
 export { lookaroundCoverage };

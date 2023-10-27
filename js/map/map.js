@@ -8,6 +8,7 @@ import { wrapLon } from "../geo/geo.js";
 import { LineColorType, Theme } from "../enums.js";
 import { getUserLocale } from "../util/misc.js";
 import { GeolocationButton } from "./GeolocationButton.js";
+import { CoverageColorer } from "./layers/colors.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
@@ -80,8 +81,10 @@ export function createMap(config, filterControl) {
   });
   map.addControl(attributionControl);
 
+  const coverageColorer = new CoverageColorer();
+
   setUpSearch(map);
-  setUpFilterControl(map, filterControl);
+  setUpFilterControl(map, filterControl, coverageColorer);
   createContextMenu(map);
   createPanoMarkerLayer(map);
 
@@ -175,18 +178,24 @@ function isDarkThemeEnabled() {
   );
 }
 
-function setUpFilterControl(map, filterControl) {
+function setUpFilterControl(map, filterControl, coverageColorer) {
   vectorBlueLineLayer.setFilterSettings(filterControl.getFilterSettings());
+  vectorBlueLineLayer.setCoverageColorer(coverageColorer);
   lookaroundCoverage.setFilterSettings(filterControl.getFilterSettings());
-  filterControl.filtersChanged = (filterSettings) => {
-    const useRasterTiles = filterSettings.isDefault() 
-      || (filterSettings.lineColorType === LineColorType.BuildId);
-    updateActiveCachedBlueLineLayer(useRasterTiles);
-    vectorBlueLineLayer.setFilterSettings(filterSettings);
-    vectorBlueLineLayer.getLayers().forEach(l => l.changed());
-    lookaroundCoverage.setFilterSettings(filterSettings);
-    lookaroundCoverage.getLayers().forEach(l => l.getSource().refresh());
-  };
+  lookaroundCoverage.setCoverageColorer(coverageColorer);
+  filterControl.filtersChanged = (filterSettings) => onFiltersChanged(filterSettings, coverageColorer);
+}
+
+function onFiltersChanged(filterSettings, coverageColorer) {
+  coverageColorer.filterSettingsChanged(filterSettings);
+  const useRasterTiles =
+    filterSettings.isDefault() ||
+    filterSettings.lineColorType === LineColorType.BuildId;
+  updateActiveCachedBlueLineLayer(useRasterTiles);
+  vectorBlueLineLayer.setFilterSettings(filterSettings);
+  vectorBlueLineLayer.getLayers().forEach((l) => l.changed());
+  lookaroundCoverage.setFilterSettings(filterSettings);
+  lookaroundCoverage.getLayers().forEach((l) => l.getSource().refresh());
 }
 
 function updateActiveCachedBlueLineLayer(useRasterTiles) {

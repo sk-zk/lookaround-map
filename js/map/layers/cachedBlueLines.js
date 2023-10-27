@@ -1,6 +1,6 @@
 import { Constants } from "../Constants.js";
 import { CoverageType, LineColorType } from "../../enums.js";
-import { determineLineColor, carLineColor, trekkerLineColor } from "./colors.js";
+import { CoverageColorer, carLineColor, trekkerLineColor } from "./colors.js";
 import { getDevicePixelRatio } from "../../util/misc.js";
 import { FilterSettings } from "../FilterSettings.js";
 
@@ -31,7 +31,7 @@ const trekkerLinesStyle = new Style({
   }),
 });
 
-function styleFeature(feature, resolution, filterSettings, map) {
+function styleFeature(feature, resolution, filterSettings, map, coverageColorer) {
   if (feature.get("coverage_type") === CoverageType.Car && !filterSettings.showCars) {
     return null;
   }
@@ -48,7 +48,10 @@ function styleFeature(feature, resolution, filterSettings, map) {
 
   const zoom = map.getView().getZoomForResolution(resolution);
   const width = determineLineWidth(zoom);
-  const color = determineLineColor(filterSettings, feature.get("timestamp"), feature.get("coverage_type"));
+  const color = coverageColorer.determineLineColor({
+    timestamp: feature.get("timestamp"), 
+    coverageType: feature.get("coverage_type")
+  });
 
   let style;
   switch (feature.get("coverage_type")) {
@@ -114,6 +117,7 @@ class CachedBlueLinesSource extends VectorTile {
 class CachedBlueLinesLayer extends VectorTileLayer {
   #filterSettings = new FilterSettings();
   #currentPolygonFilter = null;
+  #coverageColorer = null;
 
   constructor(options) {
     options = options || {};
@@ -130,9 +134,7 @@ class CachedBlueLinesLayer extends VectorTileLayer {
       }),
       zIndex: Constants.BLUE_LINES_ZINDEX,
     });
-    super.setStyle((feature, resolution) =>
-      styleFeature(feature, resolution, this.#filterSettings, this.get("map"))
-    );
+    super.setStyle((feature, resolution) => styleFeature(feature, resolution, this.#filterSettings, this.get("map"), this.#coverageColorer));
   }
 
   setFilterSettings(filterSettings) {
@@ -146,6 +148,10 @@ class CachedBlueLinesLayer extends VectorTileLayer {
     if (this.#currentPolygonFilter != null) {
       this.addFilter(this.#filterSettings.polygonFilter);
     }
+  }
+
+  setCoverageColorer(coverageColorer) {
+    this.#coverageColorer = coverageColorer;
   }
 }
 
@@ -172,6 +178,10 @@ const vectorBlueLineLayer = new LayerGroup({
 vectorBlueLineLayer.setFilterSettings = (filterSettings) => {
   blueLineLayerMain.setFilterSettings(filterSettings);
   blueLineLayer15.setFilterSettings(filterSettings);
+};
+vectorBlueLineLayer.setCoverageColorer = (coverageColorer) => {
+  blueLineLayerMain.setCoverageColorer(coverageColorer);
+  blueLineLayer15.setCoverageColorer(coverageColorer);
 };
 
 const rasterBlueLineLayer = new TileLayer({
