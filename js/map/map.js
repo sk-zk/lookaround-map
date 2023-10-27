@@ -219,6 +219,8 @@ class MapManager {
     vectorBlueLineLayer.getLayers().forEach((l) => l.changed());
     lookaroundCoverage.setFilterSettings(filterSettings);
     lookaroundCoverage.getLayers().forEach((l) => l.getSource().refresh());
+    rasterBlueLineLayer.setFilterSettings(filterSettings);
+    rasterBlueLineLayer.changed();
   }
 
   #updateActiveCachedBlueLineLayer(useRasterTiles) {

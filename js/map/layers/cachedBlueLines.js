@@ -13,6 +13,7 @@ import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ.js";
 import { createXYZ } from "ol/tilegrid";
 import TileLayer from "ol/layer/Tile.js";
+import { ImageTile } from "ol";
 
 const OPACITY = 0.8;
 
@@ -184,19 +185,40 @@ vectorBlueLineLayer.setCoverageColorer = (coverageColorer) => {
   blueLineLayer15.setCoverageColorer(coverageColorer);
 };
 
-const rasterBlueLineLayer = new TileLayer({
-  visible: true,
-  type: "overlay",
-  source: new XYZ({
-    url: `https://lookmap.eu.pythonanywhere.com/bluelines_raster${pixelRatio > 1 ? "_2x" : ""}/{z}/{x}/{y}.png`,
-    minZoom: Constants.MIN_ZOOM,
-    maxZoom: 7,
-    tilePixelRatio: Math.min(2, pixelRatio)
-  }),
-  minZoom: Constants.MIN_ZOOM-1,
-  maxZoom: 7,
-  opacity: OPACITY,
-  zIndex: Constants.BLUE_LINES_ZINDEX,
-});
+class RasterBlueLineLayer extends TileLayer {
+  #filterSettings = new FilterSettings();
+  #currentPolygonFilter;
+
+  constructor() {
+    super({
+      visible: true,
+      type: "overlay",
+      source: new XYZ({
+        url: `https://lookmap.eu.pythonanywhere.com/bluelines_raster${pixelRatio > 1 ? "_2x" : ""}/{z}/{x}/{y}.png`,
+        minZoom: Constants.MIN_ZOOM,
+        maxZoom: 7,
+        tilePixelRatio: Math.min(2, pixelRatio)
+      }),
+      minZoom: Constants.MIN_ZOOM-1,
+      maxZoom: 7,
+      opacity: OPACITY,
+      zIndex: Constants.BLUE_LINES_ZINDEX,
+    });
+  }
+
+  setFilterSettings(filterSettings) {
+    this.#filterSettings = filterSettings;
+    this.#setPolygonFilter();
+  }
+
+  #setPolygonFilter() {
+    this.removeFilter(this.#currentPolygonFilter);
+    this.#currentPolygonFilter = this.#filterSettings.polygonFilter;
+    if (this.#currentPolygonFilter != null) {
+      this.addFilter(this.#filterSettings.polygonFilter);
+    }
+  } 
+}
+const rasterBlueLineLayer = new RasterBlueLineLayer();
 
 export { rasterBlueLineLayer, vectorBlueLineLayer };
