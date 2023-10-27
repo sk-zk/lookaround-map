@@ -1,6 +1,6 @@
 import { Api } from "./Api.js";
 import { Authenticator } from "./util/Authenticator.js";
-import { createMap } from "./map/map.js";
+import { MapManager } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
 import { NominatimReverseGeocoder, AppleReverseGeocoder} from "./geo/geocoders.js";
 import { wrapLon, RAD2DEG } from "./geo/geo.js";
@@ -21,13 +21,14 @@ import "./external/ol-layerswitcher/ol-layerswitcher.css";
 import "../static/style.css";
 
 function initMap() {
-  map = createMap(
+  const mapMgr = new MapManager(
     {
       center: params.center,
       auth: auth,
     },
     new FilterControl()
   );
+  map = mapMgr.getMap();
   map.on("moveend", (_) => {
     updateHashParams(map, currentPano, panoViewer?.getPosition());
   });
@@ -140,8 +141,12 @@ async function updatePanoInfo(pano) {
   document.querySelector("#pano-build-id").innerHTML = `${pano.buildId}`; 
   document.querySelector("#pano-pos").innerHTML = `${pano.lat.toFixed(6)}, ${pano.lon.toFixed(6)}`; 
   document.querySelector("#pano-ele").innerHTML = `${pano.elevation.toFixed(2)} m`; 
-    /*`<br>h:${pano.heading * RAD2DEG}°` +
-    `<br>Y:${pano.dbg[0]} P:${pano.dbg[1]} R:${pano.dbg[2]}`*/
+  /*document.querySelector("#dbg").innerHTML = 
+    `h:${pano.heading * RAD2DEG}°` +
+    `<br>tX:${pano.tilePos[0]} tY:${pano.tilePos[1]}` + 
+    `<br>x:${pano.rawPos[0]} y:${pano.rawPos[1]}` + 
+    `<br>Y:${pano.dbg[0]} P:${pano.dbg[1]} R:${pano.dbg[2]}` + 
+    `<br>alt:${pano.rawAltitude}`;*/
   const date = new Date(pano.timestamp);
   const locale = getUserLocale();
   const formattedDate = new Intl.DateTimeFormat(locale, {
@@ -363,3 +368,4 @@ if (params.pano) {
 } else {
   initMap();
 }
+
