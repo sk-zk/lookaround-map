@@ -10,6 +10,9 @@
   <meta name="viewport" content="user-scalable=no, initial-scale=1.0, width=device-width" />
   <link rel="stylesheet" href="/static/dist/main.css">
 
+  <link rel="preconnect" href="https://fonts.bunny.net">
+  <link href="https://fonts.bunny.net/css?family=inter:300,600" rel="stylesheet" />
+  
   <meta property="og:title" content="Apple Look Around Viewer" />
   <meta property="og:description" content="A community-made web viewer for Apple Look Around" />
 </head>
@@ -22,7 +25,7 @@
   <div id="pano-info">
     <details id="pano-info-details" open>
     <summary>
-      <img class="pano-info-hamburger" src="/static/icons/menu.svg" width="20" height="20" title="View more"> <strong><span id="pano-address-first-line"></span></strong>
+      <img class="pano-info-hamburger" src="/static/icons/menu.svg" width="20" height="20" title="View more"> <span id="pano-address-first-line"></span>
       <div id="pano-share-container">
         <a href="javascript:void(0);" id="pano-share">
           <img class="pano-share-icon" src="/static/icons/share.svg" width="20" height="20" title="Share this location">
@@ -44,6 +47,7 @@
         <span class="pano-technical-desc">Position: </span><span id="pano-pos"></span>
         <span class="pano-technical-desc">Height: </span><span id="pano-ele"></span>
       </div>
+      <div id="dbg"></div>
       <div>Open in <a href="javascript:void(0);" id="open-in-gsv">Google Street View</a> | <a href="javascript:void(0);" id="open-in-apple-maps">Apple Maps</a></div>
     </div>
   </details>

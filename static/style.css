@@ -1,12 +1,12 @@
 * {
-  font-family: "Segoe UI", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 body {
   margin: 0;
   padding: 0;
-  font-size: 16px;
-  line-height: 1.3em;
+  font-size: 15px;
+  line-height: 1.4em;
 }
 
 /********/
@@ -100,7 +100,7 @@ body {
   height: 250px !important;
   left: 10px;
   bottom: 10px;
-  border: 1px solid rgba(120, 120, 120, 0.7);
+  border: 1px solid rgba(120, 120, 120, 0.8);
 }
 
 #pano {
@@ -126,7 +126,7 @@ body {
   z-index: 2;
   width: 30px;
   height: 30px;
-  background-color: rgba(50, 50, 50, 0.7);
+  background-color: rgba(50, 50, 50, 0.8);
   color: white;
   text-align: center;
   font-size: 16pt;
@@ -139,7 +139,7 @@ body {
   display: none;
   top: 10px;
   left: 10px;
-  background-color: rgba(50, 50, 50, 0.7);
+  background-color: rgba(50, 50, 50, 0.8);
   z-index: 2;
   color: white;
   max-width: 420px;
@@ -156,7 +156,7 @@ body {
     height: 22vh !important;
     left: 0px;
     bottom: 0px;
-    border: 1px solid rgba(120, 120, 120, 0.7);
+    border: 1px solid rgba(120, 120, 120, 0.8);
   }
 
   #pano {
@@ -334,7 +334,7 @@ body {
 #sidebar {
   background: var(--map-ui-bg);
   height: 100%;
-  width: 300px;
+  width: 330px;
   padding: 15px;
   box-sizing: border-box;
   display: none;
@@ -461,7 +461,7 @@ body {
 
 #pano-technical-container {
   display: grid; 
-  grid-template-columns: auto 1fr 0.5fr 1fr; 
+  grid-template-columns: auto 0.9fr auto 0.8fr; 
   grid-template-rows: 1fr 1fr; 
 }
 
@@ -469,4 +469,9 @@ body {
   text-align: right;
   color: #d8d8d8;
   padding-right: 0.5em;
+}
+
+#pano-address-first-line {
+  font-weight: 600;
+  font-size: 1.1em;
 }
