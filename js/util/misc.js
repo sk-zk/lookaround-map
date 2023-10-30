@@ -20,7 +20,7 @@ export function showNotificationTooltip(text, xPos, yPos, duration) {
 
 export function isAppleDevice() {
   const ua = navigator.userAgent.toLowerCase();
-  const appleIndicators = ["mac os", "macintosh", "iphone", "ipad", "darwin", "webkit", "apple"];
+  const appleIndicators = ["mac os", "macintosh", "iphone", "ipad", "darwin", "apple"];
   for (const indicator of appleIndicators) {
     if (ua.indexOf(indicator) > -1) {
       return true;
