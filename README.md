@@ -42,7 +42,7 @@ To do so, three options are implemented. Simply install the one you like and it 
      but the actual content of the individual sections remains undeciphered. 
 - [ ] Decode the mesh, render it, and use it to improve movement etc.
    - There are three types of pano data Apple Maps will request. One is `/t/<face>/<zoom>`, which returns the pano faces as HEIC, but there are two others: `/m/<zoom>` and `/mt/7`,
-     in a custom container format with the header `MCP4`. These files contain the mesh, compressed with Edgebreaker.
+     in a custom container format starting with the magic string `MCP4`. These files contain the mesh, compressed with Edgebreaker.
 
 ## Credits
 This app uses icons by [eva-icons](https://github.com/akveo/eva-icons) and [bqlqn](https://www.flaticon.com/authors/bqlqn/fill?author_id=291&type=standard).
