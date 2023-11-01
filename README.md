@@ -40,8 +40,9 @@ To do so, three options are implemented. Simply install the one you like and it 
      for containing that information is style 53 at z=15 specifically.  
    - This tile is in Apple's custom `VMP4` format. The general structure of the format [has been decoded](https://github.com/19h/vmp4-dump),
      but the actual content of the individual sections remains undeciphered. 
-- [ ] Decode the depth / mesh data and use it to improve movement etc.
-   - There are three types of pano data Apple Maps will request. One is `/t/<face>/<zoom>`, which returns the pano faces as HEIC, but there are two others: `/m/<zoom>` and `/mt/7`, in a custom format with the header `MCP4`. One of them probably contains the depth information I'm looking for.
+- [ ] Decode the mesh, render it, and use it to improve movement etc.
+   - There are three types of pano data Apple Maps will request. One is `/t/<face>/<zoom>`, which returns the pano faces as HEIC, but there are two others: `/m/<zoom>` and `/mt/7`,
+     in a custom container format with the header `MCP4`. These files contain the mesh, compressed with Edgebreaker.
 
 ## Credits
 This app uses icons by [eva-icons](https://github.com/akveo/eva-icons) and [bqlqn](https://www.flaticon.com/authors/bqlqn/fill?author_id=291&type=standard).
