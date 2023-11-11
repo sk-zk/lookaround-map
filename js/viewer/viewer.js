@@ -48,6 +48,11 @@ export async function createPanoViewer(config) {
       pan: config.initialPano.heading + YAW_OFFSET,
     },
     plugins: plugins,
+    rendererParameters: {
+      alpha: true,
+      antialias: true,
+      preserveDrawingBuffer: true,
+    }
   });
 
   viewer.api = new Api(endpoint);
@@ -96,6 +101,10 @@ export async function createPanoViewer(config) {
       const alternativeDates = getAlternativeDates(config.initialPano, nearbyPanos);
       viewer.alternativeDatesChangedCallback(alternativeDates);
     });
+
+  viewer.takeScreenshot = function() {
+    return document.querySelector(".psv-canvas").toDataURL("image/jpeg", 1.0);
+  }
 
   return viewer;
 }

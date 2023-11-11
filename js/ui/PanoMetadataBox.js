@@ -2,8 +2,10 @@ import { getUserLocale } from "../util/misc.js";
 import { NominatimReverseGeocoder, AppleReverseGeocoder } from "../geo/geocoders.js";
 import { AddressSource } from "../enums.js";
 import { settings } from "../settings.js";
+import { RAD2DEG } from "../geo/geo.js";
 
 export class PanoMetadataBox {
+  #address;
   #appTitle;
   #geocoder;
   #panoId;
@@ -15,6 +17,7 @@ export class PanoMetadataBox {
   #addressRest;
 
   constructor(appTitle) {
+    this.#address = null;
     this.#appTitle = appTitle;
     this.#geocoder = this.#constructGeocoder();
     this.#panoId = document.querySelector("#pano-id");
@@ -65,6 +68,7 @@ export class PanoMetadataBox {
 
   async #fetchAndSetAddress(lat, lon) {
     const address = await this.#geocoder.reverseGeocode(lat, lon, getUserLocale());
+    this.#address = address;
     if (address.length === 0) {
       this.#addressFirstLine.innerText = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
       this.#addressRest.innerHTML = "";
@@ -95,5 +99,9 @@ export class PanoMetadataBox {
     } else {
       document.querySelector("#pano-info-details").open = true;
     }
+  }
+
+  getAddress() {
+    return this.#address;
   }
 }

@@ -73,6 +73,10 @@ class Application {
       showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500);
     });
     this.#hookUpOpenLinks();
+
+    document.querySelector("#pano-screenshot").addEventListener("click", (e) => {
+      this.#takeScreenshotOfViewer();
+    });
   }
 
   async init() {       
@@ -160,9 +164,8 @@ class Application {
     const pano = e.detail;
     this.currentPano = pano;
     this.#updateMapMarker(pano);
-    this.panoMetadataBox.update(pano).then((_) => 
-      updateHashParams(this.map, pano, this.panoViewer.getPosition())
-    );
+    this.panoMetadataBox.update(pano);
+    updateHashParams(this.map, pano, this.panoViewer.getPosition());
   }
 
   #closePanoViewer() {
@@ -318,6 +321,16 @@ class Application {
     const payload = encodeShareLinkPayload(this.currentPano.lat, this.currentPano.lon, position.yaw, position.pitch);
     const link = `${document.location.protocol}//${document.location.host}${document.location.pathname}#s=${payload}`;
     navigator.clipboard.writeText(link);
+  }
+
+  #takeScreenshotOfViewer() {
+    const screenshot = this.panoViewer.takeScreenshot();
+    const a = document.createElement("a");
+    a.target = "_blank";
+    a.href = screenshot;
+    a.download = this.panoMetadataBox.getAddress()[0];
+    a.click();
+    a.remove();
   }
 } 
 
