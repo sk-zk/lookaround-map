@@ -116,7 +116,8 @@ export class MovementPlugin extends AbstractPlugin {
     if (e.data.rightclick || !this.movementEnabled) {
       return;
     }
-    if (!this.marker.visible || !this.marker.config.data) {
+
+    if (!this.marker.state.visible || !this.marker.config.data) {
       if (this.mouseHasMoved) {
         return;
       } else {
