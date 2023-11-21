@@ -10,6 +10,9 @@ function degToRad(deg) {
   return (deg * Math.PI) / 180;
 }
 
+const YAW_OFFSET = 1.07992247; // 61.875°, which is the center of face 0
+
+
 /**
  * @summary Adapter for Look Around panoramas
  * @memberof PSV.adapters
@@ -145,7 +148,7 @@ export class LookaroundAdapter extends AbstractAdapter {
         radius,
         12 * 2,
         this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(0-90),
+        degToRad(0-90) - YAW_OFFSET,
         degToRad(120),
         sideFaceThetaStart,
         sideFaceThetaLength,
@@ -154,7 +157,7 @@ export class LookaroundAdapter extends AbstractAdapter {
         radius,
         6 * 2,
         this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(120-90),
+        degToRad(120-90) - YAW_OFFSET,
         degToRad(60),
         sideFaceThetaStart,
         sideFaceThetaLength,
@@ -163,7 +166,7 @@ export class LookaroundAdapter extends AbstractAdapter {
         radius,
         12 * 2,
         this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(180-90),
+        degToRad(180-90) - YAW_OFFSET,
         degToRad(120),
         sideFaceThetaStart,
         sideFaceThetaLength,
@@ -172,7 +175,7 @@ export class LookaroundAdapter extends AbstractAdapter {
         radius,
         6 * 2,
         this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(300-90),
+        degToRad(300-90) - YAW_OFFSET,
         degToRad(60),
         sideFaceThetaStart,
         sideFaceThetaLength,
@@ -208,11 +211,11 @@ export class LookaroundAdapter extends AbstractAdapter {
         this.__setTopBottomUV(geom, i);
       }
       if (i == Face.Top) {
-        geom.rotateY(degToRad(27.5 - 90));
+        geom.rotateY(degToRad(27.5 - 90) + YAW_OFFSET);
       }
       else if (i == Face.Bottom) {
         geom.scale(1,1,1.5);
-        geom.rotateY(degToRad(27.5 - 90));
+        geom.rotateY(degToRad(27.5 - 90) + YAW_OFFSET);
       }
       geometries.push(geom);
       this.meshesForFrustum.push(new Mesh(geom, []));

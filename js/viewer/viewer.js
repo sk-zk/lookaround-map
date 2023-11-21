@@ -5,14 +5,12 @@ import { CompassPlugin } from "@photo-sphere-viewer/compass-plugin";
 import { Api } from "../Api.js";
 import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
-import { distanceBetween } from "../geo/geo.js";
+import { DEG2RAD, distanceBetween } from "../geo/geo.js";
 import { isHeicSupported } from "../util/misc.js";
 
 import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
 import "@photo-sphere-viewer/compass-plugin/index.css";
-
-const YAW_OFFSET = 1.07992247; // 61.875°, which is the center of face 0
 
 export const DefaultHeading = Object.freeze({
 	North: 0,
@@ -45,7 +43,9 @@ export async function createPanoViewer(config) {
     defaultZoomLvl: defaultZoomLvl,
     navbar: null,
     sphereCorrection: {
-      pan: config.initialPano.heading + YAW_OFFSET,
+      pan: config.initialPano.heading,
+      //tilt: config.initialPano.pitch,
+      //roll: config.initialPano.roll
     },
     plugins: plugins,
     rendererParameters: {
@@ -63,7 +63,7 @@ export async function createPanoViewer(config) {
     // for some reason, setPanorama doesn't appear to store the
     // new sphereCorrection anywhere, so I'm just passing it to the
     // viewer adapter manually
-    viewer.panWorkaround = pano.heading + YAW_OFFSET;
+    viewer.panWorkaround = pano.heading;
 
     if (resetView) {
       // temporarily disable dynamic face loading.
@@ -79,7 +79,9 @@ export async function createPanoViewer(config) {
     }, {
       showLoader: false,
       sphereCorrection: {
-        pan: pano.heading + YAW_OFFSET,
+        pan: pano.heading,
+        //tilt: pano.pitch,
+        //roll: pano.roll
       },
     });
     if (resetView) {

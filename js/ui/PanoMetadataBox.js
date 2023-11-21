@@ -50,11 +50,8 @@ export class PanoMetadataBox {
     this.#position.innerHTML = `${pano.lat.toFixed(6)}, ${pano.lon.toFixed(6)}`;
     this.#elevation.innerHTML = `${pano.elevation.toFixed(2)} m`;
     /*document.querySelector("#dbg").innerHTML = 
-        `h:${pano.heading * RAD2DEG}°` +
-        `<br>tX:${pano.tilePos[0]} tY:${pano.tilePos[1]}` + 
-        `<br>x:${pano.rawPos[0]} y:${pano.rawPos[1]}` + 
-        `<br>Y:${pano.dbg[0]} P:${pano.dbg[1]} R:${pano.dbg[2]}` + 
-        `<br>alt:${pano.rawAltitude}`;*/
+        `rY:${pano.dbg[0]} rP:${pano.dbg[1]} rR:${pano.dbg[2]}` + 
+        `<br>Y:${pano.heading * RAD2DEG}°`; // P:${pano.pitch * RAD2DEG}° R:${pano.roll * RAD2DEG}°`;*/
     const date = new Date(pano.timestamp);
     const locale = getUserLocale();
     const formattedDate = new Intl.DateTimeFormat(locale, {
