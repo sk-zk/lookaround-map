@@ -7,6 +7,7 @@ const LineColorType = Object.freeze({
   CoverageType: 0,
   Age: 1,
   BuildId: 2,
+  Heading: 3,
 });
 
 const Face = Object.freeze({

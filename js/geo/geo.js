@@ -169,10 +169,10 @@ export function distanceBetween(lat1, lon1, lat2, lon2, R = 6371.0) {
     return Math.sqrt(x * x + y * y) * R;
 }
 
-function wrap(angle) {
-    angle %= TAU;
-    if (angle < 0) {
-      angle += TAU;
-    }
-    return angle;
+export function wrap(angle) {
+  angle %= TAU;
+  if (angle < 0) {
+    angle += TAU;
   }
+  return angle;
+}

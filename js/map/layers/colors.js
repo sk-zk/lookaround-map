@@ -1,7 +1,8 @@
 import { LineColorType, CoverageType } from "../../enums.js";
 import { FilterSettings } from "../FilterSettings.js";
+import { wrap } from "../../geo/geo.js";
 
-import { interpolateTurbo } from "d3-scale-chromatic";
+import { interpolateTurbo, interpolateSinebow } from "d3-scale-chromatic";
 
 const earliestDate = Math.floor(new Date("2018-06-01").getTime());
 const latestDate =   Math.floor(new Date("2023-09-01").getTime());
@@ -19,7 +20,7 @@ function offsetTurbo(n) {
 }
 
 function circlesOnly(lineColorType) {
-  return lineColorType === LineColorType.BuildId;
+  return lineColorType === LineColorType.BuildId || lineColorType === LineColorType.Heading;
 }
 
 class CoverageColorer {
@@ -67,6 +68,10 @@ class CoverageColorer {
       const offsetFn = offsetTurbo;
       const interpFn = interpolateTurbo;
       this.colorFunction = (metadata) => interpFn(offsetFn(convFn(metadata.buildId)));
+    } else if (filterSettings.lineColorType === LineColorType.Heading) {
+      const convFn = createValueToPercentFunction(0, Math.PI * 2);
+      const interpFn = interpolateSinebow;
+      this.colorFunction = (metadata) => interpFn(convFn(wrap(metadata.heading)));
     } else {
       this.colorFunction = this.coverageTypeFunction;
     }

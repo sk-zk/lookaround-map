@@ -54,6 +54,10 @@ export class FilterControl {
       this.#filterSettings.lineColorType = LineColorType.BuildId;
       this.onFiltersChanged();
     });
+    document.querySelector("#color-by-heading").addEventListener("change", (_) => {
+      this.#filterSettings.lineColorType = LineColorType.Heading;
+      this.onFiltersChanged();
+    });
 
     document.querySelector("#polygon-filter").addEventListener("change", (e) => { 
       this.#polygonSelected(e); 
