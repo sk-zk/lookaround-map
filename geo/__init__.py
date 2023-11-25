@@ -1,7 +1,6 @@
 from pyproj import CRS
 
 from lookaround.geo import wgs84_to_tile_coord
-from .geocode import reverse_geocode
 
 geod = CRS("epsg:4326").get_geod()
 

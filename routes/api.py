@@ -12,6 +12,7 @@ import requests
 from requests import HTTPError
 
 from lookaround.auth import Authenticator
+from lookaround.geocode import reverse_geocode
 from lookaround import get_coverage_tile, get_pano_face
 import geo
 from config import config
@@ -110,7 +111,7 @@ def address():
         abort(400)
     
     try:
-        address = geo.reverse_geocode(lat, lon, language=language, session=addr_session)
+        address = reverse_geocode(lat, lon, display_language=[language], session=addr_session)
         return jsonify(address)
     except AttributeError:
         return jsonify([])
