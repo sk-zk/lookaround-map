@@ -20,7 +20,7 @@ function offsetTurbo(n) {
 }
 
 function circlesOnly(lineColorType) {
-  return lineColorType === LineColorType.BuildId || lineColorType === LineColorType.Heading;
+  return lineColorType === LineColorType.BuildId;
 }
 
 class CoverageColorer {
@@ -68,10 +68,6 @@ class CoverageColorer {
       const offsetFn = offsetTurbo;
       const interpFn = interpolateTurbo;
       this.colorFunction = (metadata) => interpFn(offsetFn(convFn(metadata.buildId)));
-    } else if (filterSettings.lineColorType === LineColorType.Heading) {
-      const convFn = createValueToPercentFunction(0, Math.PI * 2);
-      const interpFn = interpolateSinebow;
-      this.colorFunction = (metadata) => interpFn(convFn(wrap(metadata.heading)));
     } else {
       this.colorFunction = this.coverageTypeFunction;
     }
