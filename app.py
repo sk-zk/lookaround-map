@@ -10,7 +10,6 @@ sys.path.append("lookaround")
 from routes.api import api
 from config import config
 from misc.util import load_ip_blacklist
-from misc.CustomJSONEncoder import CustomJSONEncoder
 
 
 def create_app():
@@ -30,7 +29,6 @@ def create_app():
     compress.init_app(app)
 
     app.config['JSONIFY_PRETTYPRINT_REGULAR'] = False
-    app.json_encoder = CustomJSONEncoder
     
     mimetypes.add_type('text/javascript', '.js')
     pillow_heif.register_heif_opener()
@@ -43,7 +41,7 @@ def create_app():
 
     @app.before_request
     def you_know_what_you_did():
-        ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)
+        ip = request.environ.get('HTTP_X_REAL_IP', request.remote_addr)     
         if ip in ip_blacklist:
             return redirect(config.IP_BLACKLIST_REDIRECT_URL)
 
