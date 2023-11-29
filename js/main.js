@@ -195,7 +195,7 @@ class Application {
 
   #hookUpOpenLinks() {
     document.querySelector("#open-in-gsv").addEventListener("click", (_) => { 
-      openInGsv(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition(), this.panoViewer.getZoomLevel());
+      openInGsv(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition(), this.panoViewer.renderer.camera.fov);
     });
   
     document.querySelector("#open-in-apple-maps").addEventListener("click", (e) => { 

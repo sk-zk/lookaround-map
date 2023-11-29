@@ -66,13 +66,11 @@ export function updateHashParams(map, currentPano, panoViewerPosition) {
   history.replaceState(null, null, document.location.pathname + "#" + newHash);
 }
 
-export function openInGsv(lat, lon, position, zoom) {
+export function openInGsv(lat, lon, position, fov) {
   const yaw = position.yaw * RAD2DEG;
   const pitch = position.pitch * RAD2DEG + 90;
-  // estimated, but it works well enough
-  zoom = -0.65 * zoom + 77.5;
   window.open(
-    `https://www.google.com/maps/@${lat},${lon},3a,${zoom}y,${yaw}h,${pitch}t/data=!3m1!1e1`,
+    `https://www.google.com/maps/@${lat},${lon},3a,${fov}y,${yaw}h,${pitch}t/data=!3m1!1e1`,
     "_blank"
   );
 }
