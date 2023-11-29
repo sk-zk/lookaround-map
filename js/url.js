@@ -75,7 +75,7 @@ export function openInGsv(lat, lon, position, fov) {
   );
 }
 
-export function generateAppleMapsUrl(lat, lon, heading, position) {
+export function generateAppleMapsUrl(lat, lon, position) {
   const message = new proto.MuninViewState();
   const viewState = new proto.MuninViewState.ViewState();
   viewState.setLatitude(lat);

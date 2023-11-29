@@ -199,8 +199,7 @@ class Application {
     });
   
     document.querySelector("#open-in-apple-maps").addEventListener("click", (e) => { 
-      const url = generateAppleMapsUrl(this.currentPano.lat, this.currentPano.lon, 
-        this.currentPano.heading, this.panoViewer.getPosition());
+      const url = generateAppleMapsUrl(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition());
       if (this.isRunningOnAppleDevice) {
         window.open(url, "_blank");
       } else {
