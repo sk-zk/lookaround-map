@@ -32,6 +32,8 @@ def pano_to_dict(pano: LookaroundPanorama, include_heading=True, include_elevati
         }
     if include_heading:
         pano_dict["heading"] = pano.heading
+        pano_dict["pitch"] = pano.pitch
+        pano_dict["roll"] = pano.roll
     if include_elevation:
         pano_dict["elevation"] = pano.elevation
     return pano_dict

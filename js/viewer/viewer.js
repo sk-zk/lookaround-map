@@ -44,8 +44,8 @@ export async function createPanoViewer(config) {
     navbar: null,
     sphereCorrection: {
       pan: config.initialPano.heading,
-      //tilt: config.initialPano.pitch,
-      //roll: config.initialPano.roll
+      tilt: config.initialPano.pitch,
+      roll: config.initialPano.roll
     },
     plugins: plugins,
     rendererParameters: {
@@ -80,8 +80,8 @@ export async function createPanoViewer(config) {
       showLoader: false,
       sphereCorrection: {
         pan: pano.heading,
-        //tilt: pano.pitch,
-        //roll: pano.roll
+        tilt: pano.pitch,
+        roll: pano.roll
       },
     });
     if (resetView) {
