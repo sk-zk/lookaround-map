@@ -235,7 +235,6 @@ class Application {
 
   #toggleLayoutControlVisibility(isMapLayout) {
     document.querySelector(".ol-overlaycontainer-stopevent").style.display = isMapLayout ? "block" : "none";
-    document.querySelector("#github-link").style.display = isMapLayout ? "block" : "none";
     document.querySelector("#close-pano").style.display = isMapLayout ? "none" : "flex";
     document.querySelector("#pano-info").style.display = isMapLayout ? "none" : "block";
     document.querySelector("#sidebar-container").style.display = isMapLayout ? "flex" : "none";
@@ -273,12 +272,12 @@ class Application {
     sidebarToggle.addEventListener("click", (_) => {
       if (!sidebar.style.display || sidebar.style.display === "none") {
         sidebar.style.display = "block";
-        sidebarToggle.innerText = ">";
-        sidebarToggle.classList.remove("sidebar-toggle-transparent");
+        sidebarToggle.classList.remove("sidebar-toggle-closed");
+        sidebarToggle.classList.add("sidebar-toggle-open");
       } else {
         sidebar.style.display = "none";
-        sidebarToggle.innerText = "<";
-        sidebarToggle.classList.add("sidebar-toggle-transparent");
+        sidebarToggle.classList.remove("sidebar-toggle-open");
+        sidebarToggle.classList.add("sidebar-toggle-closed");
       }
     });
   

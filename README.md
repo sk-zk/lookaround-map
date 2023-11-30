@@ -44,4 +44,4 @@ To do so, one of these three libraries can be used. Simply install the one you l
    - Everyone's least favorite feature, but it makes sense to add it for completion's sake.
 
 ## Credits
-This app uses icons by [eva-icons](https://github.com/akveo/eva-icons) and [bqlqn](https://www.flaticon.com/authors/bqlqn/fill?author_id=291&type=standard).
+This app uses icons by [eva-icons](https://github.com/akveo/eva-icons) and [boxicons](https://github.com/atisawd/boxicons).

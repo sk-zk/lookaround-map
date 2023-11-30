@@ -25,16 +25,21 @@
   <div id="pano-info">
     <details id="pano-info-details" open>
     <summary>
-      <img class="pano-info-hamburger" src="/static/icons/menu.svg" width="20" height="20" title="View more"> <span id="pano-address-first-line"></span>
-      <div id="pano-share-container">
-        <a href="javascript:void(0);" id="pano-screenshot"><img class="pano-share-icon" src="/static/icons/camera.svg" width="20" height="20" title="Take a screenshot"></a>
-        <a href="javascript:void(0);" id="pano-share"><img class="pano-share-icon" src="/static/icons/share.svg" width="20" height="20" title="Share this location"></a>
+      <svg class="pano-info-hamburger" width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>View more</title><g data-name="Layer 2"><g data-name="menu"><rect fill="#fff" width="24" height="24" transform="rotate(180 12 12)" opacity="0"/><rect fill="#fff" x="3" y="11" width="18" height="2" rx=".95" ry=".95"/><rect fill="#fff" x="3" y="16" width="18" height="2" rx=".95" ry=".95"/><rect fill="#fff" x="3" y="6" width="18" height="2" rx=".95" ry=".95"/></g></g></svg>
+      <span id="pano-address-first-line"></span>
+      <div id="pano-info-buttons">
+        <a href="javascript:void(0);" id="pano-screenshot">
+          <svg width="20" height="20" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Take a screenshot</title><g data-name="Layer 2"><g data-name="camera"><rect fill="#fff" width="24" height="24" opacity="0"/><circle fill="#fff" cx="12" cy="14" r="1.5"/><path fill="#fff" d="M19 7h-3V5.5A2.5 2.5 0 0 0 13.5 3h-3A2.5 2.5 0 0 0 8 5.5V7H5a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-8a3 3 0 0 0-3-3zm-9-1.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V7h-4zm2 12a3.5 3.5 0 1 1 3.5-3.5 3.5 3.5 0 0 1-3.5 3.5z"/></g></g></svg>
+        </a>
+        <a href="javascript:void(0);" id="pano-share">
+          <svg width="20" height="20" title="Share this location" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Share this location</title><g data-name="Layer 2"><g data-name="link-2"><rect width="24" height="24" opacity="0"/><path fill="#fff" d="M13.29 9.29l-4 4a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l4-4a1 1 0 0 0-1.42-1.42z"/><path fill="#fff" d="M12.28 17.4L11 18.67a4.2 4.2 0 0 1-5.58.4 4 4 0 0 1-.27-5.93l1.42-1.43a1 1 0 0 0 0-1.42 1 1 0 0 0-1.42 0l-1.27 1.28a6.15 6.15 0 0 0-.67 8.07 6.06 6.06 0 0 0 9.07.6l1.42-1.42a1 1 0 0 0-1.42-1.42z"/><path fill="#fff" d="M19.66 3.22a6.18 6.18 0 0 0-8.13.68L10.45 5a1.09 1.09 0 0 0-.17 1.61 1 1 0 0 0 1.42 0L13 5.3a4.17 4.17 0 0 1 5.57-.4 4 4 0 0 1 .27 5.95l-1.42 1.43a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l1.42-1.42a6.06 6.06 0 0 0-.6-9.06z"/></g></g></svg>
+        </a>
       </div>
     </summary>
     <div id="pano-address-rest"></div>
     <div id="pano-metadata">
       <div id="time-machine">
-        <img src="/static/icons/clock.svg" width=16 height=16 class="time-machine-button">
+        <svg width="16" height="16" class="time-machine-button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g data-name="Layer 2"><g data-name="clock"><rect width="24" height="24" transform="rotate(180 12 12)" opacity="0"/><path fill="#eee" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm4 11h-4a1 1 0 0 1-1-1V8a1 1 0 0 1 2 0v3h3a1 1 0 0 1 0 2z"/></g></g></svg>
         <div id="pano-date-and-time-machine-menu-container">
           <span id="pano-date" class="time-machine-button"></span>
           <div id="time-machine-menu"></div>
@@ -52,83 +57,94 @@
   </details>
   </div>
 
-  <div id="github-link" class="github-link">
-    <a href="https://github.com/sk-zk/lookaround-map/" title="View the source on GitHub">
-      <img src="/static/icons/github.svg" width="24" height="24" alt="GitHub logo">
-    </a>
-  </div>
-
-  <button id="close-pano" type="button"><span>✕</span></button>
+  <button id="close-pano" type="button">
+    <svg width="28" height="28" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><title>Close panorama</title><g data-name="Layer 2"><g data-name="close"><rect width="24" height="24" transform="rotate(180 12 12)" opacity="0"/><path fill="#fff" d="M13.41 12l4.3-4.29a1 1 0 1 0-1.42-1.42L12 10.59l-4.29-4.3a1 1 0 0 0-1.42 1.42l4.3 4.29-4.3 4.29a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l4.29-4.3 4.29 4.3a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42z"/></g></g></svg>
+  </button>
 
   <div id="sidebar-container">
-    <button id="sidebar-toggle" class="sidebar-toggle-transparent">&lt;</button>
+    <button id="sidebar-toggle" class="sidebar-toggle-closed"></button>
     <div id="sidebar">
-      <details id="sidebar-layers" class="sidebar-box" open>
-        <summary><h2>Layers</h2></summary>
-        <div id="sidebar-layers-insert" class="layer-switcher"></div>
-      </details>
-      <details id="sidebar-filters" class="sidebar-box">
-        <summary><h2>Filters</h2></summary>
+      <div id="sidebar-elements">
+        <div class="sidebar-tabs">
+          <input class="sidebar-tab" name="tabs" tabindex="1" type="radio" id="tab-layers" checked>
+          <label class="sidebar-tab-label tab-layers-bg" for="tab-layers" title="Layers"></label>
+          <div class="sidebar-panel" tabindex="1">
+          <h2>Layers</h2>
+          <div id="sidebar-layers-insert" class="layer-switcher"></div>
+          </div>
+  
+          <input class="sidebar-tab" name="tabs" tabindex="1" type="radio" id="tab-filters">
+          <label class="sidebar-tab-label tab-filters-bg" for="tab-filters" title="Filters"></label>
+          <div class="sidebar-panel" tabindex="1">
+          <h2>Filters</h2>
           <div class="sidebar-control-group">
-          <h3>Coverage type</h3>
-          <input type="checkbox" id="show-cars" name="show-cars" checked><label for="show-cars">Show car footage</label><br>
-          <input type="checkbox" id="show-trekkers" name="show-trekkers" checked><label for="show-trekkers">Show trekker
-            footage</label>
+            <h3>Coverage type</h3>
+            <input type="checkbox" id="show-cars" name="show-cars" checked><label for="show-cars">Show car footage</label><br>
+            <input type="checkbox" id="show-trekkers" name="show-trekkers" checked><label for="show-trekkers">Show trekker
+              footage</label>
+            </div>
+            <p></p>
+            <div class="sidebar-control-group">
+            <h3>Capture date</h3>
+            <input type="checkbox" id="filter-date" name="filter-date"><label for="filter-date">Filter by date:</label>
+            <table>
+              <tr>
+                <td>From:</td>
+                <td><input type="date" id="coverage-min-date" name="coverage-min-date" value="2018-01-01"></td>
+              </tr>
+              <tr>
+                <td>To:</td>
+                <td><input type="date" id="coverage-max-date" name="coverage-max-date" value="2023-11-01"></td>
+              </tr>
+            </table>
+            </div>
+            <p></p>
+            <div class="sidebar-control-group">
+            <h3>Line/circle color</h3>
+              <input type="radio" id="color-by-type" name="line-color" checked><label for="color-by-type">Coverage type</label><br>
+              <input type="radio" id="color-by-age" name="line-color"><label for="color-by-age">Age</label><br>
+              <input type="radio" id="color-by-build-id" name="line-color"><label for="color-by-build-id">Build ID (z>=16)</label>
+            </div>
+            <p></p>
+            <div class="sidebar-control-group">
+            <h3>Crop by GeoJSON polygon</h3>
+              <input type="file" id="polygon-filter" />
+              <button id="remove-polygon-filter" style="display:none;">✕</button>
+            </div>
+          </div>
+  
+          <input class="sidebar-tab" name="tabs" tabindex="1" type="radio" id="tab-settings">
+          <label class="sidebar-tab-label tab-settings-bg" for="tab-settings" title="Settings"></label>
+          <div class="sidebar-panel" tabindex="1">
+          <h2>Settings</h2>
+          <div class="sidebar-control-group">
+            <h3>Theme</h3>
+            <input type="radio" id="theme-auto" name="theme"><label for="theme-auto">Automatic</label><br>
+            <input type="radio" id="theme-light" name="theme"><label for="theme-light">Light</label><br>
+            <input type="radio" id="theme-dark" name="theme"><label for="theme-dark">Dark</label><br>
           </div>
           <p></p>
           <div class="sidebar-control-group">
-          <h3>Capture date</h3>
-          <input type="checkbox" id="filter-date" name="filter-date"><label for="filter-date">Filter by date:</label>
-          <table>
-            <tr>
-              <td>From:</td>
-              <td><input type="date" id="coverage-min-date" name="coverage-min-date" value="2018-01-01"></td>
-            </tr>
-            <tr>
-              <td>To:</td>
-              <td><input type="date" id="coverage-max-date" name="coverage-max-date" value="2023-11-01"></td>
-            </tr>
-          </table>
+            <h3>Map</h3>
+            <input type="checkbox" id="labels-on-top" name="labels-on-top"><label for="labels-on-top">Display labels above lines (if supported by layer)</label>
           </div>
           <p></p>
           <div class="sidebar-control-group">
-          <h3>Line/circle color</h3>
-            <input type="radio" id="color-by-type" name="line-color" checked><label for="color-by-type">Coverage type</label><br>
-            <input type="radio" id="color-by-age" name="line-color"><label for="color-by-age">Age</label><br>
-            <input type="radio" id="color-by-build-id" name="line-color"><label for="color-by-build-id">Build ID (z>=16)</label>
+            <h3>Renderer</h3>
+            <input type="checkbox" id="show-full-pano" name="show-full-pano"><label for="show-full-pano">Render full panorama (experimental)</label>
           </div>
           <p></p>
           <div class="sidebar-control-group">
-          <h3>Crop by GeoJSON polygon</h3>
-            <input type="file" id="polygon-filter" />
-            <button id="remove-polygon-filter" style="display:none;">✕</button>
+            <h3>Address source</h3>
+            <input type="radio" id="addr-nominatim" name="addr"><label for="addr-nominatim">OpenStreetMap (Nominatim)</label><br>
+            <input type="radio" id="addr-apple" name="addr"><label for="addr-apple">Apple</label>
           </div>
-      </details>
-      <details id="sidebar-settings" class="sidebar-box">
-        <summary><h2>Settings</h2></summary>
-        <div class="sidebar-control-group">
-          <h3>Theme</h3>
-          <input type="radio" id="theme-auto" name="theme"><label for="theme-auto">Automatic</label><br>
-          <input type="radio" id="theme-light" name="theme"><label for="theme-light">Light</label><br>
-          <input type="radio" id="theme-dark" name="theme"><label for="theme-dark">Dark</label><br>
+          </div>
         </div>
-        <p></p>
-        <div class="sidebar-control-group">
-          <h3>Map</h3>
-          <input type="checkbox" id="labels-on-top" name="labels-on-top"><label for="labels-on-top">Display labels above lines (if supported by layer)</label>
-        </div>
-        <p></p>
-        <div class="sidebar-control-group">
-          <h3>Renderer</h3>
-          <input type="checkbox" id="show-full-pano" name="show-full-pano"><label for="show-full-pano">Render full panorama (experimental)</label>
-        </div>
-        <p></p>
-        <div class="sidebar-control-group">
-          <h3>Address source</h3>
-          <input type="radio" id="addr-nominatim" name="addr"><label for="addr-nominatim">OpenStreetMap (Nominatim)</label><br>
-          <input type="radio" id="addr-apple" name="addr"><label for="addr-apple">Apple</label>
-        </div>
-      </details>
+        <div id="sidebar-footer">
+          <a href="https://github.com/sk-zk/lookaround-map/" target="_blank">View the source</a> | 
+          <a href="https://github.com/sk-zk/lookaround-map/issues" target="_blank">Report a bug</a></div>
+      </div>
     </div>
   </div>
 
