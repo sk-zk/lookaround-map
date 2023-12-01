@@ -82,10 +82,10 @@ a:visited {
 #pano-info summary {
   display: inline-flex;
   flex-direction: row;
-  align-content: center;
-  align-items: center;
+  align-items: start;
   gap: 5px;
   width: 100%;
+  justify-content: space-between;
 }
 
 .pano-info-hamburger {
@@ -364,14 +364,20 @@ a:visited {
 }
 
 #pano-info-buttons {
-  flex-grow: 1;
-  text-align: right;
-  height: 20px;
   display: none;
 }
 
 #pano-info-details[open] summary #pano-info-buttons {
-  display: inline;
+  display: flex;
+  gap: 5px;
+  justify-content: flex-end;
+  flex-grow: 1;
+}
+
+#pano-info-details:not([open]) #pano-address-first-line {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 #pano-info-buttons a {
@@ -561,7 +567,7 @@ input:checked + .sidebar-tab-label + .sidebar-panel {
   display: none;
 }
 
-details[open] summary {
+.sidebar-panel-updates details[open] summary {
   display: none;
 }
 
