@@ -69,14 +69,18 @@ class Application {
     };
     
     document.querySelector("#pano-share").addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       this.#writeShareLinkToClipboard();
       showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500);
-    });
+    }, true);
     this.#hookUpOpenLinks();
 
     document.querySelector("#pano-screenshot").addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       this.#takeScreenshotOfViewer();
-    });
+    }, true);
   }
 
   async init() {       
