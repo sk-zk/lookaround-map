@@ -7,15 +7,11 @@ import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
 import { DEG2RAD, distanceBetween } from "../geo/geo.js";
 import { isHeicSupported } from "../util/misc.js";
+import { InitialOrientation } from "../enums.js";
 
 import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
 import "@photo-sphere-viewer/compass-plugin/index.css";
-
-export const InitialOrientation = Object.freeze({
-	North: 0,
-	Road: 1,
-})
 
 export async function createPanoViewer(config) { 
   const endpoint = config.endpoint ?? "";
@@ -170,3 +166,5 @@ function configurePlugins(config) {
 
   return plugins;
 }
+
+export { InitialOrientation };

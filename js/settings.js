@@ -1,5 +1,5 @@
 import { AddressSource, Theme } from "./enums.js";
-import { InitialOrientation } from "./viewer/viewer.js";
+import { InitialOrientation } from "./enums.js";
 
 class Settings {
   #settings = {};

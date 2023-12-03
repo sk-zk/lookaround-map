@@ -1,6 +1,6 @@
 import { AddressSource, Theme } from "../enums.js";
 import { settings } from "../settings.js";
-import { InitialOrientation } from "../viewer/viewer.js";
+import { InitialOrientation } from "../enums.js";
 
 export class SettingsControl {
   constructor() {

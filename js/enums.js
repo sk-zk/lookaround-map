@@ -29,4 +29,9 @@ const Theme = Object.freeze({
   Dark: "dark",
 });
 
-export { CoverageType, LineColorType, Face, AddressSource, Theme };
+const InitialOrientation = Object.freeze({
+	North: 0,
+	Road: 1,
+})
+
+export { CoverageType, LineColorType, Face, AddressSource, Theme, InitialOrientation };
