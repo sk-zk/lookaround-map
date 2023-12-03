@@ -2,7 +2,6 @@ import { CoverageType } from "../../enums.js";
 import { Constants } from "../Constants.js";
 import { Api } from "../../Api.js";
 import { wgs84ToTileCoord } from "../../geo/geo.js";
-import { CoverageColorer } from "./colors.js";
 import { FilterSettings } from "../FilterSettings.js";
 import { getDevicePixelRatio } from "../../util/misc.js";
 
@@ -31,16 +30,19 @@ class LookaroundCoverageSource extends XYZ {
       projection: options.projection,
       wrapX: true,
       zDirection: options.zDirection,
-      url: "z:{z} x:{x} y:{y}",
+      url: "{x},{y}",
       minZoom: 17,
       maxZoom: 17,
       tilePixelRatio: pixelRatio,
-      tileLoadFunction: async (tile, _) => {
+      tileLoadFunction: async (tile, url) => {
+        // `tile.tileCoords` returns unwrapped tile coordinates, but the `url` string
+        // has wrapped coordinates inserted into it, which is what we actually want
+        const tileCoords = url.split(",");
         const tileSize = [options.canvasSize * pixelRatio, options.canvasSize * pixelRatio];
         const ctx = createCanvasContext2D(tileSize[0], tileSize[1]);
 
-        const panos = await this.#getTile(tile);
-        this.#drawPanos(panos, tile.tileCoord, tileSize, pixelRatio, ctx);
+        const panos = await this.#getTile(tileCoords[0], tileCoords[1]);
+        this.#drawPanos(panos, tileCoords, tileSize, pixelRatio, ctx);
 
         tile.setImage(ctx.canvas);
       },
@@ -48,19 +50,19 @@ class LookaroundCoverageSource extends XYZ {
     this.markerSize = options.markerSize;
   }
 
-  async #getTile(tile) {
-    const coordKey = `${tile.tileCoord[1]},${tile.tileCoord[2]}`;
+  async #getTile(x, y) {
+    const cacheKey = `${x},${y}`;
     let panos = [];
-    if (coverageTileCache.has(coordKey)) {
-      panos = coverageTileCache.get(coordKey);
+    if (coverageTileCache.has(cacheKey)) {
+      panos = coverageTileCache.get(cacheKey);
     } else {
-      panos = await api.getCoverageTile(tile.tileCoord[1], tile.tileCoord[2]);
-      coverageTileCache.set(coordKey, panos);
+      panos = await api.getCoverageTile(x, y);
+      coverageTileCache.set(cacheKey, panos);
     }
     return panos;
   }
 
-  #drawPanos(panos, coords, tileSize, pixelRatio, ctx) {
+  #drawPanos(panos, tileCoords, tileSize, pixelRatio, ctx) {
     ctx.lineWidth = 2 * pixelRatio;
 
     for (const pano of panos) {
@@ -80,9 +82,9 @@ class LookaroundCoverageSource extends XYZ {
       color.opacity = 0.8;
       ctx.strokeStyle = color.formatRgb();
 
-      const tileCoord = wgs84ToTileCoord(pano.lat, pano.lon, 17);
-      const xOffset = (tileCoord.x - coords[1]) * tileSize[0] - 1;
-      const yOffset = (tileCoord.y - coords[2]) * tileSize[1] - 1;
+      const panoTileCoords = wgs84ToTileCoord(pano.lat, pano.lon, 17);
+      const xOffset = (panoTileCoords.x - tileCoords[0]) * tileSize[0] - 1;
+      const yOffset = (panoTileCoords.y - tileCoords[1]) * tileSize[1] - 1;
       ctx.beginPath();
       ctx.arc(xOffset, yOffset, this.markerSize * pixelRatio, 0, 2 * Math.PI, false);
       ctx.fill();
