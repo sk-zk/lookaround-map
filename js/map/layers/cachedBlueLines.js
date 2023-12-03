@@ -109,7 +109,7 @@ class CachedBlueLinesSource extends VectorTile {
         tileSize: [options.tileSize, options.tileSize],
       }),
       tilePixelRatio: pixelRatio,
-      //url: "http://localhost:8000/lookaround_cache/lookaround/{z}/{x}/{y}",
+      //url: "http://localhost:8111/lookaround_cache/lookaround/{z}/{x}/{y}",
       url: "https://lookmap.eu.pythonanywhere.com/bluelines2/{z}/{x}/{y}/",
     });
   }

@@ -1,4 +1,5 @@
 import { AddressSource, Theme } from "./enums.js";
+import { InitialOrientation } from "./viewer/viewer.js";
 
 class Settings {
   #settings = {};
@@ -40,6 +41,7 @@ class Settings {
       labelsOnTop: true,
       showFullPano: true,
       theme: Theme.Automatic,
+      initialOrientation: InitialOrientation.North,
     };
     for (const entry of Object.entries(defaults)) {
       this.#settings[entry[0]] ??= entry[1];

@@ -1,5 +1,6 @@
 import { AddressSource, Theme } from "../enums.js";
 import { settings } from "../settings.js";
+import { InitialOrientation } from "../viewer/viewer.js";
 
 export class SettingsControl {
   constructor() {
@@ -54,6 +55,24 @@ export class SettingsControl {
     labelsOnTop.checked = settings.get("labelsOnTop");
     labelsOnTop.addEventListener("change", (_) => {
       settings.set("labelsOnTop", labelsOnTop.checked);
+    });
+
+    const initialOrientationNorth =  document.querySelector("#spawn-facing-north");
+    const initialOrientationRoad =  document.querySelector("#spawn-facing-road");
+    switch (settings.get("initialOrientation")) {
+      default:
+      case InitialOrientation.North:
+        initialOrientationNorth.checked = true;
+          break;
+        case InitialOrientation.Road:
+          initialOrientationRoad.checked = true;
+          break;
+    }
+    initialOrientationNorth.addEventListener("change", (_) => {
+      settings.set("initialOrientation", InitialOrientation.North);
+    });
+    initialOrientationRoad.addEventListener("change", (_) => {
+      settings.set("initialOrientation", InitialOrientation.Road);
     });
   }
 }

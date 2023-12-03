@@ -119,6 +119,7 @@ class Application {
     this.panoViewer = await createPanoViewer({
       container: container,
       initialPano: pano,
+      initialOrientation: settings.get("initialOrientation"),
     });
   
     this.panoViewer.plugins.movement.addEventListener("moved", async (e) => {

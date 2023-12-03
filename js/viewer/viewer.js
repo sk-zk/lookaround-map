@@ -12,7 +12,7 @@ import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
 import "@photo-sphere-viewer/compass-plugin/index.css";
 
-export const DefaultHeading = Object.freeze({
+export const InitialOrientation = Object.freeze({
 	North: 0,
 	Road: 1,
 })
@@ -20,8 +20,8 @@ export const DefaultHeading = Object.freeze({
 export async function createPanoViewer(config) { 
   const endpoint = config.endpoint ?? "";
   const plugins = configurePlugins(config);
-  const defaultHeading = config.defaultHeading ?? DefaultHeading.North;
-  const defaultYaw = getHeading(defaultHeading, config.initialPano.heading);
+  const initialOrientation = config.initialOrientation ?? InitialOrientation.North;
+  const defaultYaw = getHeading(initialOrientation, config.initialPano.heading);
   const defaultZoomLvl = 20;
   const useHeic = await isHeicSupported();
 
@@ -85,7 +85,7 @@ export async function createPanoViewer(config) {
       },
     });
     if (resetView) {
-      const heading = getHeading(defaultHeading, pano.heading);
+      const heading = getHeading(initialOrientation, pano.heading);
       viewer.zoom(defaultZoomLvl);
       viewer.rotate({ pitch: 0, yaw: heading });
       viewer.adapter.dynamicLoadingEnabled = true;
@@ -139,14 +139,14 @@ function getAlternativeDates(refPano, nearbyPanos) {
     .sort((a, b) => a.timestamp - b.timestamp);
 }
 
-function getHeading(defaultHeading, heading) {
+function getHeading(initialOrientation, heading) {
   let defaultYaw;
-  switch (defaultHeading) {
-    case DefaultHeading.North:
+  switch (initialOrientation) {
+    case InitialOrientation.North:
     default:
       defaultYaw = 0;
       break;
-    case DefaultHeading.Road:
+    case InitialOrientation.Road:
       defaultYaw = -heading;
       break;
   }

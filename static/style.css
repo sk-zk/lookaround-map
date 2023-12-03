@@ -481,11 +481,15 @@ a:visited {
 
 #sidebar h3 {
   margin: 0;
-  font-size: 1em;
+  font-size: 1.15em;
 }
 
 #sidebar h3:not(:first-of-type) {
   margin-top: 1.3em;
+}
+
+#sidebar p {
+  margin-top: 0;
 }
 
 .sidebar-box {
