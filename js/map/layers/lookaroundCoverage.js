@@ -4,6 +4,7 @@ import { Api } from "../../Api.js";
 import { wgs84ToTileCoord } from "../../geo/geo.js";
 import { FilterSettings } from "../FilterSettings.js";
 import { getDevicePixelRatio } from "../../util/misc.js";
+import { LineColorType } from "../../enums.js";
 
 import { LRUMap } from "../../external/js_lru/lru.js";
 
@@ -64,6 +65,16 @@ class LookaroundCoverageSource extends XYZ {
 
   #drawPanos(panos, tileCoords, tileSize, pixelRatio, ctx) {
     ctx.lineWidth = 2 * pixelRatio;
+
+    if (this.#filterSettings.lineColorType === LineColorType.Age) {
+      panos.sort((a, b) => a.timestamp - b.timestamp);
+    }
+    else if (this.#filterSettings.lineColorType === LineColorType.BuildId) {
+      panos.sort((a, b) => a.buildId - b.buildId);
+    }
+    else {
+      panos.sort((a, b) => a.coverageType - b.coverageType);
+    }
 
     for (const pano of panos) {
       if (pano.coverageType === CoverageType.Car && !this.#filterSettings.showCars) continue;
