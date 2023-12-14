@@ -1,6 +1,6 @@
-import { AddressSource, Theme } from "../enums.js";
+import { AddressSource, Theme, InitialOrientation } from "../enums.js";
 import { settings } from "../settings.js";
-import { InitialOrientation } from "../enums.js";
+import { isHevcSupported } from "../util/media.js";
 
 export class SettingsControl {
   constructor() {
@@ -74,5 +74,12 @@ export class SettingsControl {
     initialOrientationRoad.addEventListener("change", (_) => {
       settings.set("initialOrientation", InitialOrientation.Road);
     });
+
+    const enableHevc = document.querySelector("#enable-hevc");
+    enableHevc.checked = settings.get("enableHevc");
+    enableHevc.addEventListener("change", (_) => {
+      settings.set("enableHevc", enableHevc.checked);
+    });
+    enableHevc.disabled = !isHevcSupported();
   }
 }

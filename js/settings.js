@@ -1,5 +1,4 @@
-import { AddressSource, Theme } from "./enums.js";
-import { InitialOrientation } from "./enums.js";
+import { AddressSource, Theme, InitialOrientation } from "./enums.js";
 
 class Settings {
   #settings = {};
@@ -12,6 +11,20 @@ class Settings {
     }
     this.#setDefaultsForMissingFields();
     this.#save();
+  }
+
+  #setDefaultsForMissingFields() {
+    const defaults = {
+      addressSource: AddressSource.Apple,
+      labelsOnTop: true,
+      showFullPano: true,
+      theme: Theme.Automatic,
+      initialOrientation: InitialOrientation.North,
+      enableHevc: true,
+    };
+    for (const entry of Object.entries(defaults)) {
+      this.#settings[entry[0]] ??= entry[1];
+    }
   }
 
   get(key) {
@@ -33,19 +46,6 @@ class Settings {
       localStorage.getItem("showFullPano")
     );
     this.#settings.theme = localStorage.getItem("theme");
-  }
-
-  #setDefaultsForMissingFields() {
-    const defaults = {
-      addressSource: AddressSource.Apple,
-      labelsOnTop: true,
-      showFullPano: true,
-      theme: Theme.Automatic,
-      initialOrientation: InitialOrientation.North,
-    };
-    for (const entry of Object.entries(defaults)) {
-      this.#settings[entry[0]] ??= entry[1];
-    }
   }
 
   #save() {

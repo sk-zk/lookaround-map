@@ -8,6 +8,7 @@ import { MovementPlugin } from "./MovementPlugin.js";
 import { DEG2RAD, distanceBetween } from "../geo/geo.js";
 import { isHeicSupported, isHevcSupported } from "../util/media.js";
 import { InitialOrientation, ImageFormat } from "../enums.js";
+import { settings } from "../settings.js";
 
 import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
@@ -24,7 +25,7 @@ export async function createPanoViewer(config) {
   if (await isHeicSupported()) {
     imageFormat = ImageFormat.HEIC;
     console.log("fetching faces as HEIC");
-  } else if (isHevcSupported()) {
+  } else if (isHevcSupported() && settings.get("enableHevc")) {
     imageFormat = ImageFormat.HEVC;
     console.log("fetching faces as HEVC");
   } else {
