@@ -42,12 +42,12 @@ auth = Authenticator()
 
 
 use_heic2rgb = is_package_installed("heic2rgb")
+use_pyheif = is_package_installed("pyheif")
 if use_heic2rgb:
     print("heic2rgb enabled")
     import heic2rgb
     import simplejpeg
 else:
-    use_pyheif = is_package_installed("pyheif")
     if use_pyheif:
         print("pyheif enabled")
         import pyheif
@@ -130,17 +130,19 @@ def relay_pano_face(panoid, build_id, zoom, face):
     except HTTPError as httpError:
         abort(httpError.response.status_code)
 
-
     legacy_heic_param = request.args.get("heic", default=False, type=to_bool)
     if legacy_heic_param:
         format = "heic"
     else:
-        format = request.args.get("format", default="jpg", type=str)
+        format = request.args.get("format", default="jpeg", type=str)
     
-        
     if format == "heic":
-        return send_file(io.BytesIO(heic_bytes), mimetype='image/heic')
-    elif format == "jpg":
+        return send_file(io.BytesIO(heic_bytes), mimetype="image/heic")
+    elif format == "hevc" and use_heic2rgb:
+        mp4_bytes = heic2rgb.to_mp4(heic_bytes)
+        return send_file(io.BytesIO(mp4_bytes), mimetype="video/mp4")
+    else:
+        # default to JPEG
         if use_heic2rgb:
             image = heic2rgb.decode(heic_bytes)
             ndarray = np.frombuffer(image.data, dtype=np.uint8).reshape(
@@ -154,21 +156,11 @@ def relay_pano_face(panoid, build_id, zoom, face):
         else:
             with Image.open(io.BytesIO(heic_bytes)) as image:
                 with io.BytesIO() as output:
-                    image.save(output, format='jpeg', quality=config.JPEG_QUALITY)
+                    image.save(output, format="jpeg", quality=config.JPEG_QUALITY)
                     jpeg_bytes = output.getvalue()
-        response = send_file(
-            io.BytesIO(jpeg_bytes),
-            mimetype='image/jpeg'
-        )
+        response = send_file(io.BytesIO(jpeg_bytes), mimetype="image/jpeg")
         gc.collect()
         return response
-    elif format == "hevc":
-        if not use_heic2rgb:
-            abort(500, "Unsupported format")
-        mp4_bytes = heic2rgb.to_mp4(heic_bytes)
-        return send_file(io.BytesIO(mp4_bytes), mimetype='video/mp4')
-    else:
-        abort(400, "Unsupported format")
 
 
 @api.route("/pano/<int:panoid>/<int:build_id>/<int:zoom>/")

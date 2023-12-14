@@ -102,8 +102,20 @@ export class LookaroundAdapter extends AbstractAdapter {
         }
       })
       .then(async (file) => {
-        let texture = null;
+        // if HEVC is requested but heic2rgb is not installed in the backend,
+        // JPEG will be returned instead, so let's double check what we
+        // actually got
+        let receivedFormat = this.imageFormat;
         if (this.imageFormat === ImageFormat.HEVC) {
+          const bytes = new Uint8Array(await file.slice(0, 2).arrayBuffer());
+          console.log(bytes[0], bytes[1]);
+          if (bytes[0] === 0xff && bytes[1] === 0xd8) {
+            receivedFormat = ImageFormat.JPEG;
+          }
+        }
+
+        let texture = null;
+        if (receivedFormat === ImageFormat.HEVC) {
           const objectUrl = URL.createObjectURL(file);
           const frame = await getFirstFrameOfVideo(objectUrl, "video/mp4");
           texture = utils.createTexture(frame);
@@ -112,6 +124,7 @@ export class LookaroundAdapter extends AbstractAdapter {
           const img = await this.psv.textureLoader.blobToImage(file);
           texture = utils.createTexture(img);
         }
+
         if (faceIdx === Face.Top) {
           texture.flipY = false;
         }
