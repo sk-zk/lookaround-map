@@ -6,7 +6,7 @@ import { Api } from "../Api.js";
 import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
 import { DEG2RAD, distanceBetween } from "../geo/geo.js";
-import { isHeicSupported, isHevcSupported } from "../util/misc.js";
+import { isHeicSupported, isHevcSupported } from "../util/media.js";
 import { InitialOrientation, ImageFormat } from "../enums.js";
 
 import "@photo-sphere-viewer/core/index.css";
