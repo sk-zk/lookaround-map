@@ -44,3 +44,9 @@ export async function isHeicSupported() {
 export function approxEqual(a, b, epsilon=1e-6) {
   return Math.abs(a - b) < epsilon;
 }
+
+export function isHevcSupported() {
+  // check if HEVC Main Still Picture profile is supported,
+  // which is what the HEVC frame in a HEIC image uses
+  return MediaSource.isTypeSupported('video/mp4;codecs="hev1.3.E.L120.90"');
+}

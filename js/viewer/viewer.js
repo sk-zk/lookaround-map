@@ -6,8 +6,8 @@ import { Api } from "../Api.js";
 import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
 import { DEG2RAD, distanceBetween } from "../geo/geo.js";
-import { isHeicSupported } from "../util/misc.js";
-import { InitialOrientation } from "../enums.js";
+import { isHeicSupported, isHevcSupported } from "../util/misc.js";
+import { InitialOrientation, ImageFormat } from "../enums.js";
 
 import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
@@ -19,7 +19,18 @@ export async function createPanoViewer(config) {
   const initialOrientation = config.initialOrientation ?? InitialOrientation.North;
   const defaultYaw = getHeading(initialOrientation, config.initialPano.heading);
   const defaultZoomLvl = 20;
-  const useHeic = await isHeicSupported();
+
+  let imageFormat;
+  if (await isHeicSupported()) {
+    imageFormat = ImageFormat.HEIC;
+    console.log("fetching faces as HEIC");
+  } else if (isHevcSupported()) {
+    imageFormat = ImageFormat.HEVC;
+    console.log("fetching faces as HEVC");
+  } else {
+    imageFormat = ImageFormat.JPEG;
+    console.log("fetching faces as JPEG");
+  }
 
   const viewer = new Viewer({
     container: config.container,
@@ -30,7 +41,7 @@ export async function createPanoViewer(config) {
     },
     panoData: { 
       endpoint: endpoint,
-      useHeic: useHeic,
+      imageFormat: imageFormat,
     },
     minFov: 10,
     maxFov: 100,

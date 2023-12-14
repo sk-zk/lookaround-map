@@ -2,7 +2,8 @@ import { Group, Mesh, SphereGeometry, Vector3 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 import { settings } from "../settings.js";
 import { ScreenFrustum } from "./ScreenFrustum.js";
-import { Face } from "../enums.js";
+import { Face, ImageFormat } from "../enums.js";
+import { getFirstFrameOfVideo } from "../util/media.js";
 
 import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core"
 
@@ -11,7 +12,6 @@ function degToRad(deg) {
 }
 
 const YAW_OFFSET = 1.07992247; // 61.875°, which is the center of face 0
-
 
 /**
  * @summary Adapter for Look Around panoramas
@@ -28,7 +28,7 @@ export class LookaroundAdapter extends AbstractAdapter {
 
     this.renderTopAndBottomFaces = settings.get("showFullPano");
     this.faceAmount = this.renderTopAndBottomFaces ? 6 : 4;
-    this.useHeic = psv.config.panoData.useHeic;
+    this.imageFormat = psv.config.panoData.imageFormat;
     this.endpoint = psv.config.panoData.endpoint;
 
     this.panorama = psv.config.panorama.panorama;
@@ -85,11 +85,15 @@ export class LookaroundAdapter extends AbstractAdapter {
 
   async __loadOneTexture(zoom, faceIdx, progress = null) {
     let faceUrl = `${this.endpoint}${this.url}${zoom}/${faceIdx}/`;
-    if (this.useHeic) {
-      faceUrl += "?heic=1";
+    if (this.imageFormat === ImageFormat.HEIC) {
+      faceUrl += "?format=heic";
+    } else if (this.imageFormat === ImageFormat.HEVC) {
+      faceUrl += "?format=hevc";
     }
-    return await this.psv.textureLoader
-      .loadImage(faceUrl, (p) => {
+    // otherwise, load JPEG; no parameter necessary
+
+    return this.psv.textureLoader
+      .loadFile(faceUrl, (p) => {
         if (progress) {
           progress[faceIdx] = p;
           this.psv.loader.setProgress(
@@ -97,10 +101,18 @@ export class LookaroundAdapter extends AbstractAdapter {
           );
         }
       })
-      .then((img) => {
+      .then(async (file) => {
         let texture = null;
-        texture = utils.createTexture(img);
-        if (faceIdx == Face.Top) {
+        if (this.imageFormat === ImageFormat.HEVC) {
+          const objectUrl = URL.createObjectURL(file);
+          const frame = await getFirstFrameOfVideo(objectUrl, "video/mp4");
+          texture = utils.createTexture(frame);
+          URL.revokeObjectURL(objectUrl);
+        } else {
+          const img = await this.psv.textureLoader.blobToImage(file);
+          texture = utils.createTexture(img);
+        }
+        if (faceIdx === Face.Top) {
           texture.flipY = false;
         }
         texture.userData = { zoom: zoom, url: this.url };
@@ -133,7 +145,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     // some weird desperate nonsense to get most panos to render correctly
     let sideFaceThetaLength;
     let sideFaceThetaStart;
-    if (Math.abs(this.panorama.lensProjection.cy -  degToRad(17.5)) < 0.01) {
+    if (Math.abs(this.panorama.lensProjection.cy - degToRad(17.5)) < 0.01) {
       sideFaceThetaLength = degToRad(105);
       sideFaceThetaStart = degToRad(20);
     } else {

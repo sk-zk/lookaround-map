@@ -34,4 +34,16 @@ const InitialOrientation = Object.freeze({
 	Road: 1,
 })
 
-export { CoverageType, LineColorType, Face, AddressSource, Theme, InitialOrientation };
+/**
+ * The image format which the viewer will request from the backend.
+ */
+const ImageFormat = Object.freeze({
+  /** The viewer will request JPEG. */ 
+	JPEG: 0, 
+  /** The viewer will request HEIC. */
+	HEIC: 1,
+  /** The viewer will request HEVC Main Still Picture in an MP4 container. */
+  HEVC: 2,
+})
+
+export { CoverageType, LineColorType, Face, AddressSource, Theme, InitialOrientation, ImageFormat };
