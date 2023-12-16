@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, send_from_directory
 from flask_cors import CORS
 from flask_compress import Compress
 import mimetypes
@@ -38,6 +38,14 @@ def create_app():
     @app.route("/")
     def index():
         return render_template('index.html')
+    
+    @app.route("/apple-touch-icon.png")
+    def apple_touch_icon():
+        return send_from_directory("static/favicons", "apple-touch-icon.png")
+    
+    @app.route("/favicon.ico")
+    def favicon():
+        return send_from_directory("static/favicons", "favicon.png")
 
     @app.before_request
     def you_know_what_you_did():
