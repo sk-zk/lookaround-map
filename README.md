@@ -44,4 +44,4 @@ To do so, one of these three libraries can be used. Simply install the one you l
    - Everyone's least favorite feature, but it makes sense to add it for completion's sake.
 
 ## Credits
-This app uses icons by [eva-icons](https://github.com/akveo/eva-icons) and [boxicons](https://github.com/atisawd/boxicons).
+This app uses icons by [eva-icons](https://github.com/akveo/eva-icons), [boxicons](https://github.com/atisawd/boxicons) and [Liz Bravo](https://openmoji.org/library/emoji-1F34E/).
