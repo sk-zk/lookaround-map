@@ -1,18 +1,12 @@
-import { Group, Mesh, SphereGeometry, Vector3 } from "three";
+import { Mesh, SphereGeometry, Vector3 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
-import { settings } from "../settings.js";
 import { ScreenFrustum } from "./ScreenFrustum.js";
 import { Face, ImageFormat } from "../enums.js";
 import { getFirstFrameOfVideo } from "../util/media.js";
 
 import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core"
 
-function degToRad(deg) {
-  return (deg * Math.PI) / 180;
-}
-
 const NUM_FACES = 6;
-const YAW_OFFSET = 1.07992247; // 61.875°, which is the center of face 0
 
 /**
  * @summary Adapter for Look Around panoramas
