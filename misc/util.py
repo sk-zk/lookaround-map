@@ -25,10 +25,14 @@ def pano_to_dict(pano: LookaroundPanorama, include_heading=True, include_elevati
         "timestamp": pano.timestamp,
         "timezone": tf.timezone_at(lat=pano.lat, lng=pano.lon),
         "coverageType": pano.coverage_type,
-        "lensProjection": { 
-            "fovH": pano.camera_metadata[0].lens_projection.fov_h,
-            "cy": pano.camera_metadata[0].lens_projection.cy
-            },
+        "cameraMetadata": [{ 
+            "fovH": c.lens_projection.fov_h,
+            "fovS": c.lens_projection.fov_s,
+            "cy": c.lens_projection.cy,
+            "yaw": c.position.yaw,
+            "pitch": c.position.pitch,
+            "roll": c.position.roll,
+            } for c in pano.camera_metadata],
         }
     if include_heading:
         pano_dict["heading"] = pano.heading

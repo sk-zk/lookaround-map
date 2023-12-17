@@ -4,10 +4,6 @@ import { isHevcSupported } from "../util/media.js";
 
 export class SettingsControl {
   constructor() {
-    const showFullPano = document.querySelector("#show-full-pano");
-    showFullPano.checked = settings.get("showFullPano");
-    showFullPano.addEventListener("change", (_) => settings.set("showFullPano", showFullPano.checked));
-
     const addrNominatim = document.querySelector("#addr-nominatim");
     const addrApple = document.querySelector("#addr-apple");
     switch (settings.get("addressSource")) {

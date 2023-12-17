@@ -11,6 +11,7 @@ function degToRad(deg) {
   return (deg * Math.PI) / 180;
 }
 
+const NUM_FACES = 6;
 const YAW_OFFSET = 1.07992247; // 61.875°, which is the center of face 0
 
 /**
@@ -26,14 +27,12 @@ export class LookaroundAdapter extends AbstractAdapter {
     super(psv);
     this.psv = psv;
 
-    this.renderTopAndBottomFaces = settings.get("showFullPano");
-    this.faceAmount = this.renderTopAndBottomFaces ? 6 : 4;
     this.imageFormat = psv.config.panoData.imageFormat;
     this.endpoint = psv.config.panoData.endpoint;
 
     this.panorama = psv.config.panorama.panorama;
     this.url = psv.config.panorama.panorama.url;
-    this.previousFovH = this.panorama.lensProjection.fovH;
+    this.previousFovH = this.panorama.cameraMetadata[0].fovH;
 
     this.SPHERE_HORIZONTAL_SEGMENTS = 32;
 
@@ -77,7 +76,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     const promises = [];
     const progress = [0, 0, 0, 0, 0, 0];
     const startZoom = 5;
-    for (let i = 0; i < this.faceAmount; i++) {
+    for (let i = 0; i < NUM_FACES; i++) {
       promises.push(this.__loadOneTexture(startZoom, i, progress));
     }
     return Promise.all(promises).then((texture) => ({ panorama: panoramaMetadata, texture }));
@@ -108,7 +107,6 @@ export class LookaroundAdapter extends AbstractAdapter {
         let receivedFormat = this.imageFormat;
         if (this.imageFormat === ImageFormat.HEVC) {
           const bytes = new Uint8Array(await file.slice(0, 2).arrayBuffer());
-          console.log(bytes[0], bytes[1]);
           if (bytes[0] === 0xff && bytes[1] === 0xd8) {
             receivedFormat = ImageFormat.JPEG;
           }
@@ -125,9 +123,6 @@ export class LookaroundAdapter extends AbstractAdapter {
           texture = utils.createTexture(img);
         }
 
-        if (faceIdx === Face.Top) {
-          texture.flipY = false;
-        }
         texture.userData = { zoom: zoom, url: this.url };
 
         return texture;
@@ -135,7 +130,8 @@ export class LookaroundAdapter extends AbstractAdapter {
   }
 
   __recreateMeshIfNecessary() {
-    const fovH = this.panorama.lensProjection.fovH;
+    
+    const fovH = this.panorama.cameraMetadata[0].fovH;
     if (this.previousFovH !== fovH) {
       const mesh = this.createMesh();
       mesh.userData = { ["photoSphereViewer"]: true };
@@ -155,156 +151,44 @@ export class LookaroundAdapter extends AbstractAdapter {
   createMesh(scale = 1) {
     const radius = CONSTANTS.SPHERE_RADIUS * scale;
 
-    // some weird desperate nonsense to get most panos to render correctly
-    let sideFaceThetaLength;
-    let sideFaceThetaStart;
-    if (Math.abs(this.panorama.lensProjection.cy - degToRad(17.5)) < 0.01) {
-      sideFaceThetaLength = degToRad(105);
-      sideFaceThetaStart = degToRad(20);
-    } else {
-      sideFaceThetaLength = this.panorama.lensProjection.fovH;
-      sideFaceThetaStart = degToRad(28);
-    }
-
-    let faces = [
-      // radius, widthSegments, heightSegments,
-      // phiStart, phiLength, thetaStart, thetaLength
-      [
-        radius,
-        12 * 2,
-        this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(0-90) - YAW_OFFSET,
-        degToRad(120),
-        sideFaceThetaStart,
-        sideFaceThetaLength,
-      ],
-      [
-        radius,
-        6 * 2,
-        this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(120-90) - YAW_OFFSET,
-        degToRad(60),
-        sideFaceThetaStart,
-        sideFaceThetaLength,
-      ],
-      [
-        radius,
-        12 * 2,
-        this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(180-90) - YAW_OFFSET,
-        degToRad(120),
-        sideFaceThetaStart,
-        sideFaceThetaLength,
-      ],
-      [
-        radius,
-        6 * 2,
-        this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(300-90) - YAW_OFFSET,
-        degToRad(60),
-        sideFaceThetaStart,
-        sideFaceThetaLength,
-      ],
-    ];
-    if (this.renderTopAndBottomFaces) {
-      faces.push([
-        radius,
-        36 * 4,
-        this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(0),
-        degToRad(360),
-        degToRad(0),
-        sideFaceThetaStart,
-      ],
-      [
-        radius,
-        36 * 4,
-        this.SPHERE_HORIZONTAL_SEGMENTS,
-        degToRad(0),
-        degToRad(360),
-        sideFaceThetaStart + sideFaceThetaLength,
-        degToRad(180) - sideFaceThetaStart - sideFaceThetaLength,
-      ]);
-    }
     const geometries = [];
     this.meshesForFrustum = [];
-    for (let i = 0; i < faces.length; i++) {
-      const geom = new SphereGeometry(...faces[i]).scale(-1, 1, 1);
-      if (i < Face.Top) {
-        this.__setSideUV(geom, i);
-      } else {
-        this.__setTopBottomUV(geom, i);
+
+    for (let i = 0; i < NUM_FACES; i++) {
+      const faceGeom = new SphereGeometry(
+        radius, 
+        24, 
+        this.SPHERE_HORIZONTAL_SEGMENTS,
+        this.panorama.cameraMetadata[i].yaw - (this.panorama.cameraMetadata[i].fovS / 2) - (Math.PI / 2), 
+        this.panorama.cameraMetadata[i].fovS, 
+        (Math.PI / 2) - (this.panorama.cameraMetadata[i].fovH / 2) - this.panorama.cameraMetadata[i].cy, 
+        this.panorama.cameraMetadata[i].fovH
+      ).scale(-1, 1, 1);
+      if (i === Face.Top || i === Face.Bottom) {
+        faceGeom.rotateX(-this.panorama.cameraMetadata[i].pitch);
+        faceGeom.rotateZ(-this.panorama.cameraMetadata[i].roll);
       }
-      if (i == Face.Top) {
-        geom.rotateY(degToRad(27.5 - 90) + YAW_OFFSET);
-      }
-      else if (i == Face.Bottom) {
-        geom.scale(1,1,1.5);
-        geom.rotateY(degToRad(27.5 - 90) + YAW_OFFSET);
-      }
-      geometries.push(geom);
-      this.meshesForFrustum.push(new Mesh(geom, []));
+      geometries.push(faceGeom);
+      this.meshesForFrustum.push(new Mesh(faceGeom, []));
     }
 
     const mergedGeometry = mergeGeometries(geometries, true);
     const mesh = new Mesh(
       mergedGeometry,
-      Array(this.faceAmount).fill(AbstractAdapter.createOverlayMaterial())
+      Array(NUM_FACES).fill(AbstractAdapter.createOverlayMaterial())
     );
     this.mesh = mesh;
     return mesh;
   }
 
   /**
-   * Sets the UVs for side faces such that the overlapping portion is removed
-   * without having to crop the texture beforehand every time.
-   */
-  __setSideUV(geom, faceIdx) {
-    const uv = geom.getAttribute("uv");
-    for (let i = 0; i < uv.count; i++) {
-      let u = uv.getX(i);
-      let v = uv.getY(i);
-      const overlap = (faceIdx % 2 === 0) 
-        ? 1 - 1/22  // 120° faces  
-        : 1 - 1/12; // 60° faces
-      u *= overlap;
-      uv.setXY(i, u, v);
-    }
-    uv.needsUpdate = true;
-  }
-
-  __setTopBottomUV(geom, faceIdx) {
-    if (faceIdx < Face.Top) return;
-
-    const uv = geom.getAttribute("uv");
-    const position = geom.getAttribute("position")
-    const largestX =
-      faceIdx == Face.Top 
-        ? position.getX(position.count - 1) 
-        : position.getX(0);
-    for (let i = 0; i < uv.count; i++) {
-      let u = position.getX(i);
-      let v = position.getZ(i);
-      u =
-        i == Face.Top
-          ? u / (2 *  largestX) + 0.5
-          : u / (2 * -largestX) + 0.5;
-      v = v / (2 * largestX) + 0.5;
-
-      uv.setXY(i, u, v);
-    }
-    uv.needsUpdate = true;
-  }
-
-  /**
    * @override
    */
   setTexture(mesh, textureData) {
-    for (let i = 0; i < this.faceAmount; i++) {
+    for (let i = 0; i < NUM_FACES; i++) {
       if (textureData.texture[i]) {
         const material = AbstractAdapter.createOverlayMaterial();
         material.uniforms.panorama.value = textureData.texture[i];
-        //material.needsUpdate = true;
         mesh.material[i] = material;
       }
     }
@@ -315,7 +199,7 @@ export class LookaroundAdapter extends AbstractAdapter {
    * @override
    */
   setTextureOpacity(mesh, opacity) {
-    for (let i = 0; i < this.faceAmount; i++) {
+    for (let i = 0; i < NUM_FACES; i++) {
       mesh.material[i].opacity = opacity;
       mesh.material[i].transparent = opacity < 1;
     }
@@ -372,7 +256,7 @@ export class LookaroundAdapter extends AbstractAdapter {
         this.__loadOneTexture(zoom, faceIdx).then((texture) => {
           if (this.mesh.material[faceIdx].uniforms.panorama.value.userData.url == oldUrl) {
             // ^ dumb temp fix to stop faces from loading in
-            // after the user has already navigated to a different one
+            // after the user has already navigated to a different panorama
             const material = AbstractAdapter.createOverlayMaterial();
             material.uniforms.panorama.value = texture;
             material.userData.refreshing = false;

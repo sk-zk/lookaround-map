@@ -28,8 +28,6 @@ To do so, one of these three libraries can be used. Simply install the one you l
 #3: However, **the fastest option** (that I'm aware of) is my own [heic2rgb](https://github.com/sk-zk/heic2rgb/), which is noticeably faster than the previous two. Supports Linux and Windows.
 
 ## TODO
-- [ ] Render top and bottom faces of panoramas correctly
-   - Completely lost as to which projection this is
 - [ ] Decode the official blue line layer
    - No longer all that important because I've got my own now, but it would be nice as fallback and for whenever an update drops
    - Out of all the network requests that happen when you tap the Look Around button, the most likely candidate
@@ -42,6 +40,7 @@ To do so, one of these three libraries can be used. Simply install the one you l
      but I have no idea how the vertices are encoded in this format.
 - [ ] Add PoIs
    - Everyone's least favorite feature, but it makes sense to add it for completion's sake.
+- [ ] Fix z-fighting
 
 ## Credits
 This app uses icons by [eva-icons](https://github.com/akveo/eva-icons), [boxicons](https://github.com/atisawd/boxicons) and [Liz Bravo](https://openmoji.org/library/emoji-1F34E/).

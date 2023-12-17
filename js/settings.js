@@ -17,7 +17,6 @@ class Settings {
     const defaults = {
       addressSource: AddressSource.Apple,
       labelsOnTop: true,
-      showFullPano: true,
       theme: Theme.Automatic,
       initialOrientation: InitialOrientation.North,
       enableHevc: true,
@@ -41,9 +40,6 @@ class Settings {
     this.#settings.addressSource = localStorage.getItem("addrSource");
     this.#settings.labelsOnTop = JSON.parse(
       localStorage.getItem("labelsOnTop")
-    );
-    this.#settings.showFullPano = JSON.parse(
-      localStorage.getItem("showFullPano")
     );
     this.#settings.theme = localStorage.getItem("theme");
   }
