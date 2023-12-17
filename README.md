@@ -14,7 +14,7 @@
 * Open the current view in Apple Maps or Google Street View
 
 ## Embedding
-The panorama viewer can be embedded on its own on another web page. Check out the sample code [here](https://gist.github.com/sk-zk/31df8318aead93695472b5952fb2d988).
+The panorama viewer can be embedded into another web page. Check out the sample code [here](https://gist.github.com/sk-zk/31df8318aead93695472b5952fb2d988).
 
 ## Setup
 ```sh
