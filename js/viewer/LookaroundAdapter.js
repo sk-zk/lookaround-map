@@ -186,6 +186,9 @@ export class LookaroundAdapter extends AbstractAdapter {
     for (let i = 0; i < NUM_FACES; i++) {
       if (textureData.texture[i]) {
         const material = AbstractAdapter.createOverlayMaterial();
+        material.polygonOffset = true;
+        material.polygonOffsetUnit = 1;
+        material.polygonOffsetFactor = i;
         material.uniforms.panorama.value = textureData.texture[i];
         mesh.material[i] = material;
       }
@@ -256,6 +259,9 @@ export class LookaroundAdapter extends AbstractAdapter {
             // ^ dumb temp fix to stop faces from loading in
             // after the user has already navigated to a different panorama
             const material = AbstractAdapter.createOverlayMaterial();
+            material.polygonOffset = true;
+            material.polygonOffsetUnit = 1;
+            material.polygonOffsetFactor = faceIdx;
             material.uniforms.panorama.value = texture;
             material.userData.refreshing = false;
             this.mesh.material[faceIdx] = material;

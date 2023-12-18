@@ -52,7 +52,6 @@ heic2rgb can also remux the HEVC bitstream of the image to MP4 for browsers whic
       compressed with Edgebreaker. I can decode the CLERS string, but I have not yet been able to make sense of how vertices are encoded in this format.
 - [ ] Add PoIs
    - Everyone's least favorite feature, but it makes sense to add it for completion's sake.
-- [ ] Fix z-fighting
 
 ## Credits
 This app uses icons by [eva-icons](https://github.com/akveo/eva-icons), [boxicons](https://github.com/atisawd/boxicons) and [Liz Bravo](https://openmoji.org/library/emoji-1F34E/).
