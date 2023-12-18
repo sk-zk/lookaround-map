@@ -1,10 +1,11 @@
 import { Mesh, SphereGeometry, Vector3 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
+
+import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core"
+
 import { ScreenFrustum } from "./ScreenFrustum.js";
 import { Face, ImageFormat } from "../enums.js";
 import { getFirstFrameOfVideo } from "../util/media.js";
-
-import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core"
 
 const NUM_FACES = 6;
 
@@ -27,8 +28,6 @@ export class LookaroundAdapter extends AbstractAdapter {
     this.panorama = psv.config.panorama.panorama;
     this.url = psv.config.panorama.panorama.url;
     this.previousFovH = this.panorama.cameraMetadata[0].fovH;
-
-    this.SPHERE_HORIZONTAL_SEGMENTS = 32;
 
     psv.addEventListener("position-updated", this);
     psv.addEventListener("zoom-updated", this);
@@ -147,21 +146,26 @@ export class LookaroundAdapter extends AbstractAdapter {
 
     const geometries = [];
     this.meshesForFrustum = [];
+    const params = [];
 
     for (let i = 0; i < NUM_FACES; i++) {
+      params.push({
+        phiStart: this.panorama.cameraMetadata[i].yaw - (this.panorama.cameraMetadata[i].fovS / 2) - (Math.PI / 2),
+        phiLength: this.panorama.cameraMetadata[i].fovS,
+        thetaStart: (Math.PI / 2) - (this.panorama.cameraMetadata[i].fovH / 2) - this.panorama.cameraMetadata[i].cy,
+        thetaLength: this.panorama.cameraMetadata[i].fovH,
+      });
+      
       const faceGeom = new SphereGeometry(
-        radius, 
-        24, 
-        this.SPHERE_HORIZONTAL_SEGMENTS,
-        this.panorama.cameraMetadata[i].yaw - (this.panorama.cameraMetadata[i].fovS / 2) - (Math.PI / 2), 
-        this.panorama.cameraMetadata[i].fovS, 
-        (Math.PI / 2) - (this.panorama.cameraMetadata[i].fovH / 2) - this.panorama.cameraMetadata[i].cy, 
-        this.panorama.cameraMetadata[i].fovH
+        radius, 24, 32, 
+        params[i].phiStart, params[i].phiLength, params[i].thetaStart, params[i].thetaLength
       ).scale(-1, 1, 1);
+
       if (i === Face.Top || i === Face.Bottom) {
         faceGeom.rotateX(-this.panorama.cameraMetadata[i].pitch);
         faceGeom.rotateZ(-this.panorama.cameraMetadata[i].roll);
       }
+
       geometries.push(faceGeom);
       this.meshesForFrustum.push(new Mesh(faceGeom, []));
     }
