@@ -1,4 +1,4 @@
-import { Mesh, SphereGeometry, Vector3 } from "three";
+import { Group, Mesh, SphereGeometry, Vector3 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core"
@@ -59,10 +59,6 @@ export class LookaroundAdapter extends AbstractAdapter {
     this.panorama = panoramaMetadata.panorama;
     this.url = panoramaMetadata.url;
 
-    // some trekker panos have longer side faces than regular car footage.
-    // if this pano has a different projection from the last one, the mesh needs to be rebuilt.
-    this.__recreateMeshIfNecessary();
-
     // initial load of the pano with a low starting quality.
     // higher resolution faces are loaded dynamically based on zoom level
     // and where the user is looking.
@@ -72,7 +68,11 @@ export class LookaroundAdapter extends AbstractAdapter {
     for (let i = 0; i < NUM_FACES; i++) {
       promises.push(this.__loadOneTexture(startZoom, i, progress));
     }
-    return Promise.all(promises).then((texture) => ({ panorama: panoramaMetadata, texture }));
+    return Promise.all(promises).then((texture) => { 
+      // if this pano has different camera paremeters from the last one, the mesh needs to be rebuilt.
+      this.__recreateMeshIfNecessary();
+      return { panorama: panoramaMetadata, texture };
+    });
   }
 
   async __loadOneTexture(zoom, faceIdx, progress = null) {
@@ -122,18 +122,19 @@ export class LookaroundAdapter extends AbstractAdapter {
       });
   }
 
-  __recreateMeshIfNecessary() {
-    
+  __recreateMeshIfNecessary() {   
     const fovH = this.panorama.cameraMetadata[0].fovH;
     if (this.previousFovH !== fovH) {
       const mesh = this.createMesh();
       mesh.userData = { ["photoSphereViewer"]: true };
       mesh.parent = this.psv.renderer.meshContainer;
 
-      this.psv.renderer.mesh = mesh;
-      this.psv.renderer.meshContainer.children = [mesh];
-
       mesh.updateMatrixWorld(true);
+
+      this.psv.renderer.mesh = mesh;
+      const oldMesh = this.psv.renderer.meshContainer.children[0];
+      this.psv.renderer.meshContainer.remove(oldMesh);
+      this.psv.renderer.meshContainer.add(mesh);
     }
     this.previousFovH = fovH;
   }
