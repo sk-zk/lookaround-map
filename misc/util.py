@@ -12,11 +12,11 @@ from config import config
 tf = TimezoneFinder(in_memory=True) 
 
 
-def panos_to_dicts(panos: List[LookaroundPanorama], include_heading=True, include_elevation=True) -> List[dict]:
-    return [pano_to_dict(pano,include_heading=include_heading, include_elevation=include_elevation) for pano in panos]
+def panos_to_dicts(panos: List[LookaroundPanorama], include_orientation=True, include_elevation=True) -> List[dict]:
+    return [pano_to_dict(pano,include_orientation=include_orientation, include_elevation=include_elevation) for pano in panos]
 
 
-def pano_to_dict(pano: LookaroundPanorama, include_heading=True, include_elevation=True) -> dict:
+def pano_to_dict(pano: LookaroundPanorama, include_orientation=True, include_elevation=True) -> dict:
     pano_dict = {
         "panoid": str(pano.panoid),
         "buildId": str(pano.build_id),
@@ -34,7 +34,7 @@ def pano_to_dict(pano: LookaroundPanorama, include_heading=True, include_elevati
             "roll": c.position.roll,
             } for c in pano.camera_metadata],
         }
-    if include_heading:
+    if include_orientation:
         pano_dict["heading"] = pano.heading
         pano_dict["pitch"] = pano.pitch
         pano_dict["roll"] = pano.roll

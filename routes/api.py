@@ -16,7 +16,7 @@ from lookaround.geocode import reverse_geocode
 from lookaround import get_coverage_tile, get_pano_face
 import geo
 from config import config
-from misc.util import to_bool, panos_to_dicts
+from misc.util import pano_to_dict, to_bool, panos_to_dicts
 
 
 def is_package_installed(package_name):
@@ -58,10 +58,10 @@ else:
 @api.route("/tiles/coverage/<int:x>/<int:y>/")
 @cross_origin()
 def relay_coverage_tile(x, y):
-    include_heading = request.args.get("heading", default=False, type=bool)
+    include_orientation = request.args.get("orientation", default=False, type=bool)
     include_elevation = request.args.get("elevation", default=False, type=bool)
     panos = get_coverage_tile(x, y, session=map_session)
-    return jsonify(panos_to_dicts(panos, include_heading=include_heading, include_elevation=include_elevation))
+    return jsonify(panos_to_dicts(panos, include_orientation=include_orientation, include_elevation=include_elevation))
 
 
 @api.route("/closest")
@@ -95,11 +95,12 @@ def closest():
             distance = geo.distance(lat, lon, pano.lat, pano.lon)
             if distance < radius:
                 panos.append((pano, distance))
+
     panos = sorted(panos, key=lambda p: p[1])
     if limit:
-        return jsonify(panos_to_dicts([x[0] for x in panos[:limit]]))
-    else:
-        return jsonify(panos_to_dicts([x[0] for x in panos]))
+        panos = panos[:limit]
+
+    return jsonify(panos_to_dicts([x[0] for x in panos]))
 
 
 @api.route("/address")
