@@ -83,42 +83,47 @@ export async function createPanoViewer(config) {
       // on the screen, which is a waste of time and bandwidth.
       viewer.adapter.dynamicLoadingEnabled = false;
     }
-    await viewer.setPanorama({ 
-      panorama: pano, 
-      url: `/pano/${pano.panoid}/${pano.buildId}/`,
-    }, {
-      showLoader: false,
-      sphereCorrection: {
-        pan: pano.heading,
-        tilt: pano.pitch,
-        roll: pano.roll
-      },
-    });
-    if (resetView) {
-      const heading = getHeading(initialOrientation, pano.heading);
-      viewer.zoom(defaultZoomLvl);
-      viewer.rotate({ pitch: 0, yaw: heading });
-      viewer.adapter.dynamicLoadingEnabled = true;
-      viewer.adapter.__refresh();
-    }
-    const nearbyPanos = await viewer.api.getPanosAroundPoint(pano.lat, pano.lon, 100);
-    viewer.plugins.movement.updatePanoMarkers(pano, nearbyPanos);
-    const alternativeDates = getAlternativeDates(pano, nearbyPanos);
-    viewer.alternativeDatesChangedCallback(alternativeDates);
+    await Promise.all([
+      (async () => {
+        await viewer.setPanorama({ 
+          panorama: pano, 
+          url: `/pano/${pano.panoid}/${pano.buildId}/`,
+        }, {
+          showLoader: false,
+          sphereCorrection: {
+            pan: pano.heading,
+            tilt: pano.pitch,
+            roll: pano.roll
+          },
+        });
+        if (resetView) {
+          const heading = getHeading(initialOrientation, pano.heading);
+          viewer.zoom(defaultZoomLvl);
+          viewer.rotate({ pitch: 0, yaw: heading });
+          viewer.adapter.dynamicLoadingEnabled = true;
+          viewer.adapter.__refresh();
+        }
+      })(),
+      (async () => {
+        await updateMarkers(viewer, pano);
+      })()
+    ]);
   };
 
-  viewer.api.getPanosAroundPoint(config.initialPano.lat, config.initialPano.lon, 100)
-    .then((nearbyPanos) => {
-      viewer.plugins.movement.updatePanoMarkers(config.initialPano, nearbyPanos);
-      const alternativeDates = getAlternativeDates(config.initialPano, nearbyPanos);
-      viewer.alternativeDatesChangedCallback(alternativeDates);
-    });
+  updateMarkers(viewer, config.initialPano);
 
   viewer.takeScreenshot = function() {
     return document.querySelector(".psv-canvas").toDataURL("image/jpeg", 1.0);
   }
 
   return viewer;
+}
+
+async function updateMarkers(viewer, pano) {
+  const nearbyPanos = await viewer.api.getPanosAroundPoint(pano.lat, pano.lon, 100);
+  viewer.plugins.movement.updatePanoMarkers(pano, nearbyPanos);
+  const alternativeDates = getAlternativeDates(pano, nearbyPanos);
+  viewer.alternativeDatesChangedCallback(alternativeDates);
 }
 
 function getAlternativeDates(refPano, nearbyPanos) {
