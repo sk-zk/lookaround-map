@@ -66,16 +66,16 @@ export class LookaroundAdapter extends AbstractAdapter {
     const progress = [0, 0, 0, 0, 0, 0];
     const startZoom = 5;
     for (let i = 0; i < NUM_FACES; i++) {
-      promises.push(this.__loadOneTexture(startZoom, i, progress));
+      promises.push(this.#loadOneTexture(startZoom, i, progress));
     }
     return Promise.all(promises).then((texture) => { 
       // if this pano has different camera paremeters from the last one, the mesh needs to be rebuilt.
-      this.__recreateMeshIfNecessary();
+      this.#recreateMeshIfNecessary();
       return { panorama: panoramaMetadata, texture };
     });
   }
 
-  async __loadOneTexture(zoom, faceIdx, progress = null) {
+  async #loadOneTexture(zoom, faceIdx, progress = null) {
     let faceUrl = `${this.endpoint}${this.url}${zoom}/${faceIdx}/`;
     if (this.imageFormat === ImageFormat.HEIC) {
       faceUrl += "?format=heic";
@@ -122,7 +122,7 @@ export class LookaroundAdapter extends AbstractAdapter {
       });
   }
 
-  __recreateMeshIfNecessary() {   
+  #recreateMeshIfNecessary() {   
     const fovH = this.panorama.cameraMetadata[0].fovH;
     if (this.previousFovH !== fovH) {
       const mesh = this.createMesh();
@@ -194,7 +194,7 @@ export class LookaroundAdapter extends AbstractAdapter {
         mesh.material[i] = material;
       }
     }
-    this.__refresh(); // immediately replace the low quality tiles from intial load
+    this.#refresh(); // immediately replace the low quality tiles from intial load
   }
 
   /**
@@ -224,29 +224,29 @@ export class LookaroundAdapter extends AbstractAdapter {
         // and not POSITION_UPDATED, so I had to restort to handling
         // BEFFORE_ROTATE instead and passing the rotation param from it
         // all the way to __getVisibleFaces()
-        this.__refresh(e.position);
+        this.#refresh(e.position);
         break;
       case "zoom-updated":
-        this.__refresh();
+        this.#refresh();
         break;
     }
   }
 
-  __refresh(position=null) {
+  #refresh(position=null) {
     if (!this.mesh) return;
     if (this.mesh.material.length === 0) return;
     if (!this.dynamicLoadingEnabled) return;
     
-    const visibleFaces = this.__getVisibleFaces(position);
+    const visibleFaces = this.#getVisibleFaces(position);
     // TODO finetune this
     if (this.psv.renderer.state.vFov < 55) {
-      this.__refreshFaces(visibleFaces, 0);
+      this.#refreshFaces(visibleFaces, 0);
     } else {
-      this.__refreshFaces(visibleFaces, 2);
+      this.#refreshFaces(visibleFaces, 2);
     }
   }
 
-  __refreshFaces(faces, zoom) {
+  #refreshFaces(faces, zoom) {
     for (const faceIdx of faces) {
       if (
         this.mesh.material[faceIdx].uniforms.panorama.value &&
@@ -255,7 +255,7 @@ export class LookaroundAdapter extends AbstractAdapter {
       ) {
         this.mesh.material[faceIdx].uniforms.panorama.value.userData.refreshing = true;
         const oldUrl = this.mesh.material[faceIdx].uniforms.panorama.value.userData.url;
-        this.__loadOneTexture(zoom, faceIdx).then((texture) => {
+        this.#loadOneTexture(zoom, faceIdx).then((texture) => {
           if (this.mesh.material[faceIdx].uniforms.panorama.value.userData.url == oldUrl) {
             // ^ dumb temp fix to stop faces from loading in
             // after the user has already navigated to a different panorama
@@ -273,7 +273,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     }
   }
 
-  __getVisibleFaces(position=null) {
+  #getVisibleFaces(position=null) {
     const yaw = position?.yaw ?? null;
     this.screenFrustum.update(yaw);
 

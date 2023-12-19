@@ -2,7 +2,6 @@ import { AbstractPlugin } from "@photo-sphere-viewer/core";
 import { geodeticToEnu, enuToPhotoSphere, distanceBetween } from "../geo/geo.js";
 import { ScreenFrustum } from "./ScreenFrustum.js";
 
-
 const MARKER_ID = "0";
 const MAX_DISTANCE = 100;
 const CAMERA_HEIGHT = 2.4; // the approximated height of the camera
@@ -32,10 +31,10 @@ export class MovementPlugin extends AbstractPlugin {
     // addMarker no longer returns the marker object in psv 5?
     this.marker = psv.plugins.markers.markers["0"];
     psv.container.addEventListener("mousemove", (e) => {
-      this._onMouseMove(e);
+      this.#onMouseMove(e);
     });
     psv.addEventListener("click", async (e) => {
-      await this._onClick(e);
+      await this.#onClick(e);
     });
     this.lastMousePosition = null;
     this.screenFrustum = new ScreenFrustum(psv);
@@ -70,7 +69,7 @@ export class MovementPlugin extends AbstractPlugin {
     }
   }
 
-  _onMouseMove(e) {
+  #onMouseMove(e) {
     this.mouseHasMoved = true;
        
     const updateLimit = 1000/60.0;
@@ -86,19 +85,19 @@ export class MovementPlugin extends AbstractPlugin {
       if (vector != null) {
         const position = this.psv.dataHelper.vector3ToSphericalCoords(vector);
         this.lastMousePosition = position;
-        this._mouseMovedTo(position);
+        this.#mouseMovedTo(position);
       } else {
-        this._hideMarker();
+        this.#hideMarker();
       }
     }
   }
 
-  _mouseMovedTo(position) {
+  #mouseMovedTo(position) {
     if (!this.nearbyPanos || !this.movementEnabled) return;
 
-    const closest = this._getClosestPano(position);
+    const closest = this.#getClosestPano(position);
     if (closest === null) {
-      this._hideMarker();
+      this.#hideMarker();
     } else {
       this.psv.plugins.markers.updateMarker({
         id: MARKER_ID,
@@ -112,7 +111,7 @@ export class MovementPlugin extends AbstractPlugin {
     }
   }
 
-  async _onClick(e) {
+  async #onClick(e) {
     if (e.data.rightclick || !this.movementEnabled) {
       return;
     }
@@ -123,32 +122,32 @@ export class MovementPlugin extends AbstractPlugin {
       } else {
         // mobile user
         const position = { pitch: e.data.pitch, yaw: e.data.yaw };
-        const closest = this._getClosestPano(position);
-        await this._navigateTo(closest.pano);
+        const closest = this.#getClosestPano(position);
+        await this.#navigateTo(closest.pano);
       }
     } else {
       const pano = this.marker.config.data;
-      this._hideMarker();
+      this.#hideMarker();
       this.movementEnabled = false;
-      await this._navigateTo(pano);
+      await this.#navigateTo(pano);
       this.movementEnabled = true;
       // allow user to keep mouse in the same spot while clicking forward
-      this._mouseMovedTo(this.lastMousePosition);
+      this.#mouseMovedTo(this.lastMousePosition);
     }
   }
 
-  async _navigateTo(pano) {
+  async #navigateTo(pano) {
     await this.psv.navigateTo(pano);
     this.dispatchEvent(new CustomEvent("moved", { detail: pano }));
   }
 
-  _getClosestPano(position) {
+  #getClosestPano(position) {
     this.screenFrustum.update();
     let closest = null;
     let closestDist = 9999999;
     for (const pano of this.nearbyPanos) {
       // ignore pano markers that aren't even on screen
-      if (this._markerPositionIsOffScreen(pano.position)) continue;
+      if (this.#markerPositionIsOffScreen(pano.position)) continue;
       const distance = distanceBetween(
         position.pitch, position.yaw,
         pano.position.pitch, pano.position.yaw,
@@ -161,7 +160,7 @@ export class MovementPlugin extends AbstractPlugin {
     return closest;
   }
 
-  _markerPositionIsOffScreen(pano_position) {
+  #markerPositionIsOffScreen(pano_position) {
     const viewerCoords = this.psv.dataHelper.sphericalCoordsToViewerCoords({
       pitch: pano_position.pitch,
       yaw: pano_position.yaw,
@@ -170,7 +169,7 @@ export class MovementPlugin extends AbstractPlugin {
            viewerCoords.y > this.psv.state.size.height || viewerCoords.y < 0;
   }
 
-  _hideMarker() {
+  #hideMarker() {
     this.psv.plugins.markers.updateMarker({
       id: MARKER_ID,
       visible: false,
