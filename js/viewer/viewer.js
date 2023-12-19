@@ -16,6 +16,8 @@ import "@photo-sphere-viewer/compass-plugin/index.css";
 
 export async function createPanoViewer(config) { 
   const endpoint = config.endpoint ?? "";
+  config.canMove ??= true;
+  config.compassEnabled ??= true;
   const plugins = configurePlugins(config);
   const initialOrientation = config.initialOrientation ?? InitialOrientation.North;
   const defaultYaw = getHeading(initialOrientation, config.initialPano.heading);
@@ -162,13 +164,15 @@ function getHeading(initialOrientation, heading) {
 }
 
 function configurePlugins(config) {  
-  const plugins = [
-    [MarkersPlugin, {}],
-    [MovementPlugin, {}],
-  ];
+  const plugins = [];
+
+  if (config.canMove) {
+    plugins.push([MarkersPlugin, {}]);
+    plugins.push([MovementPlugin, {}]);
+  }
 
   const compassEnabled = config.compassEnabled ?? true;
-  if (compassEnabled) {
+  if (config.compassEnabled) {
     plugins.push(
       [
         CompassPlugin,
