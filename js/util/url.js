@@ -1,6 +1,6 @@
-import { DEG2RAD, RAD2DEG, wrapLon } from "./geo/geo.js";
-import { Constants } from "./map/Constants.js";
-import "./proto/MuninViewState_pb.js";
+import { DEG2RAD, RAD2DEG, wrapLon } from "../geo/geo.js";
+import { Constants } from "../map/Constants.js";
+import "../proto/MuninViewState_pb.js";
 
 import { Base64 } from "js-base64";
 
@@ -26,7 +26,8 @@ export function parseHashParams() {
       longitude: centerParams[2],
     };
   } else {
-    center = { zoom: Constants.MIN_ZOOM, latitude: 20, longitude: 0 };
+    const zoom = params.has("p") ? 17 : Constants.MIN_ZOOM;
+    center = { zoom: zoom, latitude: 20, longitude: 0 };
   }
 
   let pano = null;

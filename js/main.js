@@ -2,13 +2,13 @@ import { Api } from "./Api.js";
 import { Authenticator } from "./util/Authenticator.js";
 import { MapManager } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
-import { wrapLon, RAD2DEG } from "./geo/geo.js";
+import { wrapLon } from "./geo/geo.js";
 import { TimeMachineControl } from "./ui/TimeMachineControl.js";
 import { Theme } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
 import { showNotificationTooltip, isAppleDevice, approxEqual } from "./util/misc.js";
-import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsUrl, encodeShareLinkPayload } from "./url.js";
+import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsUrl, encodeShareLinkPayload } from "./util/url.js";
 import { PanoMetadataBox } from "./ui/PanoMetadataBox.js";
 import { settings } from "./settings.js";
 
