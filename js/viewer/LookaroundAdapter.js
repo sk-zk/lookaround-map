@@ -157,6 +157,11 @@ export class LookaroundAdapter extends AbstractAdapter {
         thetaLength: this.panorama.cameraMetadata[i].fovH,
       });
       
+      if (i > 0 && i < Face.Top) {
+        let overlap = params[i-1].phiStart + params[i-1].phiLength - params[i].phiStart;
+        params[i-1].phiLength -= overlap;
+      }
+
       const faceGeom = new SphereGeometry(
         radius, 24, 32, 
         params[i].phiStart, params[i].phiLength, params[i].thetaStart, params[i].thetaLength
@@ -186,11 +191,7 @@ export class LookaroundAdapter extends AbstractAdapter {
   setTexture(mesh, textureData) {
     for (let i = 0; i < NUM_FACES; i++) {
       if (textureData.texture[i]) {
-        const material = AbstractAdapter.createOverlayMaterial();
-        material.polygonOffset = true;
-        material.polygonOffsetUnit = 1;
-        material.polygonOffsetFactor = i;
-        material.uniforms.panorama.value = textureData.texture[i];
+        const material = this.#createPanoFaceMaterial(i, textureData.texture[i]);
         mesh.material[i] = material;
       }
     }
@@ -259,11 +260,7 @@ export class LookaroundAdapter extends AbstractAdapter {
           if (this.mesh.material[faceIdx].uniforms.panorama.value.userData.url == oldUrl) {
             // ^ dumb temp fix to stop faces from loading in
             // after the user has already navigated to a different panorama
-            const material = AbstractAdapter.createOverlayMaterial();
-            material.polygonOffset = true;
-            material.polygonOffsetUnit = 1;
-            material.polygonOffsetFactor = faceIdx;
-            material.uniforms.panorama.value = texture;
+            const material = this.#createPanoFaceMaterial(faceIdx, texture);
             material.userData.refreshing = false;
             this.mesh.material[faceIdx] = material;
             this.psv.needsUpdate();
@@ -271,6 +268,15 @@ export class LookaroundAdapter extends AbstractAdapter {
         });
       }
     }
+  }
+
+  #createPanoFaceMaterial(faceIdx, texture) {
+    const material = AbstractAdapter.createOverlayMaterial();
+    material.polygonOffset = true;
+    material.polygonOffsetUnit = 1;
+    material.polygonOffsetFactor = faceIdx * 2;
+    material.uniforms.panorama.value = texture;
+    return material;
   }
 
   #getVisibleFaces(position=null) {
