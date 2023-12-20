@@ -1,3 +1,4 @@
+from enum import Enum
 from functools import lru_cache
 import gc
 import importlib
@@ -16,7 +17,7 @@ from lookaround.geocode import reverse_geocode
 from lookaround import get_coverage_tile, get_pano_face
 import geo
 from config import config
-from misc.util import pano_to_dict, to_bool, panos_to_dicts
+from misc.util import to_bool, panos_to_dicts, AdditionalMetadata
 
 
 def is_package_installed(package_name):
@@ -58,10 +59,8 @@ else:
 @api.route("/tiles/coverage/<int:x>/<int:y>/")
 @cross_origin()
 def relay_coverage_tile(x, y):
-    include_orientation = request.args.get("orientation", default=False, type=bool)
-    include_elevation = request.args.get("elevation", default=False, type=bool)
     panos = get_coverage_tile(x, y, session=map_session)
-    return jsonify(panos_to_dicts(panos, include_orientation=include_orientation, include_elevation=include_elevation))
+    return jsonify(panos_to_dicts(panos, []))
 
 
 @api.route("/closest")
@@ -76,6 +75,8 @@ def closest():
     lon = request.args.get("lon", default=None, type=float)
     radius = request.args.get("radius", default=config.CLOSEST_MAX_RADIUS, type=float)
     limit = request.args.get("limit", default=None, type=int)
+    additional_metadata = [AdditionalMetadata(x) for x in 
+                           (request.args.get("meta", default="", type=str).split(","))]
 
     if not lat or not lon:
         abort(400, "Latitude and longitude must be set")
@@ -100,7 +101,7 @@ def closest():
     if limit:
         panos = panos[:limit]
 
-    return jsonify(panos_to_dicts([x[0] for x in panos]))
+    return jsonify(panos_to_dicts([x[0] for x in panos], additional_metadata))
 
 
 @api.route("/address")

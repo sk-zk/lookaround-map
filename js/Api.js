@@ -9,10 +9,13 @@ export class Api {
     return tile;
   }
 
-  async getPanosAroundPoint(lat, lon, radius, limit = null) {
+  async getPanosAroundPoint(lat, lon, radius, limit = null, additionalMetadata = null) {
     let url = `${this.endpoint}/closest?lat=${lat}&lon=${lon}&radius=${radius}`;
     if (limit) {
       url += `&limit=${limit}`;
+    }
+    if (additionalMetadata) {
+      url += `&meta=${additionalMetadata.join(",")}`
     }
     const response = await fetch(url);
     const panos = await response.json();

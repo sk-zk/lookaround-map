@@ -1,4 +1,5 @@
 
+from enum import Enum
 from typing import List
 from timezonefinder import TimezoneFinder
 
@@ -12,34 +13,47 @@ from config import config
 tf = TimezoneFinder(in_memory=True) 
 
 
-def panos_to_dicts(panos: List[LookaroundPanorama], include_orientation=True, include_elevation=True) -> List[dict]:
-    return [pano_to_dict(pano,include_orientation=include_orientation, include_elevation=include_elevation) for pano in panos]
+class AdditionalMetadata(Enum):
+    ORIENTATION = "ori"
+    CAMERA_METADATA = "cam"
+    ELEVATION = "ele"
+    TIMEZONE = "tz"
 
 
-def pano_to_dict(pano: LookaroundPanorama, include_orientation=True, include_elevation=True) -> dict:
+def panos_to_dicts(panos: List[LookaroundPanorama], 
+                   additional_metadata: List[AdditionalMetadata]) -> List[dict]:
+    return [pano_to_dict(pano, additional_metadata) for pano in panos]
+
+
+def pano_to_dict(pano: LookaroundPanorama, 
+                 additional_metadata: List[AdditionalMetadata]) -> dict:
     pano_dict = {
         "panoid": str(pano.panoid),
         "buildId": str(pano.build_id),
         "lat": pano.lat,
         "lon": pano.lon,
         "timestamp": pano.timestamp,
-        "timezone": tf.timezone_at(lat=pano.lat, lng=pano.lon),
         "coverageType": pano.coverage_type,
-        "cameraMetadata": [{ 
+        }
+    
+    if AdditionalMetadata.ORIENTATION in additional_metadata:
+        pano_dict["heading"] = pano.heading
+        pano_dict["pitch"] = pano.pitch
+        pano_dict["roll"] = pano.roll
+    if AdditionalMetadata.ELEVATION in additional_metadata:
+        pano_dict["elevation"] = pano.elevation
+    if AdditionalMetadata.CAMERA_METADATA in additional_metadata:
+        pano_dict["cameraMetadata"] = [{ 
             "fovH": c.lens_projection.fov_h,
             "fovS": c.lens_projection.fov_s,
             "cy": c.lens_projection.cy,
             "yaw": c.position.yaw,
             "pitch": c.position.pitch,
             "roll": c.position.roll,
-            } for c in pano.camera_metadata],
-        }
-    if include_orientation:
-        pano_dict["heading"] = pano.heading
-        pano_dict["pitch"] = pano.pitch
-        pano_dict["roll"] = pano.roll
-    if include_elevation:
-        pano_dict["elevation"] = pano.elevation
+            } for c in pano.camera_metadata]
+    if AdditionalMetadata.TIMEZONE in additional_metadata:
+        pano_dict["timezone"] = tf.timezone_at(lat=pano.lat, lng=pano.lon)
+    
     return pano_dict
 
 
@@ -55,4 +69,4 @@ def load_ip_blacklist() -> set:
 
 def to_bool(s: str) -> bool:
     s = s.lower()
-    return s == "1" or s == "true" or s == "True"
+    return s == "1" or s == "true"

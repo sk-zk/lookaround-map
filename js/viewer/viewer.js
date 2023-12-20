@@ -7,7 +7,7 @@ import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
 import { DEG2RAD, distanceBetween } from "../geo/geo.js";
 import { isHeicSupported, isHevcSupported } from "../util/media.js";
-import { InitialOrientation, ImageFormat } from "../enums.js";
+import { InitialOrientation, ImageFormat, AdditionalMetadata } from "../enums.js";
 import { settings } from "../settings.js";
 
 import "@photo-sphere-viewer/core/index.css";
@@ -70,6 +70,14 @@ export async function createPanoViewer(config) {
   viewer.alternativeDatesChangedCallback = function() {};
 
   viewer.navigateTo = async (pano, resetView=false) => {
+    // when navigateTo is called from the movement plugin,
+    // metadata needed for rendering will not be set, so we'll request it from the server
+    if (!pano.heading) {
+      pano = (await viewer.api.getPanosAroundPoint(pano.lat, pano.lon, 5, 1, 
+        [AdditionalMetadata.CameraMetadata, AdditionalMetadata.Elevation, 
+          AdditionalMetadata.Orientation, AdditionalMetadata.TimeZone]))[0];
+    }
+
     // for some reason, setPanorama doesn't appear to store the
     // new sphereCorrection anywhere, so I'm just passing it to the
     // viewer adapter manually
@@ -120,7 +128,8 @@ export async function createPanoViewer(config) {
 }
 
 async function updateMarkers(viewer, pano) {
-  const nearbyPanos = await viewer.api.getPanosAroundPoint(pano.lat, pano.lon, 100);
+  const nearbyPanos = await viewer.api.getPanosAroundPoint(
+    pano.lat, pano.lon, 100, 1000, [AdditionalMetadata.Elevation, AdditionalMetadata.TimeZone]);
   viewer.plugins.movement.updatePanoMarkers(pano, nearbyPanos);
   const alternativeDates = getAlternativeDates(pano, nearbyPanos);
   viewer.alternativeDatesChangedCallback(alternativeDates);

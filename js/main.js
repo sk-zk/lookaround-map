@@ -4,7 +4,7 @@ import { MapManager } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
 import { wrapLon } from "./geo/geo.js";
 import { TimeMachineControl } from "./ui/TimeMachineControl.js";
-import { Theme } from "./enums.js";
+import { Theme, AdditionalMetadata } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
 import { showNotificationTooltip, isAppleDevice, approxEqual } from "./util/misc.js";
@@ -146,7 +146,11 @@ class Application {
     } else {
       radius = 100;
     }
-    const pano = (await this.api.getPanosAroundPoint(lat, lon, radius, 1))[0];
+    const pano = (await this.api.getPanosAroundPoint(
+      lat, lon, radius, 1, 
+      [AdditionalMetadata.CameraMetadata, AdditionalMetadata.Elevation, 
+        AdditionalMetadata.Orientation, AdditionalMetadata.TimeZone])
+      )[0];
     this.currentPano = pano;
     if (pano) {
       await this.#displayPano(pano);
