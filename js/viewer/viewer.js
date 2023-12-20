@@ -78,11 +78,6 @@ export async function createPanoViewer(config) {
           AdditionalMetadata.Orientation, AdditionalMetadata.TimeZone]))[0];
     }
 
-    // for some reason, setPanorama doesn't appear to store the
-    // new sphereCorrection anywhere, so I'm just passing it to the
-    // viewer adapter manually
-    viewer.panWorkaround = pano.heading;
-
     if (resetView) {
       // temporarily disable dynamic face loading.
       // this is necessary because setPanorama() doesn't have a parameter for
@@ -91,6 +86,7 @@ export async function createPanoViewer(config) {
       // on the screen, which is a waste of time and bandwidth.
       viewer.adapter.dynamicLoadingEnabled = false;
     }
+    
     await Promise.all([
       (async () => {
         await viewer.setPanorama({ 
