@@ -101,7 +101,7 @@ export async function createPanoViewer(config) {
           viewer.zoom(defaultZoomLvl);
           viewer.rotate({ pitch: 0, yaw: heading });
           viewer.adapter.dynamicLoadingEnabled = true;
-          viewer.adapter.__refresh();
+          viewer.adapter.refresh();
         }
       })(),
       (async () => {

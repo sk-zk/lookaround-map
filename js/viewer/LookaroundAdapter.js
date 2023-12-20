@@ -194,7 +194,7 @@ export class LookaroundAdapter extends AbstractAdapter {
         mesh.material[i] = material;
       }
     }
-    this.#refresh(); // immediately replace the low quality tiles from intial load
+    this.refresh(); // immediately replace the low quality tiles from intial load
   }
 
   /**
@@ -224,15 +224,15 @@ export class LookaroundAdapter extends AbstractAdapter {
         // and not POSITION_UPDATED, so I had to restort to handling
         // BEFFORE_ROTATE instead and passing the rotation param from it
         // all the way to __getVisibleFaces()
-        this.#refresh(e.position);
+        this.refresh(e.position);
         break;
       case "zoom-updated":
-        this.#refresh();
+        this.refresh();
         break;
     }
   }
 
-  #refresh(position=null) {
+  refresh(position=null) {
     if (!this.mesh) return;
     if (this.mesh.material.length === 0) return;
     if (!this.dynamicLoadingEnabled) return;
