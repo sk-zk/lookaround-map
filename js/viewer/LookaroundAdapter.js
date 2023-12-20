@@ -195,7 +195,8 @@ export class LookaroundAdapter extends AbstractAdapter {
         mesh.material[i] = material;
       }
     }
-    this.refresh(); // immediately replace the low quality tiles from intial load
+    // immediately replace the low quality tiles from intial load
+    this.refresh(); 
   }
 
   /**
@@ -221,11 +222,7 @@ export class LookaroundAdapter extends AbstractAdapter {
   handleEvent(e) {
     switch (e.type) {
       case "before-rotate":
-        // the rotate() method of the viewer only fires BEFORE_ROTATE
-        // and not POSITION_UPDATED, so I had to restort to handling
-        // BEFFORE_ROTATE instead and passing the rotation param from it
-        // all the way to __getVisibleFaces()
-        this.refresh(e.position);
+        this.refresh();
         break;
       case "zoom-updated":
         this.refresh();
@@ -233,12 +230,12 @@ export class LookaroundAdapter extends AbstractAdapter {
     }
   }
 
-  refresh(position=null) {
+  refresh() {
     if (!this.mesh) return;
     if (this.mesh.material.length === 0) return;
     if (!this.dynamicLoadingEnabled) return;
     
-    const visibleFaces = this.#getVisibleFaces(position);
+    const visibleFaces = this.#getVisibleFaces();
     // TODO finetune this
     if (this.psv.renderer.state.vFov < 55) {
       this.#refreshFaces(visibleFaces, 0);
@@ -279,18 +276,18 @@ export class LookaroundAdapter extends AbstractAdapter {
     return material;
   }
 
-  #getVisibleFaces(position=null) {
-    const yaw = position?.yaw ?? null;
-    this.screenFrustum.update(yaw);
+  #getVisibleFaces() {
+    this.screenFrustum.update(this.panorama.heading);
 
     // TODO find a more elegant way to do this
+    let point = new Vector3();
     const visibleFaces = [];
     for (let meshIdx = 0; meshIdx < this.meshesForFrustum.length; meshIdx++) {
       const mesh = this.meshesForFrustum[meshIdx];
+      mesh.updateMatrixWorld();
       const position = mesh.geometry.getAttribute("position");
-      const step = 20;
-      for (let i = 0; i < position.count; i += step) {
-        const point = new Vector3().fromBufferAttribute(position, i);
+      for (let i = 0; i < position.count; i++) {
+        point.fromBufferAttribute(position, i);
         if (this.screenFrustum.frustum.containsPoint(point)) {
           visibleFaces.push(meshIdx);
           break;
