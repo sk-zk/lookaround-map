@@ -23,7 +23,7 @@ export class MovementPlugin extends AbstractPlugin {
       position: { yaw: 0, pitch: 0 },
       size: { width: 1, height: 1 },
       scale: { zoom: [0.5, 1] }, 
-      image: `${this.psv.config.panoData.endpoint}/static/marker.png`,
+      image: `${this.psv.config.panoData.apiBaseUrl}/static/marker.png`,
       opacity: 0.4,
       data: null,
       visible: false,

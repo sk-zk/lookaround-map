@@ -36,23 +36,24 @@ def pano_to_dict(pano: LookaroundPanorama,
         "coverageType": pano.coverage_type,
         }
     
-    if AdditionalMetadata.ORIENTATION in additional_metadata:
-        pano_dict["heading"] = pano.heading
-        pano_dict["pitch"] = pano.pitch
-        pano_dict["roll"] = pano.roll
-    if AdditionalMetadata.ELEVATION in additional_metadata:
-        pano_dict["elevation"] = pano.elevation
-    if AdditionalMetadata.CAMERA_METADATA in additional_metadata:
-        pano_dict["cameraMetadata"] = [{ 
-            "fovH": c.lens_projection.fov_h,
-            "fovS": c.lens_projection.fov_s,
-            "cy": c.lens_projection.cy,
-            "yaw": c.position.yaw,
-            "pitch": c.position.pitch,
-            "roll": c.position.roll,
-            } for c in pano.camera_metadata]
-    if AdditionalMetadata.TIMEZONE in additional_metadata:
-        pano_dict["timezone"] = tf.timezone_at(lat=pano.lat, lng=pano.lon)
+    for meta in additional_metadata:
+        if meta == AdditionalMetadata.ORIENTATION:
+            pano_dict["heading"] = pano.heading
+            pano_dict["pitch"] = pano.pitch
+            pano_dict["roll"] = pano.roll
+        if meta == AdditionalMetadata.ELEVATION:
+            pano_dict["elevation"] = pano.elevation
+        if meta == AdditionalMetadata.CAMERA_METADATA:
+            pano_dict["cameraMetadata"] = [{ 
+                "fovH": c.lens_projection.fov_h,
+                "fovS": c.lens_projection.fov_s,
+                "cy": c.lens_projection.cy,
+                "yaw": c.position.yaw,
+                "pitch": c.position.pitch,
+                "roll": c.position.roll,
+                } for c in pano.camera_metadata]
+        if meta == AdditionalMetadata.TIMEZONE:
+            pano_dict["timezone"] = tf.timezone_at(lat=pano.lat, lng=pano.lon)
     
     return pano_dict
 

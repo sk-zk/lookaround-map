@@ -23,7 +23,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     this.psv = psv;
 
     this.imageFormat = psv.config.panoData.imageFormat;
-    this.endpoint = psv.config.panoData.endpoint;
+    this.apiBaseUrl = psv.config.panoData.apiBaseUrl;
 
     this.panorama = psv.config.panorama.panorama;
     this.url = psv.config.panorama.panorama.url;
@@ -76,7 +76,7 @@ export class LookaroundAdapter extends AbstractAdapter {
   }
 
   async #loadOneTexture(zoom, faceIdx, progress = null) {
-    let faceUrl = `${this.endpoint}${this.url}${zoom}/${faceIdx}/`;
+    let faceUrl = `${this.apiBaseUrl}${this.url}${zoom}/${faceIdx}/`;
     if (this.imageFormat === ImageFormat.HEIC) {
       faceUrl += "?format=heic";
     } else if (this.imageFormat === ImageFormat.HEVC) {

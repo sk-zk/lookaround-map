@@ -75,8 +75,13 @@ def closest():
     lon = request.args.get("lon", default=None, type=float)
     radius = request.args.get("radius", default=config.CLOSEST_MAX_RADIUS, type=float)
     limit = request.args.get("limit", default=None, type=int)
-    additional_metadata = [AdditionalMetadata(x) for x in 
-                           (request.args.get("meta", default="", type=str).split(","))]
+    additional_metadata_strs = request.args.get("meta", default="", type=str).split(",")
+    additional_metadata = []
+    for meta in additional_metadata_strs:
+        try:
+            additional_metadata.append(AdditionalMetadata(meta))
+        except:
+            pass
 
     if not lat or not lon:
         abort(400, "Latitude and longitude must be set")

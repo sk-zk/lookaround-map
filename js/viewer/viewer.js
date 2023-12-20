@@ -15,7 +15,7 @@ import "@photo-sphere-viewer/markers-plugin/index.css";
 import "@photo-sphere-viewer/compass-plugin/index.css";
 
 export async function createPanoViewer(config) { 
-  const endpoint = config.endpoint ?? "";
+  const apiBaseUrl = config.apiBaseUrl ?? "";
   config.canMove ??= true;
   config.compassEnabled ??= true;
   const plugins = configurePlugins(config);
@@ -43,7 +43,7 @@ export async function createPanoViewer(config) {
       url: `/pano/${config.initialPano.panoid}/${config.initialPano.buildId}/`,
     },
     panoData: { 
-      endpoint: endpoint,
+      apiBaseUrl: apiBaseUrl,
       imageFormat: imageFormat,
     },
     minFov: 10,
@@ -65,7 +65,7 @@ export async function createPanoViewer(config) {
     }
   });
 
-  viewer.api = new Api(endpoint);
+  viewer.api = new Api(apiBaseUrl);
 
   viewer.alternativeDatesChangedCallback = function() {};
 
