@@ -20,7 +20,9 @@ export class FilterControl {
       this.#filterSettings.minDate = Math.floor(
         new Date(document.querySelector("#coverage-min-date").value).getTime()
       );
-      this.onFiltersChanged();
+      if (this.#filterSettings.filterByDate) {
+        this.onFiltersChanged();
+      }
     });
     const coverageMaxDate = document.querySelector("#coverage-max-date");
     coverageMaxDate.value = new Date(this.#filterSettings.maxDate).toISOString().split("T")[0];
@@ -28,7 +30,9 @@ export class FilterControl {
       this.#filterSettings.maxDate = Math.floor(
         new Date(document.querySelector("#coverage-max-date").value).getTime()
       );
-      this.onFiltersChanged();
+      if (this.#filterSettings.filterByDate) {
+        this.onFiltersChanged();
+      }
     });
 
     document.querySelector("#show-cars").checked = true;
@@ -63,6 +67,20 @@ export class FilterControl {
       this.#filterSettings.polygonFilter = null;
       e.target.style.display = "none";
       this.onFiltersChanged();
+    });
+
+    document.querySelector("#filter-build-id").addEventListener("change", (e) => {
+      this.#filterSettings.filterByBuildId = e.target.checked;
+      this.onFiltersChanged();
+    });
+
+    document.querySelector("#filter-build-id-val").addEventListener("change", (e) => {
+      if (e.target.checkValidity()) {
+        this.#filterSettings.buildId = e.target.value;
+      }
+      if (this.#filterSettings.filterByBuildId) {
+        this.onFiltersChanged();
+      }
     });
   }
 

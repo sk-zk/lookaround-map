@@ -7,7 +7,9 @@ const defaults = {
     showCars: true,
     showTrekkers: true,
     polygonFilter: null,
-    lineColorType: LineColorType.CoverageType
+    lineColorType: LineColorType.CoverageType,
+    filterByBuildId: false,
+    buildId: null,
 };
 
 export class FilterSettings {
@@ -20,7 +22,8 @@ export class FilterSettings {
             && this.showCars === defaults.showCars
             && this.showTrekkers === defaults.showTrekkers
             && this.polygonFilter === defaults.polygonFilter
-            && this.lineColorType === defaults.lineColorType;
+            && this.lineColorType === defaults.lineColorType
+            && this.filterByBuildId === defaults.filterByBuildId;
     }
 
     canUseRasterTiles() {

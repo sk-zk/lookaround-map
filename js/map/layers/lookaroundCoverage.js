@@ -86,6 +86,10 @@ class LookaroundCoverageSource extends XYZ {
       ) {
         continue;
       }
+      if (this.#filterSettings.filterByBuildId && this.#filterSettings.buildId && 
+        pano.buildId !== this.#filterSettings.buildId) {
+          continue;
+      }
 
       let color = rgb(this.#coverageColorer.determineCircleColor(pano));
       color.opacity = 0.2;
