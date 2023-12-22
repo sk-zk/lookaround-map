@@ -77,6 +77,8 @@ export class FilterControl {
     document.querySelector("#filter-build-id-val").addEventListener("change", (e) => {
       if (e.target.checkValidity()) {
         this.#filterSettings.buildId = e.target.value;
+      } else {
+        this.#filterSettings.buildId = null;
       }
       if (this.#filterSettings.filterByBuildId) {
         this.onFiltersChanged();
