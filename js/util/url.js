@@ -78,12 +78,12 @@ export function openInGsv(lat, lon, position, fov) {
 
 export function generateAppleMapsUrl(lat, lon, position) {
   const message = new proto.MuninViewState();
-  const viewState = new proto.MuninViewState.ViewState();
-  viewState.setLatitude(lat);
-  viewState.setLongitude(lon);
-  viewState.setYaw(position.yaw * RAD2DEG);
-  viewState.setPitch(-position.pitch * RAD2DEG);
-  message.setViewstate(viewState);
+  const cameraFrame = new proto.MuninViewState.CameraFrame();
+  cameraFrame.setLatitude(lat);
+  cameraFrame.setLongitude(lon);
+  cameraFrame.setYaw(position.yaw * RAD2DEG);
+  cameraFrame.setPitch(-position.pitch * RAD2DEG);
+  message.setCameraframe(cameraFrame);
   const mvsParameter = Base64.fromUint8Array(message.serializeBinary());
   return `https://maps.apple.com/?ll=${lat},${lon}&_mvs=${mvsParameter}`;
 }
