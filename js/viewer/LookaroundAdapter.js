@@ -4,7 +4,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core"
 
 import { ScreenFrustum } from "./ScreenFrustum.js";
-import { Face, ImageFormat } from "../enums.js";
+import { CoverageType, Face, ImageFormat } from "../enums.js";
 import { getFirstFrameOfVideo } from "../util/media.js";
 
 const NUM_FACES = 6;
@@ -59,6 +59,8 @@ export class LookaroundAdapter extends AbstractAdapter {
     this.panorama = panoramaMetadata.panorama;
     this.url = panoramaMetadata.url;
 
+    this.#fixProjectionIfNecessary();
+
     // initial load of the pano with a low starting quality.
     // higher resolution faces are loaded dynamically based on zoom level
     // and where the user is looking.
@@ -73,6 +75,21 @@ export class LookaroundAdapter extends AbstractAdapter {
       this.#recreateMeshIfNecessary();
       return { panorama: panoramaMetadata, texture };
     });
+  }
+
+  #fixProjectionIfNecessary() {
+    // some trekker locations seemingly have bad camera params set,
+    // so we'll override them with known good ones.
+    // this will break if Apple ever releases any trekker footage
+    // which actually _does_ have a different cy than this one.
+    if (this.panorama.coverageType === CoverageType.Trekker && this.panorama.cameraMetadata[0].cy !== 0.305432619) {
+      for (let i = 0; i < 4; i++) {
+        this.panorama.cameraMetadata[i].cy = 0.305432619;
+        this.panorama.cameraMetadata[i].fovH = 1.832595715;
+      }
+      this.panorama.cameraMetadata[Face.Bottom].fovS = 2.129301687;
+      this.panorama.cameraMetadata[Face.Bottom].fovH = 2.268928028;
+    }
   }
 
   async #loadOneTexture(zoom, faceIdx, progress = null) {
