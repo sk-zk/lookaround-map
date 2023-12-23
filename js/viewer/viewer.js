@@ -193,4 +193,4 @@ function configurePlugins(config) {
   return plugins;
 }
 
-export { InitialOrientation };
+export { InitialOrientation, Api, AdditionalMetadata };
