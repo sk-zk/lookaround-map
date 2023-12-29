@@ -260,9 +260,9 @@ class Application {
       return;
     }
   
-    if (approxEqual(params.pano.latitude, this.currentPano.lat) && 
-        approxEqual(params.pano.longitude, this.currentPano.lon) && 
-        params.pano.position) {
+    if (this.currentPano && approxEqual(params.pano.latitude, this.currentPano.lat)
+                         && approxEqual(params.pano.longitude, this.currentPano.lon)
+                         && params.pano.position) {
           this.panoViewer.rotate(params.pano.position);
     } else {
       this.#fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude)
