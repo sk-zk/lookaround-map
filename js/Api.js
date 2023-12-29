@@ -9,7 +9,7 @@ export class Api {
     return tile;
   }
 
-  async getPanosAroundPoint(lat, lon, radius, limit = null, additionalMetadata = null) {
+  async getClosestPanos(lat, lon, radius, limit = null, additionalMetadata = null) {
     let url = `${this.baseUrl}/closest?lat=${lat}&lon=${lon}&radius=${radius}`;
     if (limit) {
       url += `&limit=${limit}`;

@@ -161,7 +161,7 @@ class Application {
     } else {
       radius = 100;
     }
-    const pano = (await this.api.getPanosAroundPoint(
+    const pano = (await this.api.getClosestPanos(
       lat, lon, radius, 1, 
       [AdditionalMetadata.CameraMetadata, AdditionalMetadata.Elevation, 
         AdditionalMetadata.Orientation, AdditionalMetadata.TimeZone])

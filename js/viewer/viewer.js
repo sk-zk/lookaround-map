@@ -73,7 +73,7 @@ export async function createPanoViewer(config) {
     // when navigateTo is called from the movement plugin,
     // metadata needed for rendering will not be set, so we'll request it from the server
     if (!pano.heading) {
-      pano = (await viewer.api.getPanosAroundPoint(pano.lat, pano.lon, 5, 1, 
+      pano = (await viewer.api.getClosestPanos(pano.lat, pano.lon, 5, 1, 
         [AdditionalMetadata.CameraMetadata, AdditionalMetadata.Elevation, 
           AdditionalMetadata.Orientation, AdditionalMetadata.TimeZone]))[0];
     }
@@ -124,8 +124,10 @@ export async function createPanoViewer(config) {
 }
 
 async function updateMarkers(viewer, pano) {
-  const nearbyPanos = await viewer.api.getPanosAroundPoint(
-    pano.lat, pano.lon, 100, 1000, [AdditionalMetadata.Elevation, AdditionalMetadata.TimeZone]);
+  const nearbyPanos = await viewer.api.getClosestPanos(
+    pano.lat, pano.lon, 
+    100, 1000, 
+    [AdditionalMetadata.Elevation, AdditionalMetadata.TimeZone]);
   viewer.plugins.movement.updatePanoMarkers(pano, nearbyPanos);
   const alternativeDates = getAlternativeDates(pano, nearbyPanos);
   viewer.alternativeDatesChangedCallback(alternativeDates);
