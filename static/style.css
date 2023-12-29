@@ -75,6 +75,10 @@ body {
 
 /********/
 
+code {
+  font-family: monospace;
+}
+
 a:visited {
   color: var(--map-ui-text-color);
 }

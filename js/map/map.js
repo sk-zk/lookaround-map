@@ -10,6 +10,7 @@ import { getUserLocale } from "../util/misc.js";
 import { GeolocationButton } from "./GeolocationButton.js";
 import { CoverageColorer } from "./layers/colors.js";
 import { settings } from "../settings.js";
+import { isAppleMapsUrl,parseAppleMapsUrl } from "../util/url.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
@@ -44,7 +45,7 @@ class MapManager {
   #cachedBlueLines;
   #overlays;
 
-  constructor(config, filterControl) {
+  constructor(config, filterControl, onAppleMapsLinkPasted) {
     this.#filterControl = filterControl;
 
     useGeographic();
@@ -73,7 +74,7 @@ class MapManager {
 
     this.#createAttributionControl();
     this.#createLayerSwitcher();
-    this.#createSearch();
+    this.#createSearch(onAppleMapsLinkPasted);
     this.#createContextMenu();
     this.#createPanoMarkerLayer();
     this.#setUpFilterControl();
@@ -177,8 +178,8 @@ class MapManager {
     this.#map.addControl(geolocationButton);
   }
 
-  #createSearch() {
-    const searchControl = new SearchNominatim({});
+  #createSearch(onAppleMapsLinkPasted) {
+    const searchControl = new SearchNominatimPlusAppleLinkParser({}, onAppleMapsLinkPasted);
     searchControl.addEventListener("select", (e) => {
       try {
         const bounds = e.search.boundingbox;
@@ -347,6 +348,36 @@ function isDarkThemeEnabled() {
     (window.matchMedia &&
       window.matchMedia("(prefers-color-scheme: dark)").matches)
   );
+}
+
+class SearchNominatimPlusAppleLinkParser extends SearchNominatim {
+  constructor(options, onAppleMapsLinkPasted) {
+    // the base class olcontrolSearch is a big ol' pile of shit
+    // where 90% of the logic, and the part I need to modify,
+    // is located in a function created in the constructor
+    // with no way to override it short of literally hijacking
+    // the addEventListener function and grabbing it out of there.
+    const originalAddEventListener = EventTarget.prototype.addEventListener;
+    EventTarget.prototype.addEventListener = function (...args) {
+      if (args[0] === "keyup") {     
+        const origCallback = args[1];
+        const patchedCallback = function (e) {
+          if (e.key === "Enter" && isAppleMapsUrl(e.target.value)) {
+            onAppleMapsLinkPasted(parseAppleMapsUrl(e.target.value));
+            e.target.value = "";
+          } else {
+            origCallback(e);
+          }
+        };
+        return originalAddEventListener.apply(this, [args[0], patchedCallback])
+      }
+      return originalAddEventListener.apply(this, args);
+    };
+
+    super(options);
+
+    EventTarget.prototype.addEventListener = originalAddEventListener;
+  }
 }
 
 export { MapManager };

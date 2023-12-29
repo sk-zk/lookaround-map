@@ -99,7 +99,7 @@ export function encodeShareLinkPayload(lat, lon, yaw, pitch) {
 }
 
 export function decodeShareLinkPayload(payload) {
-  const bytes = Base64.toUint8Array(payload, true);
+  const bytes = Base64.toUint8Array(payload);
   const floats = new Float32Array(bytes.buffer);
   return {
     lat: floats[0],
@@ -107,4 +107,54 @@ export function decodeShareLinkPayload(payload) {
     yaw: floats[2],
     pitch: floats[3],
   };
+}
+
+export function isAppleMapsUrl(str) {
+  if (str.indexOf("http://") !== 0 && str.indexOf("https://") !== 0) {
+    str = "https://" + str;
+  }
+  try {
+    const url = new URL(str);
+    return url.host === "maps.apple.com";
+  }
+  catch {
+    return false;
+  }
+}
+
+export function parseAppleMapsUrl(str) {
+  if (str.indexOf("http://") !== 0 && str.indexOf("https://") !== 0) {
+    str = "https://" + str;
+  }
+
+  const url = new URL(str);
+  if (url.host !== "maps.apple.com") {
+    throw new TypeError("Not an Apple Maps URL");
+  }
+
+  const params = {};
+  if (url.searchParams.has("ll")) {
+    const coords = url.searchParams.get("ll").split(",");
+    params.lat = coords[0];
+    params.lon = coords[1];
+  }
+
+  if (url.searchParams.has("z")) {
+    params.zoom = url.searchParams.get("z");
+  }
+
+  if (url.searchParams.has("_mvs")) {
+    const bytes = Base64.toUint8Array(url.searchParams.get("_mvs"));
+    const mvs = proto.MuninViewState.deserializeBinary(bytes);
+    params.pano = { 
+      lat: mvs.getCameraframe().getLatitude(), 
+      lon: mvs.getCameraframe().getLongitude(),
+      position: { 
+        yaw: mvs.getCameraframe().getYaw() * DEG2RAD, 
+        pitch: -mvs.getCameraframe().getPitch() * DEG2RAD,
+      }
+    };
+  }
+
+  return params;
 }

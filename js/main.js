@@ -101,7 +101,8 @@ class Application {
         center: params.center,
         auth: this.auth,
       },
-      new FilterControl()
+      new FilterControl(),
+      (params) => { this.#onAppleMapsLinkPasted(params) },
     );
     this.map = mapMgr.getMap();
     this.map.on("moveend", (_) => {
@@ -112,6 +113,20 @@ class Application {
       clickCoordinates[0] = wrapLon(clickCoordinates[0]);
       await this.#fetchAndDisplayPanoAt(clickCoordinates[1], clickCoordinates[0]);
     });
+  }
+
+  #onAppleMapsLinkPasted(params) {
+    if (params.pano) {
+      this.#fetchAndDisplayPanoAt(params.pano.lat, params.pano.lon, params.pano.position);
+      this.map.getView().setZoom(17);
+    } else {
+      if (params.lat && params.lon) {
+        this.map.getView().setCenter([params.lon, params.lat]);
+      }
+      if (params.zoom) {
+        this.map.getView().setZoom(params.zoom);
+      }
+    }
   }
 
   async #initPanoViewer(pano) {
@@ -138,7 +153,7 @@ class Application {
     this.panoViewer.addEventListener("position-updated", positionUpdateHandler);
   }
 
-  async #fetchAndDisplayPanoAt(lat, lon) {
+  async #fetchAndDisplayPanoAt(lat, lon, position = null) {
     const zoom = this.map.getView().getZoom();
     let radius;
     if (zoom > 15) {
@@ -153,17 +168,19 @@ class Application {
       )[0];
     this.currentPano = pano;
     if (pano) {
-      await this.#displayPano(pano);
+      await this.#displayPano(pano, position);
     }
   }
 
-  async #displayPano(pano) {
+  async #displayPano(pano, position = null) {
     await this.panoMetadataBox.update(pano);
     updateHashParams(this.map, pano, this.panoViewer?.getPosition());
     if (this.panoViewer) {
       await this.panoViewer.navigateTo(pano);
+      if (position) this.panoViewer.rotate(position);
     } else {
       await this.#initPanoViewer(pano);
+      if (position) this.panoViewer.rotate(position);
       this.#switchMapToPanoLayout();
     }
     this.#updateMapMarker(pano);
