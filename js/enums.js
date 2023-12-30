@@ -10,10 +10,10 @@ const LineColorType = Object.freeze({
 });
 
 const Face = Object.freeze({
-  Front: 0,
-  Right: 1,
-  Back: 2,
-  Left: 3,
+  Back: 0,
+  Left: 1,
+  Front: 2,
+  Right: 3,
   Top: 4,
   Bottom: 5,
 });
