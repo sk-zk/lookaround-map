@@ -40,6 +40,7 @@ class MapManager {
   #appleSatelliteOverlay;
   #appleSatellite;
   #googleRoadLayer;
+  #googleRoadLayerOldStyle;
   #baseLayers;
 
   #cachedBlueLines;
@@ -126,11 +127,13 @@ class MapManager {
       this.#appleRoadDark.setVisible(false);
     }
   
-    this.#googleRoadLayer = new GoogleRoadLayer(this.#languageTag);
+    this.#googleRoadLayer = new GoogleRoadLayer("Google Maps Road", this.#languageTag, false);
+    this.#googleRoadLayerOldStyle = new GoogleRoadLayer("Google Maps Road (Old Style)", this.#languageTag, true);
   
     this.#baseLayers = new LayerGroup({
       title: "Base layer",
-      layers: [this.#appleRoad, this.#appleRoadDark, this.#appleSatellite, this.#googleRoadLayer,
+      layers: [this.#appleRoad, this.#appleRoadDark, this.#appleSatellite, 
+        this.#googleRoadLayer, this.#googleRoadLayerOldStyle,
         openStreetMap, cartoVoyager, cartoPositron, cartoDarkMatter]
     });
   
