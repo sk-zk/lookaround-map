@@ -204,6 +204,7 @@ class MapManager {
   #updateLabelZIndex(labelsOnTop) {
     this.#appleSatelliteOverlay.setZIndex(labelsOnTop ? Constants.LABELS_ZINDEX : Constants.LABELS_BELOW_ZINDEX);
     this.#googleRoadLayer.setLabelsOnTop(labelsOnTop);
+    this.#googleRoadLayerOldStyle.setLabelsOnTop(labelsOnTop);
     cartoPositron.setLabelsOnTop(labelsOnTop);
     cartoDarkMatter.setLabelsOnTop(labelsOnTop);
     cartoVoyager.setLabelsOnTop(labelsOnTop);
