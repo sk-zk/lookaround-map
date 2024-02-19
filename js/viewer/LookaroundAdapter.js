@@ -33,6 +33,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     psv.addEventListener("position-updated", this);
     psv.addEventListener("zoom-updated", this);
     psv.addEventListener("before-rotate", this);
+    psv.addEventListener("before-render", this);
 
     this.screenFrustum = new ScreenFrustum(psv);
 
@@ -266,6 +267,29 @@ export class LookaroundAdapter extends AbstractAdapter {
       case "zoom-updated":
         this.refresh();
         break;
+      case "before-render":
+        this.#onBeforeRender(e);
+        break;
+    }
+  }
+
+  #onBeforeRender(e) {
+    const elapsed = !this.timestamp ? 0 : e.timestamp - this.timestamp;
+    this.timestamp = e.timestamp;
+
+    for (let i = 0; i < NUM_FACES; i++) {
+      const mat = this.mesh.material[i];
+      if (mat.uniforms.mixAmount.active) {
+        if (mat.uniforms.mixAmount.elapsed > CROSSFADE_DURATION) {
+          mat.uniforms.mixAmount.active = false;
+          mat.uniforms.mixAmount.value = 0;
+          mat.uniforms.mixAmount.elapsed = 0;
+        } else {
+          mat.uniforms.mixAmount.value = 1 - (mat.uniforms.mixAmount.elapsed / CROSSFADE_DURATION);
+          mat.uniforms.mixAmount.elapsed += elapsed;
+          this.psv.needsUpdate();
+        }
+      }
     }
   }
 
@@ -298,6 +322,7 @@ export class LookaroundAdapter extends AbstractAdapter {
             // ^ dumb temp fix to stop faces from loading in
             // after the user has already navigated to a different panorama
             this.#blendTexture(mat, texture);
+            this.psv.needsUpdate();
           }
         });
       }
@@ -305,22 +330,11 @@ export class LookaroundAdapter extends AbstractAdapter {
   }
 
   #blendTexture(mat, newTexture) {
-    clearInterval(mat.crossfadeInterval);
     mat.uniforms.mixAmount.value = 1;
+    mat.uniforms.mixAmount.active = true;
     mat.uniforms.texture2.value = mat.uniforms.texture1.value;
     mat.uniforms.texture1.value = newTexture;
     mat.uniforms.texture1.userData.refreshing = false;
-    const animStart = new Date().valueOf();
-    mat.crossfadeInterval = setInterval(() => {
-      let elapsed = new Date().valueOf() - animStart;
-      if (elapsed > CROSSFADE_DURATION) {
-        mat.uniforms.mixAmount.value = 0;
-        this.psv.needsUpdate();
-        return clearInterval(mat.crossfadeInterval);
-      }
-      mat.uniforms.mixAmount.value = 1 - (elapsed / CROSSFADE_DURATION);
-      this.psv.needsUpdate();
-    }, 16.666);
   }
 
   #createPanoFaceMaterials() {
@@ -380,7 +394,7 @@ export class LookaroundAdapter extends AbstractAdapter {
       uniforms: {
         "texture1": { value: null, userData: {} },
         "texture2": { value: null, userData: {} },
-        "mixAmount": { value: 0.0 },
+        "mixAmount": { value: 0.0, elapsed: 0.0, active: false },
       },
       glslVersion: GLSL3,
     });
