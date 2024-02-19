@@ -1,4 +1,4 @@
-import { Group, Mesh, SphereGeometry, Vector3 } from "three";
+import { Group, Mesh, SphereGeometry, Vector3, ShaderMaterial, GLSL3 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core"
@@ -8,6 +8,7 @@ import { CoverageType, Face, ImageFormat } from "../enums.js";
 import { getFirstFrameOfVideo } from "../util/media.js";
 
 const NUM_FACES = 6;
+const CROSSFADE_DURATION = 150.0;
 
 /**
  * @summary Adapter for Look Around panoramas
@@ -196,7 +197,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     const mergedGeometry = mergeGeometries(geometries, true);
     const mesh = new Mesh(
       mergedGeometry,
-      Array(NUM_FACES).fill(AbstractAdapter.createOverlayMaterial())
+      this.#createPanoFaceMaterials(),
     );
     this.mesh = mesh;
     return mesh;
@@ -208,8 +209,7 @@ export class LookaroundAdapter extends AbstractAdapter {
   setTexture(mesh, textureData) {
     for (let i = 0; i < NUM_FACES; i++) {
       if (textureData.texture[i]) {
-        const material = this.#createPanoFaceMaterial(i, textureData.texture[i]);
-        mesh.material[i] = material;
+        mesh.material[i].uniforms.texture1.value = textureData.texture[i];
       }
     }
     // immediately replace the low quality tiles from intial load
@@ -263,34 +263,105 @@ export class LookaroundAdapter extends AbstractAdapter {
 
   #refreshFaces(faces, zoom) {
     for (const faceIdx of faces) {
+      const mat = this.mesh.material[faceIdx];
       if (
-        this.mesh.material[faceIdx].uniforms.panorama.value &&
-        this.mesh.material[faceIdx].uniforms.panorama.value.userData.zoom > zoom &&
-        !this.mesh.material[faceIdx].uniforms.panorama.value.userData.refreshing
+        mat.uniforms.texture1.value &&
+        mat.uniforms.texture1.value.userData.zoom > zoom &&
+        !mat.uniforms.texture1.value.userData.refreshing
       ) {
-        this.mesh.material[faceIdx].uniforms.panorama.value.userData.refreshing = true;
-        const oldUrl = this.mesh.material[faceIdx].uniforms.panorama.value.userData.url;
+        mat.uniforms.texture1.value.userData.refreshing = true;
+        const oldUrl = mat.uniforms.texture1.value.userData.url;
         this.#loadOneTexture(zoom, faceIdx).then((texture) => {
-          if (this.mesh.material[faceIdx].uniforms.panorama.value.userData.url == oldUrl) {
+          if (mat.uniforms.texture1.value.userData.url == oldUrl) {
             // ^ dumb temp fix to stop faces from loading in
             // after the user has already navigated to a different panorama
-            const material = this.#createPanoFaceMaterial(faceIdx, texture);
-            material.userData.refreshing = false;
-            this.mesh.material[faceIdx] = material;
-            this.psv.needsUpdate();
+            this.#blendTexture(mat, texture);
           }
         });
       }
     }
   }
 
-  #createPanoFaceMaterial(faceIdx, texture) {
-    const material = AbstractAdapter.createOverlayMaterial();
-    material.polygonOffset = true;
-    material.polygonOffsetUnit = 1;
-    material.polygonOffsetFactor = faceIdx * 2;
-    material.uniforms.panorama.value = texture;
-    return material;
+  #blendTexture(mat, newTexture) {
+    clearInterval(mat.crossfadeInterval);
+    mat.uniforms.mixAmount.value = 1;
+    mat.uniforms.texture2.value = mat.uniforms.texture1.value;
+    mat.uniforms.texture1.value = newTexture;
+    mat.uniforms.texture1.userData.refreshing = false;
+    mat.crossfadeInterval = setInterval(() => {
+      if (mat.uniforms.mixAmount.elapsed > CROSSFADE_DURATION) {
+        mat.uniforms.mixAmount.elapsed = 0;
+        mat.uniforms.mixAmount.value = 0;
+        this.psv.needsUpdate();
+        return clearInterval(mat.crossfadeInterval);
+      }
+      mat.uniforms.mixAmount.value = 1 - Math.min(1.0, (mat.uniforms.mixAmount.elapsed / CROSSFADE_DURATION));
+      this.psv.needsUpdate();
+      mat.uniforms.mixAmount.elapsed += 16.666666666;
+    }, 16.666666666);
+  }
+
+  #createPanoFaceMaterials() {
+    const materials = Array(NUM_FACES);
+    for (let i = 0; i < NUM_FACES; i++) {
+      const material = this.#createCrossfadeMaterial();
+      material.polygonOffset = true;
+      material.polygonOffsetUnit = 1;
+      material.polygonOffsetFactor = i * 2;
+      materials[i] = material;
+    }
+    return materials;
+  }
+
+  #createCrossfadeMaterial() {
+    return new ShaderMaterial({
+      vertexShader: `
+        // Define varying output for texture coordinates
+        out vec2 vTexCoord;
+        
+        void main() {
+            // Set the varying output to the input texture coordinates
+            vTexCoord = uv;
+        
+            // Output the transformed vertex position
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        // Define varying input for texture coordinates
+        in vec2 vTexCoord;
+        
+        // Input textures
+        uniform sampler2D texture1;
+        uniform sampler2D texture2;
+        
+        // Interpolation factor for crossfade
+        uniform float mixValue;
+        
+        // Time for the automatic crossfade (in milliseconds)
+        uniform float elapsedTime;
+        
+        uniform float mixAmount;
+        
+        // Output color
+        out vec4 FragColor;
+        
+        void main() {        
+            // Sample colors from both textures
+            vec4 color1 = texture(texture1, vTexCoord);
+            vec4 color2 = texture(texture2, vTexCoord);
+            
+            // Perform crossfade using the time-based interpolation factor
+            FragColor = mix(color1, color2, mixAmount);
+        }
+      `,
+      uniforms: {
+        "texture1": { value: null, userData: {} },
+        "texture2": { value: null, userData: {} },
+        "mixAmount": { value: 0.0, elapsed: 0.0 },
+      },
+      glslVersion: GLSL3,
+    });
   }
 
   #getVisibleFaces() {
