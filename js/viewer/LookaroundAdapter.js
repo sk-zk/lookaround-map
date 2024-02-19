@@ -8,7 +8,7 @@ import { CoverageType, Face, ImageFormat } from "../enums.js";
 import { getFirstFrameOfVideo } from "../util/media.js";
 
 const NUM_FACES = 6;
-const CROSSFADE_DURATION = 120.0;
+const CROSSFADE_DURATION = 150.0;
 
 /**
  * @summary Adapter for Look Around panoramas
