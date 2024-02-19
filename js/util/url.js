@@ -144,7 +144,10 @@ export function parseAppleMapsUrl(str) {
   }
 
   if (url.searchParams.has("_mvs")) {
-    const bytes = Base64.toUint8Array(url.searchParams.get("_mvs"));
+    let mvsParam = url.searchParams.get("_mvs");
+    // `get` converts + to space, which is not what we want in this case
+    mvsParam = mvsParam.replaceAll(" ", "+");
+    const bytes = Base64.toUint8Array(mvsParam);
     const mvs = proto.MuninViewState.deserializeBinary(bytes);
     params.pano = { 
       lat: mvs.getCameraframe().getLatitude(), 
