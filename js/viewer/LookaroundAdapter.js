@@ -8,7 +8,7 @@ import { CoverageType, Face, ImageFormat } from "../enums.js";
 import { getFirstFrameOfVideo } from "../util/media.js";
 
 const NUM_FACES = 6;
-const CROSSFADE_DURATION = 150.0;
+const CROSSFADE_DURATION = 120.0;
 
 /**
  * @summary Adapter for Look Around panoramas
@@ -207,6 +207,28 @@ export class LookaroundAdapter extends AbstractAdapter {
    * @override
    */
   setTexture(mesh, textureData) {
+    const psvCanvas = document.querySelector(".psv-canvas");
+    if (psvCanvas) {
+      //const screenshot = psvCanvas.toDataURL("image/jpeg", 1.0);
+      const crossfadeCanvas = document.querySelector("#crossfade-canvas");
+      crossfadeCanvas.width = psvCanvas.width;
+      crossfadeCanvas.height = psvCanvas.height;
+      crossfadeCanvas.style.display = "block";
+      const ctx = crossfadeCanvas.getContext("2d");
+      ctx.clearRect(0, 0, psvCanvas.width, psvCanvas.height);
+      crossfadeCanvas.style.opacity = 1;
+      ctx.drawImage(psvCanvas, 0, 0);
+      const animStart = new Date().valueOf();
+      const interval = setInterval(() => {
+        let elapsed = new Date().valueOf() - animStart;
+        if (elapsed > CROSSFADE_DURATION) {
+          crossfadeCanvas.style.display = "none";
+          return clearInterval(interval);
+        }
+        crossfadeCanvas.style.opacity = 1 - (elapsed / CROSSFADE_DURATION);
+      }, 16.6666)
+    }
+
     for (let i = 0; i < NUM_FACES; i++) {
       if (textureData.texture[i]) {
         mesh.material[i].uniforms.texture1.value = textureData.texture[i];
@@ -288,17 +310,17 @@ export class LookaroundAdapter extends AbstractAdapter {
     mat.uniforms.texture2.value = mat.uniforms.texture1.value;
     mat.uniforms.texture1.value = newTexture;
     mat.uniforms.texture1.userData.refreshing = false;
+    const animStart = new Date().valueOf();
     mat.crossfadeInterval = setInterval(() => {
-      if (mat.uniforms.mixAmount.elapsed > CROSSFADE_DURATION) {
-        mat.uniforms.mixAmount.elapsed = 0;
+      let elapsed = new Date().valueOf() - animStart;
+      if (elapsed > CROSSFADE_DURATION) {
         mat.uniforms.mixAmount.value = 0;
         this.psv.needsUpdate();
         return clearInterval(mat.crossfadeInterval);
       }
-      mat.uniforms.mixAmount.value = 1 - Math.min(1.0, (mat.uniforms.mixAmount.elapsed / CROSSFADE_DURATION));
+      mat.uniforms.mixAmount.value = 1 - (elapsed / CROSSFADE_DURATION);
       this.psv.needsUpdate();
-      mat.uniforms.mixAmount.elapsed += 16.666666666;
-    }, 16.666666666);
+    }, 16.666);
   }
 
   #createPanoFaceMaterials() {
@@ -358,7 +380,7 @@ export class LookaroundAdapter extends AbstractAdapter {
       uniforms: {
         "texture1": { value: null, userData: {} },
         "texture2": { value: null, userData: {} },
-        "mixAmount": { value: 0.0, elapsed: 0.0 },
+        "mixAmount": { value: 0.0 },
       },
       glslVersion: GLSL3,
     });

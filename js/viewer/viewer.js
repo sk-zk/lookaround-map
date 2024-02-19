@@ -65,6 +65,10 @@ export async function createPanoViewer(config) {
     }
   });
 
+  const crossfadeCanvas = document.createElement("canvas");
+  crossfadeCanvas.id = "crossfade-canvas";
+  document.querySelector(".psv-container").appendChild(crossfadeCanvas);
+
   viewer.api = new Api(apiBaseUrl);
 
   viewer.alternativeDatesChangedCallback = function() {};
