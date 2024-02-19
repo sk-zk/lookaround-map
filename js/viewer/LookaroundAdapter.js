@@ -38,6 +38,8 @@ export class LookaroundAdapter extends AbstractAdapter {
     this.screenFrustum = new ScreenFrustum(psv);
 
     this.dynamicLoadingEnabled = true;
+
+    this.timestamp = 0;
   }
 
   /**
@@ -254,12 +256,14 @@ export class LookaroundAdapter extends AbstractAdapter {
   }
 
   #onBeforeRender(e) {
-    const elapsed = !this.timestamp ? 0 : e.timestamp - this.timestamp;
+    const elapsed = e.timestamp - this.timestamp;
     this.timestamp = e.timestamp;
 
+    let needsUpdate = false;
     for (let i = 0; i < NUM_FACES; i++) {
       const mat = this.mesh.material[i];
       if (mat.uniforms.mixAmount.active) {
+        needsUpdate = true;
         if (mat.uniforms.mixAmount.elapsed > CROSSFADE_DURATION) {
           mat.uniforms.mixAmount.active = false;
           mat.uniforms.mixAmount.value = 0;
@@ -267,11 +271,12 @@ export class LookaroundAdapter extends AbstractAdapter {
         } else {
           mat.uniforms.mixAmount.value = 1 - (mat.uniforms.mixAmount.elapsed / CROSSFADE_DURATION);
           mat.uniforms.mixAmount.elapsed += elapsed;
-          this.psv.needsUpdate();
         }
       }
     }
-  }
+
+    if (needsUpdate) this.psv.needsUpdate();
+   }
 
   refresh() {
     if (!this.mesh) return;
