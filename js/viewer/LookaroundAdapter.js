@@ -208,27 +208,7 @@ export class LookaroundAdapter extends AbstractAdapter {
    * @override
    */
   setTexture(mesh, textureData) {
-    const psvCanvas = document.querySelector(".psv-canvas");
-    if (psvCanvas) {
-      //const screenshot = psvCanvas.toDataURL("image/jpeg", 1.0);
-      const crossfadeCanvas = document.querySelector("#crossfade-canvas");
-      crossfadeCanvas.width = psvCanvas.width;
-      crossfadeCanvas.height = psvCanvas.height;
-      crossfadeCanvas.style.display = "block";
-      const ctx = crossfadeCanvas.getContext("2d");
-      ctx.clearRect(0, 0, psvCanvas.width, psvCanvas.height);
-      crossfadeCanvas.style.opacity = 1;
-      ctx.drawImage(psvCanvas, 0, 0);
-      const animStart = new Date().valueOf();
-      const interval = setInterval(() => {
-        let elapsed = new Date().valueOf() - animStart;
-        if (elapsed > CROSSFADE_DURATION) {
-          crossfadeCanvas.style.display = "none";
-          return clearInterval(interval);
-        }
-        crossfadeCanvas.style.opacity = 1 - (elapsed / CROSSFADE_DURATION);
-      }, 16.6666)
-    }
+    this.#doMovementCrossfade();
 
     for (let i = 0; i < NUM_FACES; i++) {
       if (textureData.texture[i]) {
@@ -421,4 +401,26 @@ export class LookaroundAdapter extends AbstractAdapter {
     return visibleFaces;
   }
 
+  #doMovementCrossfade() {
+    const psvCanvas = document.querySelector(".psv-canvas");
+    if (psvCanvas) {
+      const crossfadeCanvas = document.querySelector("#crossfade-canvas");
+      crossfadeCanvas.width = psvCanvas.width;
+      crossfadeCanvas.height = psvCanvas.height;
+      crossfadeCanvas.style.display = "block";
+      const ctx = crossfadeCanvas.getContext("2d");
+      ctx.clearRect(0, 0, psvCanvas.width, psvCanvas.height);
+      crossfadeCanvas.style.opacity = 1;
+      ctx.drawImage(psvCanvas, 0, 0);
+      const animStart = new Date().valueOf();
+      const interval = setInterval(() => {
+        let elapsed = new Date().valueOf() - animStart;
+        if (elapsed > CROSSFADE_DURATION) {
+          crossfadeCanvas.style.display = "none";
+          return clearInterval(interval);
+        }
+        crossfadeCanvas.style.opacity = 1 - (elapsed / CROSSFADE_DURATION);
+      }, 16.6666);
+    }
+  }
 }
