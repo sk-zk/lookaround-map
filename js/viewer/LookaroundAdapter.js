@@ -337,42 +337,26 @@ export class LookaroundAdapter extends AbstractAdapter {
   #createCrossfadeMaterial() {
     return new ShaderMaterial({
       vertexShader: `
-        // Define varying output for texture coordinates
         out vec2 vTexCoord;
         
         void main() {
-            // Set the varying output to the input texture coordinates
-            vTexCoord = uv;
-        
-            // Output the transformed vertex position
+            vTexCoord = uv;   
             gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
       fragmentShader: `
-        // Define varying input for texture coordinates
         in vec2 vTexCoord;
         
-        // Input textures
         uniform sampler2D texture1;
         uniform sampler2D texture2;
-        
-        // Interpolation factor for crossfade
-        uniform float mixValue;
-        
-        // Time for the automatic crossfade (in milliseconds)
-        uniform float elapsedTime;
-        
+                
         uniform float mixAmount;
         
-        // Output color
         out vec4 FragColor;
         
         void main() {        
-            // Sample colors from both textures
             vec4 color1 = texture(texture1, vTexCoord);
-            vec4 color2 = texture(texture2, vTexCoord);
-            
-            // Perform crossfade using the time-based interpolation factor
+            vec4 color2 = texture(texture2, vTexCoord);          
             FragColor = mix(color1, color2, mixAmount);
         }
       `,
