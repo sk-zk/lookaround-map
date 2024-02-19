@@ -65,10 +65,6 @@ export async function createPanoViewer(config) {
     }
   });
 
-  const crossfadeCanvas = document.createElement("canvas");
-  crossfadeCanvas.id = "crossfade-canvas";
-  document.querySelector(".psv-container").appendChild(crossfadeCanvas);
-
   viewer.api = new Api(apiBaseUrl);
 
   viewer.alternativeDatesChangedCallback = function() {};
@@ -119,6 +115,20 @@ export async function createPanoViewer(config) {
   };
 
   updateMarkers(viewer, config.initialPano);
+
+  const crossfadeCanvas = document.createElement("canvas");
+  crossfadeCanvas.id = "crossfade-canvas";
+  document.querySelector(".psv-container").appendChild(crossfadeCanvas);
+  var crossfadeCanvasStyle = document.createElement("style");
+  crossfadeCanvasStyle.innerHTML = `
+    #crossfade-canvas {
+      z-index: 9;
+      display: none;
+      opacity: 1;
+      position: absolute;
+    }
+  `;
+  document.head.appendChild(crossfadeCanvasStyle);
 
   viewer.takeScreenshot = function() {
     return document.querySelector(".psv-canvas").toDataURL("image/jpeg", 1.0);
