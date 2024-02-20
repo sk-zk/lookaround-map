@@ -119,13 +119,15 @@ class MapManager {
       layers: [this.#appleSatelliteImage, this.#appleSatelliteOverlay],
     });
   
+    /*
     if (isDarkThemeEnabled()) {
       this.#appleRoad.setVisible(false);
       this.#appleRoadDark.setVisible(true);
     } else {
       this.#appleRoad.setVisible(true);
       this.#appleRoadDark.setVisible(false);
-    }
+    }*/
+
   
     this.#googleRoadLayer = new GoogleRoadLayer("Google Maps Road", this.#languageTag, false);
     this.#googleRoadLayerOldStyle = new GoogleRoadLayer("Google Maps Road (Old Style)", this.#languageTag, true);
@@ -136,6 +138,8 @@ class MapManager {
         this.#googleRoadLayer, this.#googleRoadLayerOldStyle,
         openStreetMap, cartoVoyager, cartoPositron, cartoDarkMatter]
     });
+
+    openStreetMap.setVisible(true);
   
     this.#updateLabelZIndex(settings.get("labelsOnTop"));
   }
