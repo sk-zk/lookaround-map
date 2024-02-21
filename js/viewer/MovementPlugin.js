@@ -78,9 +78,10 @@ export class MovementPlugin extends AbstractPlugin {
     
     if (msSinceLastUpdate > updateLimit) {
       this.lastProcessedMoveEvent = now;
+      var rect = this.psv.container.getBoundingClientRect();
       const vector = this.psv.dataHelper.viewerCoordsToVector3({
-        x: e.clientX,
-        y: e.clientY,
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
       });
       if (vector != null) {
         const position = this.psv.dataHelper.vector3ToSphericalCoords(vector);
