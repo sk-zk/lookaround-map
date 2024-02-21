@@ -160,10 +160,10 @@ export class MovementPlugin extends AbstractPlugin {
     return closest;
   }
 
-  #markerPositionIsOffScreen(pano_position) {
+  #markerPositionIsOffScreen(panoPosition) {
     const viewerCoords = this.psv.dataHelper.sphericalCoordsToViewerCoords({
-      pitch: pano_position.pitch,
-      yaw: pano_position.yaw,
+      pitch: panoPosition.pitch,
+      yaw: panoPosition.yaw,
     });
     return viewerCoords.x > this.psv.state.size.width  || viewerCoords.x < 0 ||
            viewerCoords.y > this.psv.state.size.height || viewerCoords.y < 0;
