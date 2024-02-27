@@ -23,10 +23,13 @@ export async function getFirstFrameOfVideo(videoUrl, mimeType) {
   });
 }
 
+/**
+ * Returns whether the HEVC Main Still Picture profile is supported,
+ * which is the profile the HEVC frame in a HEIC image uses.
+ * @returns {boolean} Whether the HEVC Main Still Picture is supported.
+ */
 export function isHevcSupported() {
-  // check if HEVC Main Still Picture profile is supported,
-  // which is what the HEVC frame in a HEIC image uses
-  return MediaSource.isTypeSupported('video/mp4;codecs="hev1.3.E.L120.90"');
+  return document.createElement("video").canPlayType('video/mp4; codecs="hev1.3.E.L120.90"') === "probably";
 }
 
 export async function isHeicSupported() {
