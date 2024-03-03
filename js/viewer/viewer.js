@@ -77,36 +77,27 @@ export async function createPanoViewer(config) {
         [AdditionalMetadata.CameraMetadata, AdditionalMetadata.Elevation, 
           AdditionalMetadata.Orientation, AdditionalMetadata.TimeZone]))[0];
     }
+    
+    const setPanoramaOptions = {
+      showLoader: showLoader,
+      sphereCorrection: {
+        pan: pano.heading,
+        tilt: pano.pitch,
+        roll: pano.roll
+      },
+    }
 
     if (resetView) {
-      // temporarily disable dynamic face loading.
-      // this is necessary because setPanorama() doesn't have a parameter for
-      // changing the viewing angle, so you need to do that afterwards with
-      // rotate() - but that results in loading more faces than are actually
-      // on the screen, which is a waste of time and bandwidth.
-      viewer.adapter.dynamicLoadingEnabled = false;
+      const heading = getHeading(initialOrientation, pano.heading);
+      setPanoramaOptions.position = { yaw: heading, pitch: 0 }
     }
-    
+
     await Promise.all([
       (async () => {
-        await viewer.setPanorama({ 
+        await viewer.setPanorama({
           panorama: pano, 
           url: `/pano/${pano.panoid}/${pano.buildId}/`,
-        }, {
-          showLoader: showLoader,
-          sphereCorrection: {
-            pan: pano.heading,
-            tilt: pano.pitch,
-            roll: pano.roll
-          },
-        });
-        if (resetView) {
-          const heading = getHeading(initialOrientation, pano.heading);
-          viewer.zoom(defaultZoomLvl);
-          viewer.rotate({ pitch: 0, yaw: heading });
-          viewer.adapter.dynamicLoadingEnabled = true;
-          viewer.adapter.refresh();
-        }
+        }, setPanoramaOptions);
       })(),
       (async () => {
         await updateMarkers(viewer, pano);
