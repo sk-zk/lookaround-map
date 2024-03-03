@@ -69,7 +69,7 @@ export async function createPanoViewer(config) {
 
   viewer.alternativeDatesChangedCallback = function() {};
 
-  viewer.navigateTo = async (pano, resetView=false, showLoader=false) => {
+  viewer.navigateTo = async (pano, resetView=false, showLoader=false, position=null) => {
     // when navigateTo is called from the movement plugin,
     // metadata needed for rendering will not be set, so we'll request it from the server
     if (!pano.heading) {
@@ -87,7 +87,10 @@ export async function createPanoViewer(config) {
       },
     }
 
-    if (resetView) {
+    if (position) {
+      setPanoramaOptions.position = position;
+    }
+    else if (resetView) {
       const heading = getHeading(initialOrientation, pano.heading);
       setPanoramaOptions.position = { yaw: heading, pitch: 0 }
     }
