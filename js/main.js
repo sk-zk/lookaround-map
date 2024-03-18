@@ -122,8 +122,7 @@ class Application {
     } else {
       if (params.lat && params.lon) {
         this.map.getView().setCenter([params.lon, params.lat]);
-      }
-      if (params.zoom) {
+        params.zoom ??= 19;
         this.map.getView().setZoom(params.zoom);
       }
     }
