@@ -92,7 +92,8 @@ export async function createPanoViewer(config) {
     }
     else if (resetView) {
       const heading = getHeading(initialOrientation, pano.heading);
-      setPanoramaOptions.position = { yaw: heading, pitch: 0 }
+      setPanoramaOptions.position = { yaw: heading, pitch: 0 };
+      setPanoramaOptions.zoom = defaultZoomLvl;
     }
 
     await Promise.all([
