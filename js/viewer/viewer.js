@@ -18,9 +18,12 @@ export async function createPanoViewer(config) {
   const apiBaseUrl = config.apiBaseUrl ?? "";
   config.canMove ??= true;
   config.compassEnabled ??= true;
+  config.navigationCrossfadeDisablesPanning ??= true;
+  config.navigationCrossfadeDuration ??= 150.0;
+  config.upgradeCrossfadeDuration ??= 150.0;
+  config.initialOrientation ??= InitialOrientation.North;
   const plugins = configurePlugins(config);
-  const initialOrientation = config.initialOrientation ?? InitialOrientation.North;
-  const defaultYaw = getHeading(initialOrientation, config.initialPano.heading);
+  const defaultYaw = getHeading(config.initialOrientation, config.initialPano.heading);
   const defaultZoomLvl = 20;
 
   let imageFormat;
@@ -45,6 +48,9 @@ export async function createPanoViewer(config) {
     panoData: { 
       apiBaseUrl: apiBaseUrl,
       imageFormat: imageFormat,
+      navigationCrossfadeDisablesPanning: config.navigationCrossfadeDisablesPanning,
+      navigationCrossfadeDuration: config.navigationCrossfadeDuration,
+      upgradeCrossfadeDuration: config.upgradeCrossfadeDuration
     },
     minFov: 10,
     maxFov: 100,
@@ -91,7 +97,7 @@ export async function createPanoViewer(config) {
       setPanoramaOptions.position = position;
     }
     else if (resetView) {
-      const heading = getHeading(initialOrientation, pano.heading);
+      const heading = getHeading(config.initialOrientation, pano.heading);
       setPanoramaOptions.position = { yaw: heading, pitch: 0 };
       setPanoramaOptions.zoom = defaultZoomLvl;
     }
@@ -192,7 +198,6 @@ function configurePlugins(config) {
     plugins.push([MovementPlugin, {}]);
   }
 
-  const compassEnabled = config.compassEnabled ?? true;
   if (config.compassEnabled) {
     plugins.push(
       [

@@ -8,7 +8,6 @@ import { CoverageType, Face, ImageFormat } from "../enums.js";
 import { getFirstFrameOfVideo } from "../util/media.js";
 
 const NUM_FACES = 6;
-const CROSSFADE_DURATION = 150.0;
 
 /**
  * @summary Adapter for Look Around panoramas
@@ -25,7 +24,9 @@ export class LookaroundAdapter extends AbstractAdapter {
 
     this.imageFormat = psv.config.panoData.imageFormat;
     this.apiBaseUrl = psv.config.panoData.apiBaseUrl;
-
+    this.navigationCrossfadeDisablesPanning = psv.config.panoData.navigationCrossfadeDisablesPanning;
+    this.navigationCrossfadeDuration = psv.config.panoData.navigationCrossfadeDuration;
+    this.upgradeCrossfadeDuration = psv.config.panoData.upgradeCrossfadeDuration;
     this.panorama = psv.config.panorama.panorama;
     this.url = psv.config.panorama.panorama.url;
     this.previousFovH = this.panorama.cameraMetadata[0].fovH;
@@ -264,12 +265,12 @@ export class LookaroundAdapter extends AbstractAdapter {
       const mat = this.mesh.material[i];
       if (mat.uniforms.mixAmount.active) {
         needsUpdate = true;
-        if (mat.uniforms.mixAmount.elapsed > CROSSFADE_DURATION) {
+        if (mat.uniforms.mixAmount.elapsed > this.upgradeCrossfadeDuration) {
           mat.uniforms.mixAmount.active = false;
           mat.uniforms.mixAmount.value = 0;
           mat.uniforms.mixAmount.elapsed = 0;
         } else {
-          mat.uniforms.mixAmount.value = 1 - (mat.uniforms.mixAmount.elapsed / CROSSFADE_DURATION);
+          mat.uniforms.mixAmount.value = 1 - (mat.uniforms.mixAmount.elapsed / this.upgradeCrossfadeDuration);
           mat.uniforms.mixAmount.elapsed += elapsed;
         }
       }
@@ -391,25 +392,33 @@ export class LookaroundAdapter extends AbstractAdapter {
   }
 
   #doMovementCrossfade() {
+    if (this.navigationCrossfadeDuration < 1) return;
+
     const psvCanvas = document.querySelector(".psv-canvas");
-    if (psvCanvas) {
-      const crossfadeCanvas = document.querySelector("#crossfade-canvas");
-      crossfadeCanvas.width = psvCanvas.width;
-      crossfadeCanvas.height = psvCanvas.height;
-      crossfadeCanvas.style.display = "block";
-      const ctx = crossfadeCanvas.getContext("2d");
-      ctx.clearRect(0, 0, psvCanvas.width, psvCanvas.height);
-      crossfadeCanvas.style.opacity = 1;
-      ctx.drawImage(psvCanvas, 0, 0);
-      const animStart = new Date().valueOf();
-      const interval = setInterval(() => {
-        let elapsed = new Date().valueOf() - animStart;
-        if (elapsed > CROSSFADE_DURATION) {
-          crossfadeCanvas.style.display = "none";
-          return clearInterval(interval);
-        }
-        crossfadeCanvas.style.opacity = 1 - (elapsed / CROSSFADE_DURATION);
-      }, 16.6666);
+    if (!psvCanvas) return;
+   
+    const crossfadeCanvas = document.querySelector("#crossfade-canvas");
+    crossfadeCanvas.width = psvCanvas.width;
+    crossfadeCanvas.height = psvCanvas.height;
+    crossfadeCanvas.style.display = "block";
+    const ctx = crossfadeCanvas.getContext("2d");
+    ctx.clearRect(0, 0, psvCanvas.width, psvCanvas.height);
+    crossfadeCanvas.style.opacity = 1;
+    ctx.drawImage(psvCanvas, 0, 0);
+    const prevMoveSpeed = this.psv.config.moveSpeed;
+    if (this.navigationCrossfadeDisablesPanning) {
+      this.psv.setOption("moveSpeed", 0);
     }
+    const animStart = new Date().valueOf();
+    const interval = setInterval(() => {
+      let elapsed = new Date().valueOf() - animStart;
+      if (elapsed > this.navigationCrossfadeDuration) {
+        crossfadeCanvas.style.display = "none";
+        this.psv.setOption("moveSpeed", prevMoveSpeed);
+        return clearInterval(interval);
+      }
+      crossfadeCanvas.style.opacity = 1 - (elapsed / this.navigationCrossfadeDuration);
+    }, 16.6666);
+    
   }
 }
