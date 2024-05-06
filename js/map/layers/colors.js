@@ -1,11 +1,10 @@
 import { LineColorType, CoverageType } from "../../enums.js";
 import { FilterSettings } from "../FilterSettings.js";
-import { wrap } from "../../geo/geo.js";
 
 import { interpolateTurbo, interpolateSinebow } from "d3-scale-chromatic";
 
 const earliestDate = Math.floor(new Date("2018-06-01").getTime());
-const latestDate =   Math.floor(new Date("2023-12-01").getTime());
+const latestDate =   Math.floor(new Date("2024-04-01").getTime());
 
 const carLineColor = "rgba(26, 159, 176, 1)";
 const trekkerLineColor = "rgba(173, 140, 191, 1)";
@@ -63,7 +62,7 @@ class CoverageColorer {
       this.colorFunction = (metadata) => interpFn(offsetFn(convFn(metadata.timestamp)));
     } else if (filterSettings.lineColorType === LineColorType.BuildId) {
       const start = 511228947; // lowest value discovered since I started scraping
-      const end = 2000000000; // highest value plus some breathing room
+      const end = 2100000000; // highest value plus some breathing room
       const convFn = createValueToPercentFunction(start, end);
       const offsetFn = offsetTurbo;
       const interpFn = interpolateTurbo;
