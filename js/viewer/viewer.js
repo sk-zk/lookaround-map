@@ -5,7 +5,7 @@ import { CompassPlugin } from "@photo-sphere-viewer/compass-plugin";
 import { Api } from "../Api.js";
 import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
-import { DEG2RAD, distanceBetween } from "../geo/geo.js";
+import { distanceBetween } from "../geo/geo.js";
 import { isHeicSupported, isHevcSupported } from "../util/media.js";
 import { InitialOrientation, ImageFormat, AdditionalMetadata } from "../enums.js";
 import { settings } from "../settings.js";

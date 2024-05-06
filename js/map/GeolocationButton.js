@@ -1,4 +1,4 @@
-import { Control, defaults as defaultControls } from "ol/control.js";
+import { Control } from "ol/control.js";
 
 class GeolocationButton extends Control {
   constructor(opt_options) {

@@ -1,7 +1,7 @@
 import { LineColorType, CoverageType } from "../../enums.js";
 import { FilterSettings } from "../FilterSettings.js";
 
-import { interpolateTurbo, interpolateSinebow } from "d3-scale-chromatic";
+import { interpolateTurbo } from "d3-scale-chromatic";
 
 const earliestDate = Math.floor(new Date("2018-06-01").getTime());
 const latestDate =   Math.floor(new Date("2024-04-01").getTime());

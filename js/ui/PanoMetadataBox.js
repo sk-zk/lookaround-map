@@ -2,7 +2,6 @@ import { getUserLocale } from "../util/misc.js";
 import { NominatimReverseGeocoder, AppleReverseGeocoder } from "../geo/geocoders.js";
 import { AddressSource } from "../enums.js";
 import { settings } from "../settings.js";
-import { RAD2DEG } from "../geo/geo.js";
 
 export class PanoMetadataBox {
   #address;
