@@ -80,7 +80,7 @@ export class NominatimReverseGeocoder {
 }
 
 /**
- * Queries Apple's reverse geocoder. In the backend, this is done by scraping the address from the share link page.
+ * Queries Apple's reverse geocoder through the internal Apple Maps API.
  */
 export class AppleReverseGeocoder {
   attributionText = "";
