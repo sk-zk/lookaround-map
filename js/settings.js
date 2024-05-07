@@ -20,6 +20,7 @@ class Settings {
       theme: Theme.Automatic,
       initialOrientation: InitialOrientation.North,
       enableHevc: true,
+      useMuted: false,
     };
     for (const entry of Object.entries(defaults)) {
       this.#settings[entry[0]] ??= entry[1];

@@ -53,6 +53,12 @@ export class SettingsControl {
       settings.set("labelsOnTop", labelsOnTop.checked);
     });
 
+    const useMuted = document.querySelector("#use-muted");
+    useMuted.checked = settings.get("useMuted");
+    useMuted.addEventListener("change", (_) => {
+      settings.set("useMuted", useMuted.checked);
+    });
+
     const initialOrientationNorth =  document.querySelector("#spawn-facing-north");
     const initialOrientationRoad =  document.querySelector("#spawn-facing-road");
     switch (settings.get("initialOrientation")) {

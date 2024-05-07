@@ -1,5 +1,5 @@
 import { vectorBlueLineLayer, rasterBlueLineLayer } from "./layers/cachedBlueLines.js";
-import { AppleTileLayer, AppleMapsLayerType } from "./layers/appleMaps.js";
+import { AppleTileLayer, AppleMapsLayerType, Emphasis } from "./layers/appleMaps.js";
 import { GoogleRoadLayer, googleStreetView } from "./layers/googleMaps.js";
 import { openStreetMap, cartoDarkMatter, cartoPositron, cartoVoyager } from "./layers/openStreetMap.js";
 import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
@@ -10,7 +10,7 @@ import { getUserLocale } from "../util/misc.js";
 import { GeolocationButton } from "./GeolocationButton.js";
 import { CoverageColorer } from "./layers/colors.js";
 import { settings } from "../settings.js";
-import { isAppleMapsUrl,parseAppleMapsUrl } from "../util/url.js";
+import { isAppleMapsUrl, parseAppleMapsUrl } from "../util/url.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
@@ -82,9 +82,13 @@ class MapManager {
     this.#createGeolocationButton();
 
     document.addEventListener("settingChanged", (e) => {
-      if (e.setting[0] === "labelsOnTop") { this.#updateLabelZIndex(e.setting[1]); }
+      if (e.setting[0] === "labelsOnTop") { 
+        this.#updateLabelZIndex(e.setting[1]); 
+      }
+      else if (e.setting[0] == "useMuted") {
+        this.#updateEmphasis(e.setting[1]);
+      }
     })
-
   }
 
   getMap() {
@@ -97,12 +101,12 @@ class MapManager {
       layerType: AppleMapsLayerType.Road,
       lang: this.#languageTag,
     });
-  
     this.#appleRoadDark = new AppleTileLayer({
       title: "Apple Maps Road (Dark)",
       layerType: AppleMapsLayerType.RoadDark,
       lang: this.#languageTag,
     });
+    this.#updateEmphasis(settings.get("useMuted"));
   
     this.#appleSatelliteImage = new AppleTileLayer({
       layerType: AppleMapsLayerType.Satellite,
@@ -208,6 +212,12 @@ class MapManager {
     cartoPositron.setLabelsOnTop(labelsOnTop);
     cartoDarkMatter.setLabelsOnTop(labelsOnTop);
     cartoVoyager.setLabelsOnTop(labelsOnTop);
+  }
+
+  #updateEmphasis(useMuted) {
+    const emphasis = useMuted ? Emphasis.Muted : Emphasis.Standard;
+    this.#appleRoad.getSource().setEmphasis(emphasis);
+    this.#appleRoadDark.getSource().setEmphasis(emphasis);
   }
 
   #setUpFilterControl() {

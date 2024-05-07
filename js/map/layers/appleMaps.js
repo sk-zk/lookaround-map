@@ -32,6 +32,28 @@ const Emphasis = Object.freeze({
   Muted: "muted",
 });
 
+function generateTileUrl(opts, pixelRatio) {
+  switch (opts.tileType) {
+    default:
+    case AppleMapsTileType.Road:
+      opts.tint ??= Tint.Light;
+      opts.emphasis ??= Emphasis.Standard;
+      opts.labels ??= true;
+      opts.poi ??= true;
+      opts.style ??= 0;
+      return `https://cdn{1-4}.apple-mapkit.com/ti/tile?` +
+        `style=${opts.style}&size=1&x={x}&y={y}&z={z}&v=2303284&scale=${pixelRatio}` +
+        `&lang=${opts.lang}` +
+        `&poi=${(opts.poi && opts.labels) ? "1" : "0"}` +
+        `&tint=${opts.tint}` +
+        `&emphasis=${opts.emphasis}` +
+        `&labels=${opts.labels ? "1" : "0"}`;
+    case AppleMapsTileType.Satellite:
+      return `https://sat-cdn{1-4}.apple-mapkit.com/tile?` +
+        `style=7&size=${Math.min(2, pixelRatio)}&scale=1&x={x}&y={y}&z={z}&v=9421`;
+  }
+}
+
 class AppleTileSource extends XYZ {
   constructor(opts) {
     opts ??= {};
@@ -39,39 +61,22 @@ class AppleTileSource extends XYZ {
     opts.lang ??= "en";
     const pixelRatio = getDevicePixelRatio();
 
-    let url;
-    switch (opts.tileType) {
-      default:
-      case AppleMapsTileType.Road:
-        opts.tint ??= Tint.Light;
-        opts.emphasis ??= Emphasis.Standard;
-        opts.labels ??= true;
-        opts.poi ??= true;
-        opts.style ??= 0;
-        url =
-        `https://cdn{1-4}.apple-mapkit.com/ti/tile?` +
-        `style=${opts.style}&size=1&x={x}&y={y}&z={z}&v=2303284&scale=${pixelRatio}` +
-        `&lang=${opts.lang}` + 
-        `&poi=${(opts.poi && opts.labels) ? "1" : "0"}` + 
-        `&tint=${opts.tint}`+ 
-        `&emphasis=${opts.emphasis}`+ 
-        `&labels=${opts.labels ? "1" : "0"}`;
-        break;
-      case AppleMapsTileType.Satellite:
-        url =
-        `https://sat-cdn{1-4}.apple-mapkit.com/tile?` +
-        `style=7&size=${Math.min(2, pixelRatio)}&scale=1&x={x}&y={y}&z={z}&v=9421`;
-    }
-
     super({
       maxZoom: 20,
       attributions: "© Apple",
-      url: url,     
+      url: generateTileUrl(opts, pixelRatio),     
       tilePixelRatio: pixelRatio,
       tileLoadFunction: tileLoadFunction,
+      crossOrigin: "",
     });
 
     this.opts = opts;
+  }
+
+  setEmphasis(emphasis) {
+    this.opts.emphasis = emphasis;
+    this.setUrl(generateTileUrl(this.opts, getDevicePixelRatio()))
+    this.changed();
   }
 }
 
@@ -126,4 +131,4 @@ class AppleTileLayer extends TileLayer {
   }
 }
 
-export { AppleTileLayer, AppleMapsLayerType, AppleMapsTileType };
+export { AppleTileLayer, AppleMapsLayerType, AppleMapsTileType, Emphasis };

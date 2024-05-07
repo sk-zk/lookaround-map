@@ -127,7 +127,10 @@
           <p></p>
           <div class="sidebar-control-group">
             <h3>Map</h3>
-            <input type="checkbox" id="labels-on-top" name="labels-on-top"><label for="labels-on-top">Display labels above lines (if supported by layer)</label>
+            <input type="checkbox" id="labels-on-top" name="labels-on-top">
+            <label for="labels-on-top">Display labels above lines (if supported by layer)</label><br>
+            <input type="checkbox" id="use-muted" name="use-muted">
+            <label for="use-muted">Use muted Apple Maps tiles</label>
           </div>
           <p></p>
           <div class="sidebar-control-group">
@@ -151,6 +154,8 @@
           <label class="sidebar-tab-label tab-updates-bg" for="tab-updates" title="What's new?"></label>
           <div class="sidebar-panel sidebar-panel-updates" tabindex="1">
             <h2>What's new?</h2>
+            <h3>2024-05-07</h3>
+            <div>Added the ability to enable the muted emphasis versions of Apple Maps base layers.</div>
             <h3>2024-03-02</h3>
             <div>HEVC in Firefox on Windows is now working properly. (There is, however, a bug in the underlying
               WMF codec causing it to decode the image with the wrong color profile, like my
@@ -169,11 +174,11 @@
             </div>
             <h3>2023-12-22</h3>
             <div>Added the ability to filter by Build ID.</div>
-            <h3>2023-12-17</h3>
-            <div>The top and bottom faces of panoramas now render properly.</div>
             <p></p>
             <details>
               <summary>show older</summary>
+              <h3>2023-12-17</h3>
+              <div>The top and bottom faces of panoramas now render properly.</div>
               <h3>2023-12-15</h3>
               <div>
                 If your browser supports HEVC, including the Main Still Image profile, the viewer now
