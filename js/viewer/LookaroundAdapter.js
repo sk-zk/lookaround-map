@@ -1,7 +1,7 @@
 import { Mesh, SphereGeometry, Vector3, ShaderMaterial, GLSL3 } from "three";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
-import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core"
+import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core";
 
 import { ScreenFrustum } from "./ScreenFrustum.js";
 import { CoverageType, Face, ImageFormat } from "../enums.js";
@@ -398,13 +398,13 @@ export class LookaroundAdapter extends AbstractAdapter {
     if (!psvCanvas) return;
    
     const crossfadeCanvas = document.querySelector("#crossfade-canvas");
-    crossfadeCanvas.width = psvCanvas.width;
-    crossfadeCanvas.height = psvCanvas.height;
+    crossfadeCanvas.width = psvCanvas.clientWidth;
+    crossfadeCanvas.height = psvCanvas.clientHeight;
     crossfadeCanvas.style.display = "block";
     const ctx = crossfadeCanvas.getContext("2d");
-    ctx.clearRect(0, 0, psvCanvas.width, psvCanvas.height);
+    ctx.clearRect(0, 0, crossfadeCanvas.width, crossfadeCanvas.height);
     crossfadeCanvas.style.opacity = 1;
-    ctx.drawImage(psvCanvas, 0, 0);
+    ctx.drawImage(psvCanvas, 0, 0, crossfadeCanvas.width, crossfadeCanvas.height);
     const prevMoveSpeed = this.psv.config.moveSpeed;
     if (this.navigationCrossfadeDisablesPanning) {
       this.psv.setOption("moveSpeed", 0);
@@ -419,6 +419,5 @@ export class LookaroundAdapter extends AbstractAdapter {
       }
       crossfadeCanvas.style.opacity = 1 - (elapsed / this.navigationCrossfadeDuration);
     }, 16.6666);
-    
   }
 }
