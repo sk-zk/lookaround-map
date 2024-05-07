@@ -22,9 +22,11 @@ export async function createPanoViewer(config) {
   config.navigationCrossfadeDuration ??= 150.0;
   config.upgradeCrossfadeDuration ??= 150.0;
   config.initialOrientation ??= InitialOrientation.North;
+  config.defaultZoomLevel ??= 20;
+  config.minFov ??= 10;
+  config.maxFov ??= 100;
   const plugins = configurePlugins(config);
   const defaultYaw = getHeading(config.initialOrientation, config.initialPano.heading);
-  const defaultZoomLvl = 20;
 
   let imageFormat;
   if (await isHeicSupported()) {
@@ -52,11 +54,11 @@ export async function createPanoViewer(config) {
       navigationCrossfadeDuration: config.navigationCrossfadeDuration,
       upgradeCrossfadeDuration: config.upgradeCrossfadeDuration
     },
-    minFov: 10,
-    maxFov: 100,
+    minFov: config.minFov,
+    maxFov: config.maxFov,
     defaultPitch: 0,
     defaultYaw: defaultYaw,
-    defaultZoomLvl: defaultZoomLvl,
+    defaultZoomLvl: config.defaultZoomLevel,
     navbar: null,
     sphereCorrection: {
       pan: config.initialPano.heading,
