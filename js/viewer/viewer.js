@@ -17,6 +17,7 @@ import "@photo-sphere-viewer/compass-plugin/index.css";
 export async function createPanoViewer(config) { 
   const apiBaseUrl = config.apiBaseUrl ?? "";
   config.canMove ??= true;
+  config.canMoveWithKeyboard ??= false;
   config.compassEnabled ??= true;
   config.navigationCrossfadeDisablesPanning ??= true;
   config.navigationCrossfadeDuration ??= 150.0;
@@ -27,6 +28,11 @@ export async function createPanoViewer(config) {
   config.maxFov ??= 100;
   const plugins = configurePlugins(config);
   const defaultYaw = getHeading(config.initialOrientation, config.initialPano.heading);
+
+  if (config.canMoveWithKeyboard) {
+    config.container.tabIndex = "-1";
+    config.container.focus();
+  }
 
   let imageFormat;
   if (await isHeicSupported()) {
@@ -197,7 +203,9 @@ function configurePlugins(config) {
 
   if (config.canMove) {
     plugins.push([MarkersPlugin, {}]);
-    plugins.push([MovementPlugin, {}]);
+    plugins.push([MovementPlugin, {
+      canMoveWithKeyboard: config.canMoveWithKeyboard
+    }]);
   }
 
   if (config.compassEnabled) {

@@ -134,6 +134,7 @@ class Application {
       container: container,
       initialPano: pano,
       initialOrientation: settings.get("initialOrientation"),
+      canMoveWithKeyboard: true,
     });
   
     this.panoViewer.plugins.movement.addEventListener("moved", async (e) => {

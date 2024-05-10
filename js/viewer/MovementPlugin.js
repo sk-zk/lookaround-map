@@ -1,6 +1,9 @@
 import { AbstractPlugin } from "@photo-sphere-viewer/core";
+import { Vector2 } from "three";
+
 import { geodeticToEnu, enuToPhotoSphere, distanceBetween } from "../geo/geo.js";
 import { ScreenFrustum } from "./ScreenFrustum.js";
+import { DEG2RAD, wrap } from "../geo/geo.js";
 
 const MARKER_ID = "0";
 const MAX_DISTANCE = 100;
@@ -17,36 +20,43 @@ export class MovementPlugin extends AbstractPlugin {
   constructor(psv, options) {
     super(psv);
     this.psv = psv;
+    this.abortController = new AbortController();
 
     psv.plugins.markers.addMarker({
       id: MARKER_ID,
       position: { yaw: 0, pitch: 0 },
       size: { width: 1, height: 1 },
-      scale: { zoom: [0.5, 1] }, 
+      scale: { zoom: [0.5, 1] },
       image: `${this.psv.config.panoData.apiBaseUrl}/static/marker.png`,
       opacity: 0.4,
       data: null,
       visible: false,
     });
     // addMarker no longer returns the marker object in psv 5?
-    this.marker = psv.plugins.markers.markers["0"];
+    this.marker = psv.plugins.markers.markers[MARKER_ID];
     psv.container.addEventListener("mousemove", (e) => {
       this.#onMouseMove(e);
     });
     psv.addEventListener("click", async (e) => {
       await this.#onClick(e);
     });
+    psv.parent.addEventListener(
+      "keydown",
+      async (e) => {
+        await this.#onKeyDown(e);
+      },
+      { signal: this.abortController.signal }
+    );
     this.lastMousePosition = null;
     this.screenFrustum = new ScreenFrustum(psv);
     this.mouseHasMoved = false;
     this.lastProcessedMoveEvent = 0;
     this.movementEnabled = true;
+    this.canMoveWithKeyboard = options.canMoveWithKeyboard ?? false;
   }
 
-  /**
-   * For the given panorama, fetches nearby locations the user can navigate to.
-   */
   updatePanoMarkers(refPano, panos) {
+    this.current = refPano;
     this.nearbyPanos = [];
 
     for (const pano of panos) {
@@ -57,25 +67,39 @@ export class MovementPlugin extends AbstractPlugin {
 
       const deltaEle = pano.elevation - refPano.elevation;
       const enu = geodeticToEnu(
-        pano.lon, pano.lat, deltaEle,
-        refPano.lon, refPano.lat, CAMERA_HEIGHT
+        pano.lon,
+        pano.lat,
+        deltaEle,
+        refPano.lon,
+        refPano.lat,
+        CAMERA_HEIGHT
       );
       const position = enuToPhotoSphere(enu, 0);
 
       if (position.distance > MAX_DISTANCE) continue;
 
       const scale = 0.05 + (0.5 - (0.5 * position.distance) / 100);
-      this.nearbyPanos.push({ pano: pano, position: position, scale: scale });
+      this.nearbyPanos.push({
+        pano: pano,
+        enu: enu,
+        position: position,
+        scale: scale,
+      });
     }
+  }
+
+  destroy() {
+    this.abortController.abort();
+    super.destroy();
   }
 
   #onMouseMove(e) {
     this.mouseHasMoved = true;
-       
-    const updateLimit = 1000/60.0;
+
+    const updateLimit = 1000 / 60.0;
     const now = Date.now();
     const msSinceLastUpdate = now - this.lastProcessedMoveEvent;
-    
+
     if (msSinceLastUpdate > updateLimit) {
       this.lastProcessedMoveEvent = now;
       var rect = this.psv.container.getBoundingClientRect();
@@ -105,7 +129,7 @@ export class MovementPlugin extends AbstractPlugin {
         position: { pitch: closest.position.pitch, yaw: closest.position.yaw },
         // TODO squish marker according to perspective.
         // width/height properties of a marker will always result in a square image for some reason
-        size: { width: 100 * closest.scale, height: 100 * closest.scale},
+        size: { width: 100 * closest.scale, height: 100 * closest.scale },
         visible: true,
         data: closest.pano,
       });
@@ -137,6 +161,54 @@ export class MovementPlugin extends AbstractPlugin {
     }
   }
 
+  async #onKeyDown(e) {
+    if (!this.movementEnabled || !this.canMoveWithKeyboard) {
+      return;
+    }
+
+    let direction = null;
+    if (e.key === "ArrowUp") {
+      direction = 0;
+    } else if (e.key === "ArrowLeft") {
+      direction = Math.PI / 2;
+    } else if (e.key === "ArrowDown") {
+      direction = Math.PI;
+    } else if (e.key === "ArrowRight") {
+      direction = -Math.PI / 2;
+    } else {
+      return;
+    }
+
+    // maximum allowed difference between the desired heading 
+    // and the heading of a panorama.
+    const tolerance = 30 * DEG2RAD;
+    // maximum distance you can move in one step, in meters.
+    const maxDist = 25;
+
+    const position = this.psv.getPosition();
+    let yaw = Math.PI - (position.yaw + Math.PI / 2);
+    yaw += direction;
+    yaw = wrap(yaw);
+
+    let closestDist = Infinity;
+    let bestPano = null;
+    for (const pano of this.nearbyPanos) {
+      if (pano.position.distance > maxDist) {
+        continue;
+      }
+      const enuVec = new Vector2(pano.enu[0], pano.enu[1]);
+      const angle = enuVec.angle();
+      let diff = angle - yaw;
+      if (Math.abs(diff) < tolerance && closestDist > pano.position.distance) {
+        closestDist = pano.position.distance;
+        bestPano = pano.pano;
+      }
+    }
+    if (bestPano) {
+      await this.#navigateTo(bestPano);
+    }
+  }
+
   async #navigateTo(pano) {
     await this.psv.navigateTo(pano);
     this.dispatchEvent(new CustomEvent("moved", { detail: pano }));
@@ -145,14 +217,17 @@ export class MovementPlugin extends AbstractPlugin {
   #getClosestPano(position) {
     this.screenFrustum.update();
     let closest = null;
-    let closestDist = 9999999;
+    let closestDist = Infinity;
     for (const pano of this.nearbyPanos) {
       // ignore pano markers that aren't even on screen
       if (this.#markerPositionIsOffScreen(pano.position)) continue;
       const distance = distanceBetween(
-        position.pitch, position.yaw,
-        pano.position.pitch, pano.position.yaw,
-        1);
+        position.pitch,
+        position.yaw,
+        pano.position.pitch,
+        pano.position.yaw,
+        1
+      );
       if (distance < closestDist) {
         closestDist = distance;
         closest = pano;
@@ -161,13 +236,18 @@ export class MovementPlugin extends AbstractPlugin {
     return closest;
   }
 
+
   #markerPositionIsOffScreen(panoPosition) {
     const viewerCoords = this.psv.dataHelper.sphericalCoordsToViewerCoords({
       pitch: panoPosition.pitch,
       yaw: panoPosition.yaw,
     });
-    return viewerCoords.x > this.psv.state.size.width  || viewerCoords.x < 0 ||
-           viewerCoords.y > this.psv.state.size.height || viewerCoords.y < 0;
+    return (
+      viewerCoords.x > this.psv.state.size.width ||
+      viewerCoords.x < 0 ||
+      viewerCoords.y > this.psv.state.size.height ||
+      viewerCoords.y < 0
+    );
   }
 
   #hideMarker() {
@@ -176,9 +256,5 @@ export class MovementPlugin extends AbstractPlugin {
       visible: false,
       data: null,
     });
-  }
-
-  destroy() {
-    super.destroy();
   }
 }
