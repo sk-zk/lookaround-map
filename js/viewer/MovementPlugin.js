@@ -120,7 +120,7 @@ export class MovementPlugin extends AbstractPlugin {
   #mouseMovedTo(position) {
     if (!this.nearbyPanos || !this.movementEnabled) return;
 
-    const closest = this.#getClosestPano(position);
+    const closest = this.#getClosestPanoMarker(position);
     if (closest === null) {
       this.#hideMarker();
     } else {
@@ -147,7 +147,7 @@ export class MovementPlugin extends AbstractPlugin {
       } else {
         // mobile user
         const position = { pitch: e.data.pitch, yaw: e.data.yaw };
-        const closest = this.#getClosestPano(position);
+        const closest = this.#getClosestPanoMarker(position);
         await this.#navigateTo(closest.pano);
       }
     } else {
@@ -166,34 +166,31 @@ export class MovementPlugin extends AbstractPlugin {
       return;
     }
 
-    let direction = null;
-    if (e.key === "ArrowUp") {
-      direction = 0;
-    } else if (e.key === "ArrowLeft") {
-      direction = Math.PI / 2;
-    } else if (e.key === "ArrowDown") {
-      direction = Math.PI;
-    } else if (e.key === "ArrowRight") {
-      direction = -Math.PI / 2;
-    } else {
+    const direction = this.#keyToDirection(e.key);
+    if (!direction) {
       return;
     }
-
-    // maximum allowed difference between the desired heading 
-    // and the heading of a panorama.
-    const tolerance = 30 * DEG2RAD;
-    // maximum distance you can move in one step, in meters.
-    const maxDist = 25;
 
     const position = this.psv.getPosition();
     let yaw = Math.PI - (position.yaw + Math.PI / 2);
     yaw += direction;
-    yaw = wrap(yaw);
+    await this.#moveInDirection(yaw);
+  }
 
+  async #moveInDirection(yaw, maxDist=25, tolerance=(30 * DEG2RAD)) {
+    const pano = getClosestPanoInDirection(yaw, maxDist, tolerance);
+    if (pano) {
+      await this.#navigateTo(bestPano);
+    }
+  }
+
+  getClosestPanoInDirection(yaw, minDistance=0, maxDistance=25, tolerance=(30 * DEG2RAD)) {
+    yaw = wrap(yaw);
     let closestDist = Infinity;
     let bestPano = null;
     for (const pano of this.nearbyPanos) {
-      if (pano.position.distance > maxDist) {
+      if (pano.position.distance > maxDistance || 
+        pano.position.distance < minDistance) {
         continue;
       }
       const enuVec = new Vector2(pano.enu[0], pano.enu[1]);
@@ -204,8 +201,20 @@ export class MovementPlugin extends AbstractPlugin {
         bestPano = pano.pano;
       }
     }
-    if (bestPano) {
-      await this.#navigateTo(bestPano);
+    return bestPano;
+  }
+
+  #keyToDirection(key) {
+    if (key === "ArrowUp") {
+      return 0;
+    } else if (key === "ArrowLeft") {
+      return Math.PI / 2;
+    } else if (key === "ArrowDown") {
+      return Math.PI;
+    } else if (key === "ArrowRight") {
+      return -Math.PI / 2;
+    } else {
+      return null;
     }
   }
 
@@ -214,7 +223,7 @@ export class MovementPlugin extends AbstractPlugin {
     this.dispatchEvent(new CustomEvent("moved", { detail: pano }));
   }
 
-  #getClosestPano(position) {
+  #getClosestPanoMarker(position) {
     this.screenFrustum.update();
     let closest = null;
     let closestDist = Infinity;

@@ -5,7 +5,7 @@ import { CompassPlugin } from "@photo-sphere-viewer/compass-plugin";
 import { Api } from "../Api.js";
 import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
-import { distanceBetween } from "../geo/geo.js";
+import { distanceBetween, DEG2RAD } from "../geo/geo.js";
 import { isHeicSupported, isHevcSupported } from "../util/media.js";
 import { InitialOrientation, ImageFormat, AdditionalMetadata } from "../enums.js";
 import { settings } from "../settings.js";
@@ -122,6 +122,30 @@ export async function createPanoViewer(config) {
       })()
     ]);
   };
+
+  viewer.moveInDirection = (direction, options) => {
+    // convert CW to CCW
+    direction = (-direction + Math.PI / 2) % (Math.PI * 2);
+    options ??= {};
+    // Minimum distance to move, in meters
+    options.minDistance ??= 0;
+    // Maximum distance to move, in meters
+    options.maxDistance ??= 25;
+    // Maximum allowed deviation from the desired angle
+    options.tolerance ??= (30 * DEG2RAD);
+    options.resetView ??= false;
+    options.showLoader ??= false;
+    const pano = viewer.plugins.movement.getClosestPanoInDirection(
+      direction, 
+      options.minDistance, 
+      options.maxDistance, 
+      options.tolerance
+    );
+    if (pano) {
+      viewer.navigateTo(pano, options.resetView, options.showLoader, options.position);
+    }
+    return pano;
+  }
 
   updateMarkers(viewer, config.initialPano);
 
