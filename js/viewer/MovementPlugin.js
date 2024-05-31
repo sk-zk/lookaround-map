@@ -167,7 +167,7 @@ export class MovementPlugin extends AbstractPlugin {
     }
 
     const direction = this.#keyToDirection(e.key);
-    if (!direction) {
+    if (direction === null) {
       return;
     }
 
@@ -178,9 +178,9 @@ export class MovementPlugin extends AbstractPlugin {
   }
 
   async #moveInDirection(yaw, maxDist=25, tolerance=(30 * DEG2RAD)) {
-    const pano = getClosestPanoInDirection(yaw, maxDist, tolerance);
+    const pano = this.getClosestPanoInDirection(yaw, 0, maxDist, tolerance);
     if (pano) {
-      await this.#navigateTo(bestPano);
+      await this.#navigateTo(pano);
     }
   }
 
