@@ -12,7 +12,7 @@ const openStreetMap = new TileLayer({
   type: "base",
   visible: false,
   source: new XYZ({
-    url: "https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     attributions: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
     maxZoom: 19,
   }),
