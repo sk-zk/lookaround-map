@@ -9,7 +9,7 @@
 * Custom blue line layer which displays the full extent of the coverage at all zoom levels
 * See the exact positions of panoramas at z >= 16
 * Color or filter the coverage layers by type or date
-* View metadata Apple Maps doesn't show you: ID; elevation; full capture date and time
+* View metadata Apple Maps doesn't show you: panorama ID, elevation, full capture date and time
 * Save a screenshot of the viewport
 * Open the current view in Apple Maps or Google Street View
 
@@ -28,7 +28,7 @@ flask run
 ```
 
 ### Decoding
-For browsers which don't natively support HEIC - which is every browser except Safari 17 - the panorama faces must be converted to a supported format before sending them to the client.
+For browsers which don't natively support HEIC (which is every browser except Safari 17 or higher), the panorama faces must be converted to a supported format before sending them to the client.
 To do so, one of these three libraries can be used. Simply install the one you like and it will be selected automatically.
 
 #1: By default, [pillow-heif](https://github.com/bigcat88/pillow_heif) will be used to decode images. Supports Linux, Mac and Windows.
