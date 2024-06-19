@@ -25,6 +25,9 @@ export class Api {
   async reverseGeocode(lat, lon, language = "en-US") {
     let url = `${this.baseUrl}/address?lat=${lat}&lon=${lon}&lang=${language}`;
     const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
     const address = await response.json();
     return address;
   }

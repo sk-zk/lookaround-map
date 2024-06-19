@@ -62,7 +62,12 @@ export class PanoMetadataBox {
   }
 
   async #fetchAndSetAddress(lat, lon) {
-    const address = await this.#geocoder.reverseGeocode(lat, lon, getUserLocale());
+    let address;
+    try {
+      address = await this.#geocoder.reverseGeocode(lat, lon, getUserLocale());
+    } catch (err) {
+      address = [];
+    }
     this.#address = address;
     if (address.length === 0) {
       this.#addressFirstLine.innerText = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;

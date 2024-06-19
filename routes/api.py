@@ -9,6 +9,7 @@ from flask import Blueprint, abort, jsonify, request, send_file
 from flask_cors import cross_origin
 import numpy as np
 from PIL import Image
+from google.protobuf.message import DecodeError
 import requests
 from requests import HTTPError
 
@@ -122,8 +123,11 @@ def address():
     try:
         address = reverse_geocode(lat, lon, display_language=[language], session=addr_session)
         return jsonify(address)
+    except DecodeError:
+        print(f"DecodeError for {lat},{lon}")
+        abort(500)
     except AttributeError:
-        return jsonify([])
+        abort(500)
 
 
 # Panorama faces are passed through this server because of CORS.
