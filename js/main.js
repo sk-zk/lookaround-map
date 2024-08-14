@@ -11,6 +11,7 @@ import { showNotificationTooltip, isAppleDevice, approxEqual } from "./util/misc
 import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsUrl, encodeShareLinkPayload } from "./util/url.js";
 import { PanoMetadataBox } from "./ui/PanoMetadataBox.js";
 import { settings } from "./settings.js";
+import { AddressController } from "./AddressController.js";
 
 import Point from "ol/geom/Point.js";
 import tinyDebounce from "tiny-debounce";
@@ -34,6 +35,7 @@ class Application {
   settingsControl;
   timeMachineControl;
   panoMetadataBox;
+  addressController;
 
   constructor() {
     document.title = this.appTitle;
@@ -81,6 +83,18 @@ class Application {
       e.stopPropagation();
       this.#takeScreenshotOfViewer();
     }, true);
+
+    this.addressController = new AddressController();
+    document.addEventListener("addressChanged", (e) => {
+      if (e.error) console.log(e.error);
+
+      this.panoMetadataBox.setAddress(e.address, e.attribution);
+      if (e.address) {
+        document.title = `${e.address[0]} – ${this.appTitle}`;
+      } else {
+        document.title = this.appTitle;
+      }
+    });
   }
 
   async init() {       
@@ -173,7 +187,8 @@ class Application {
   }
 
   async #displayPano(pano, position = null) {
-    await this.panoMetadataBox.update(pano);
+    this.panoMetadataBox.setPano(pano);
+    this.addressController.fetchAddress(pano.lat, pano.lon);
     updateHashParams(this.map, pano, this.panoViewer?.getPosition());
     if (this.panoViewer) {
       await this.panoViewer.navigateTo(pano);
@@ -190,7 +205,8 @@ class Application {
     const pano = e.detail;
     this.currentPano = pano;
     this.#updateMapMarker(pano);
-    this.panoMetadataBox.update(pano);
+    this.panoMetadataBox.setPano(pano);
+    this.addressController.fetchAddress(pano.lat, pano.lon);
     updateHashParams(this.map, pano, this.panoViewer.getPosition());
   }
 
