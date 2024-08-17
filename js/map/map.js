@@ -279,11 +279,12 @@ class MapManager {
           text: "Open in Apple Maps",
           icon: "image:()",
           callback: (_) => {
-            const view = this.#map.getView();
-            const center = view.getCenter();
-            const zoom = view.getZoom();
+            const center = this.#map.getView().getCenter();
+            const extent = this.#map.getView().calculateExtent(this.#map.getSize());
+            const lonSpan = (extent[2] - extent[0])/2;
+            const latSpan = (extent[3] - extent[1])/2;
             window.open(
-              `http://maps.apple.com/?ll=${center[1]},${center[0]}&z=${zoom}`,
+              `https://beta.maps.apple.com/?ll=${center[1]},${center[0]}&spn=${lonSpan},${latSpan}`,
               "_blank"
             );
           },
