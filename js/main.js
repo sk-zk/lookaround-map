@@ -11,7 +11,7 @@ import { showNotificationTooltip, isAppleDevice, approxEqual } from "./util/misc
 import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsUrl, encodeShareLinkPayload } from "./util/url.js";
 import { PanoMetadataBox } from "./ui/PanoMetadataBox.js";
 import { settings } from "./settings.js";
-import { AddressController } from "./AddressController.js";
+import { AddressController } from "./geo/AddressController.js";
 
 import Point from "ol/geom/Point.js";
 import tinyDebounce from "tiny-debounce";
