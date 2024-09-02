@@ -36,6 +36,7 @@ class Application {
   timeMachineControl;
   panoMetadataBox;
   addressController;
+  address;
 
   constructor() {
     document.title = this.appTitle;
@@ -88,6 +89,7 @@ class Application {
     document.addEventListener("addressChanged", (e) => {
       if (e.error) console.log(e.error);
 
+      this.address = e.address;
       this.panoMetadataBox.setAddress(e.address, e.attribution);
       if (e.address) {
         document.title = `${e.address[0]} – ${this.appTitle}`;
@@ -368,7 +370,10 @@ class Application {
     const a = document.createElement("a");
     a.target = "_blank";
     a.href = screenshot;
-    a.download = this.panoMetadataBox.getAddress()[0];
+    a.download =
+      Array.isArray(this.address) && this.address.length !== 0
+        ? this.address[0]
+        : "panorama";
     a.click();
     a.remove();
   }
