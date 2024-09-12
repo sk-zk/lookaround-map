@@ -101,11 +101,13 @@ class MapManager {
       layerType: AppleMapsLayerType.Road,
       lang: this.#languageTag,
     });
+    this.#appleRoad.set("settingsName", "appleRoad");
     this.#appleRoadDark = new AppleTileLayer({
       title: "Apple Maps Road (Dark)",
       layerType: AppleMapsLayerType.RoadDark,
       lang: this.#languageTag,
     });
+    this.#appleRoadDark.set("settingsName", "appleRoadDark");
     this.#updateEmphasis(settings.get("useMuted"));
   
     this.#appleSatelliteImage = new AppleTileLayer({
@@ -122,25 +124,40 @@ class MapManager {
       visible: false,
       layers: [this.#appleSatelliteImage, this.#appleSatelliteOverlay],
     });
-  
-    if (isDarkThemeEnabled()) {
-      this.#appleRoad.setVisible(false);
-      this.#appleRoadDark.setVisible(true);
-    } else {
-      this.#appleRoad.setVisible(true);
-      this.#appleRoadDark.setVisible(false);
-    }
+    this.#appleSatellite.set("settingsName", "appleSatellite");
 
     this.#googleRoadLayer = new GoogleRoadLayer("Google Maps Road", this.#languageTag, false);
+    this.#googleRoadLayer.set("settingsName", "googleRoad");
     this.#googleRoadLayerOldStyle = new GoogleRoadLayer("Google Maps Road (Old Style)", this.#languageTag, true);
+    this.#googleRoadLayerOldStyle.set("settingsName", "googleRoadOld");
   
+    openStreetMap.set("settingsName", "openStreetMap");
+    cartoVoyager.set("settingsName", "cartoVoyager");
+    cartoPositron.set("settingsName", "cartoPositron");
+    cartoDarkMatter.set("settingsName", "cartoDarkMatter");
+
     this.#baseLayers = new LayerGroup({
       title: "Base layer",
       layers: [this.#appleRoad, this.#appleRoadDark, this.#appleSatellite, 
         this.#googleRoadLayer, this.#googleRoadLayerOldStyle,
         openStreetMap, cartoVoyager, cartoPositron, cartoDarkMatter]
     });
-  
+
+    const lastBaseLayer = settings.get("lastBaseLayer");
+    if (lastBaseLayer) {
+      this.#baseLayers.getLayers().forEach((layer, index, array) => {
+        layer.setVisible(layer.get("settingsName") === lastBaseLayer);
+      });
+    } else {
+      if (isDarkThemeEnabled()) {
+        this.#appleRoad.setVisible(false);
+        this.#appleRoadDark.setVisible(true);
+      } else {
+        this.#appleRoad.setVisible(true);
+        this.#appleRoadDark.setVisible(false);
+      }
+   }
+
     this.#updateLabelZIndex(settings.get("labelsOnTop"));
   }
 
@@ -168,6 +185,16 @@ class MapManager {
       groupSelectStyle: "group",
       startActive: true,
     });
+
+    LayerSwitcher.forEachRecursive(this.#map, (layer, index, array) => {
+      layer.on("change:visible", (e) => {
+          layer = e.target;
+          if (layer.get("type") == "base" && layer.getVisible()) {
+            settings.set("lastBaseLayer", layer.get("settingsName"));
+          }
+      });
+    });
+  
     this.#map.addControl(layerSwitcher);
     document.querySelector("#sidebar-layers-insert").appendChild(layerSwitcher.panel);
   }
