@@ -59,6 +59,12 @@ export class SettingsControl {
       settings.set("useMuted", useMuted.checked);
     });
 
+    const showTileModifiedDate = document.querySelector("#show-tile-modified-date");
+    showTileModifiedDate.checked = settings.get("showTileModifiedDate");
+    showTileModifiedDate.addEventListener("change", (_) => {
+      settings.set("showTileModifiedDate", showTileModifiedDate.checked);
+    });
+
     const initialOrientationNorth =  document.querySelector("#spawn-facing-north");
     const initialOrientationRoad =  document.querySelector("#spawn-facing-road");
     switch (settings.get("initialOrientation")) {

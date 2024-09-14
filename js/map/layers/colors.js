@@ -73,4 +73,11 @@ class CoverageColorer {
   }
 }
 
-export { CoverageColorer, carLineColor, trekkerLineColor };
+function getTileModifiedColor(lastModified) {
+  const start = 1577836800; // 2020-01-01
+  const end = Date.now() / 1000;
+  const percent = (lastModified - start) / (end-start);
+  return interpolateTurbo(offsetTurbo(percent));
+}
+
+export { CoverageColorer, carLineColor, trekkerLineColor, getTileModifiedColor };

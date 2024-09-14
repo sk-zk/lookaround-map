@@ -18,6 +18,7 @@ from lookaround.geocode import reverse_geocode
 from lookaround import get_coverage_tile, get_pano_face
 import geo
 from config import config
+from lookaround.panorama import CoverageTile
 from misc.util import to_bool, panos_to_dicts, AdditionalMetadata
 
 
@@ -31,9 +32,9 @@ def is_package_installed(package_name):
 # quite a bit, even though it never interacted with the map tile cache in any way.
 # top 10 questions scientists still can't answer.
 @lru_cache(maxsize=2**6)
-def get_coverage_tile__cached_for_movement(x, y):
+def get_coverage_tile__cached_for_movement(x: int, y: int) -> CoverageTile:
     tile = get_coverage_tile(x, y, session=movement_session)
-    return tile.panos
+    return tile
 
 
 api = Blueprint('api', __name__, url_prefix='/')
@@ -63,7 +64,10 @@ else:
 def relay_coverage_tile(x, y):
     tile = get_coverage_tile(x, y, session=map_session)
     panos = tile.panos
-    return jsonify(panos_to_dicts(panos, []))
+    return jsonify({
+        "panos": panos_to_dicts(panos, []),
+        "lastModified": tile.last_modified.timestamp()
+        })
 
 
 @api.route("/closest")
@@ -99,8 +103,8 @@ def closest():
     panos = []
     tiles = geo.get_circle_tiles(lat, lon, radius, 17)
     for (x, y) in tiles:
-        tile_panos = get_coverage_tile__cached_for_movement(x, y)
-        for pano in tile_panos:
+        tile = get_coverage_tile__cached_for_movement(x, y)
+        for pano in tile.panos:
             distance = geo.distance(lat, lon, pano.lat, pano.lon)
             if distance < radius:
                 panos.append((pano, distance))

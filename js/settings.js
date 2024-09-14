@@ -21,6 +21,7 @@ class Settings {
       initialOrientation: InitialOrientation.North,
       enableHevc: true,
       useMuted: false,
+      showTileModifiedDate: false,
     };
     for (const entry of Object.entries(defaults)) {
       this.#settings[entry[0]] ??= entry[1];

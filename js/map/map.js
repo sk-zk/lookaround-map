@@ -88,6 +88,9 @@ class MapManager {
       else if (e.setting[0] == "useMuted") {
         this.#updateEmphasis(e.setting[1]);
       }
+      else if (e.setting[0] == "showTileModifiedDate") {
+        lookaroundCoverage.getLayers().forEach((l) => l.getSource().refresh());
+      }
     })
   }
 

@@ -86,7 +86,7 @@
               <h3>Line/circle color</h3>
                 <input type="radio" id="color-by-type" name="line-color" checked><label for="color-by-type">Coverage type</label><br>
                 <input type="radio" id="color-by-age" name="line-color"><label for="color-by-age">Age</label><br>
-                <input type="radio" id="color-by-build-id" name="line-color"><label for="color-by-build-id">Build ID (z>=16)</label>
+                <input type="radio" id="color-by-build-id" name="line-color"><label for="color-by-build-id">Build ID (z≥16)</label>
               </div>
             <div class="sidebar-control-group">
             <h3>Capture date</h3>
@@ -104,7 +104,7 @@
             </div>
             <div class="sidebar-control-group">
               <h3>Build ID</h3>
-              <input type="checkbox" id="filter-build-id" name="filter-build-id"><label for="filter-build-id">Filter by Build ID (z>=16):</label><br>
+              <input type="checkbox" id="filter-build-id" name="filter-build-id"><label for="filter-build-id">Filter by Build ID (z≥16):</label><br>
               <input type="text" inputmode="numeric" pattern="\d{9,10}" id="filter-build-id-val" name="filter-build-id-val" style="width:9em;">
             </div>
             <div class="sidebar-control-group">
@@ -130,7 +130,9 @@
             <input type="checkbox" id="labels-on-top" name="labels-on-top">
             <label for="labels-on-top">Display labels above lines (if supported by layer)</label><br>
             <input type="checkbox" id="use-muted" name="use-muted">
-            <label for="use-muted">Use muted Apple Maps tiles</label>
+            <label for="use-muted">Use muted Apple Maps tiles</label><br>
+            <input type="checkbox" id="show-tile-modified-date" name="show-tile-modified-date">
+            <label for="show-tile-modified-date">Display last modification date of coverage tiles (z≥16)</label>
           </div>
           <p></p>
           <div class="sidebar-control-group">
@@ -154,6 +156,9 @@
           <label class="sidebar-tab-label tab-updates-bg" for="tab-updates" title="What's new?"></label>
           <div class="sidebar-panel sidebar-panel-updates" tabindex="1">
             <h2>What's new?</h2>
+            <h3>2024-09-14</h3>
+            <div>You can now view the last modification date of coverage tiles.
+            </div>
             <h3>2024-05-10</h3>
             <div>Keyboard movement is now available! Use the arrow keys to move to the closest panorama
               in that direction.
@@ -169,23 +174,23 @@
             <div>Added a smooth transition when moving or when higher resolution faces are loaded in.</div>
             <h3>2024-01-08</h3>
             <div>Added the Google Maps Road (Old Style) base layer.</div>
-            <h3>2023-12-29</h3>
-            <div>
-              You can now paste Apple Maps URLs into the search bar to open the linked panorama or,
-              if no panorama is given, to move the map to the linked location.<br>
-              (Supported parameters are <code>ll</code>, <code>z</code>, and <code>_mvs</code>. Other parameters
-              are ignored.)
-            </div>
             <p></p>
             <details>
               <summary>show older</summary>
+              <h3>2023-12-29</h3>
+              <div>
+                You can now paste Apple Maps URLs into the search bar to open the linked panorama or,
+                if no panorama is given, to move the map to the linked location.<br>
+                (Supported parameters are <code>ll</code>, <code>z</code>, and <code>_mvs</code>. Other parameters
+                are ignored.)
+              </div>
               <h3>2023-12-22</h3>
               <div>Added the ability to filter by Build ID.</div>
               <h3>2023-12-17</h3>
               <div>The top and bottom faces of panoramas now render properly.</div>
               <h3>2023-12-15</h3>
               <div>
-                If your browser supports HEVC, including the Main Still Image profile, the viewer now
+                If your browser supports HEVC, including the Main Still Picture profile, the viewer now
                 decodes panoramas in the client, which should improve performance in most cases. You can check if
                 your browser supports this particular format <a href="https://sk-zk.github.io/hevc-msp/" target="_blank">on this page</a>.
                 If necessary, you can disable this feature in the settings.
