@@ -32,7 +32,8 @@ def is_package_installed(package_name):
 # top 10 questions scientists still can't answer.
 @lru_cache(maxsize=2**6)
 def get_coverage_tile__cached_for_movement(x, y):
-    return get_coverage_tile(x, y, session=movement_session)
+    tile = get_coverage_tile(x, y, session=movement_session)
+    return tile.panos
 
 
 api = Blueprint('api', __name__, url_prefix='/')
@@ -60,7 +61,8 @@ else:
 @api.route("/tiles/coverage/<int:x>/<int:y>/")
 @cross_origin()
 def relay_coverage_tile(x, y):
-    panos = get_coverage_tile(x, y, session=map_session)
+    tile = get_coverage_tile(x, y, session=map_session)
+    panos = tile.panos
     return jsonify(panos_to_dicts(panos, []))
 
 
