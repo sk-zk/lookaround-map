@@ -77,6 +77,16 @@ export function openInGsv(lat, lon, position, fov) {
 }
 
 export function generateAppleMapsUrl(lat, lon, position) {
+  const mvsParameter = getMuninViewStateString(lat, lon, position);
+  return `https://maps.apple.com/?ll=${lat},${lon}&_mvs=${mvsParameter}`;
+}
+
+export function generateAppleMapsWebUrl(lat, lon, position) {
+  const mvsParameter = getMuninViewStateString(lat, lon, position);
+  return `https://beta.maps.apple.com/?ll=${lat},${lon}&_mvs=${mvsParameter}]`;
+}
+
+function getMuninViewStateString(lat, lon, position) {
   const message = new proto.MuninViewState();
   const cameraFrame = new proto.MuninViewState.CameraFrame();
   cameraFrame.setLatitude(lat);
@@ -85,7 +95,7 @@ export function generateAppleMapsUrl(lat, lon, position) {
   cameraFrame.setPitch(-position.pitch * RAD2DEG);
   message.setCameraframe(cameraFrame);
   const mvsParameter = Base64.fromUint8Array(message.serializeBinary());
-  return `https://maps.apple.com/?ll=${lat},${lon}&_mvs=${mvsParameter}`;
+  return mvsParameter;
 }
 
 export function encodeShareLinkPayload(lat, lon, yaw, pitch) {

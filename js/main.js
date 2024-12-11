@@ -8,7 +8,7 @@ import { Theme, AdditionalMetadata } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
 import { showNotificationTooltip, isAppleDevice, approxEqual } from "./util/misc.js";
-import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsUrl, encodeShareLinkPayload } from "./util/url.js";
+import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsUrl, generateAppleMapsWebUrl, encodeShareLinkPayload } from "./util/url.js";
 import { PanoMetadataBox } from "./ui/PanoMetadataBox.js";
 import { settings } from "./settings.js";
 import { AddressController } from "./geo/AddressController.js";
@@ -243,13 +243,13 @@ class Application {
     });
   
     document.querySelector("#open-in-apple-maps").addEventListener("click", (e) => { 
-      const url = generateAppleMapsUrl(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition());
+      let url;
       if (this.isRunningOnAppleDevice) {
-        window.open(url, "_blank");
+        url = generateAppleMapsUrl(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition());
       } else {
-        showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500)
-        navigator.clipboard.writeText(url);
+        url = generateAppleMapsWebUrl(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition());
       }
+      window.open(url, "_blank");
     });
   }
 
