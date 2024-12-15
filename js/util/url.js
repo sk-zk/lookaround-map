@@ -125,7 +125,7 @@ export function isAppleMapsUrl(str) {
   }
   try {
     const url = new URL(str);
-    return url.host === "maps.apple.com";
+    return url.host === "maps.apple.com" || url.host === "beta.maps.apple.com";
   }
   catch {
     return false;
@@ -138,7 +138,7 @@ export function parseAppleMapsUrl(str) {
   }
 
   const url = new URL(str);
-  if (url.host !== "maps.apple.com") {
+  if (url.host !== "maps.apple.com" && url.host !== "beta.maps.apple.com") {
     throw new TypeError("Not an Apple Maps URL");
   }
 
