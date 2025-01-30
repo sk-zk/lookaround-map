@@ -95,6 +95,20 @@ export class LookaroundAdapter extends AbstractAdapter {
       this.panorama.cameraMetadata[Face.Bottom].fovS = 2.129301687;
       this.panorama.cameraMetadata[Face.Bottom].fovH = 2.268928028;
     }
+
+    // Some of the February/March 2024 in New Orleans use the camera params
+    // of the big cam, but since all of it was taken with the small cam,
+    // this is incorrect.
+    if (this.panorama.coverageType === CoverageType.Car
+      && this.panorama.lat > 29.640968 && this.panorama.lat < 30.207505
+      && this.panorama.lon > -90.450698 && this.panorama.lon < -89.676162
+      && this.panorama.timestamp > 1706749261000 && this.panorama.timestamp < 1711933261000
+    ) {
+      for (let i = 0; i < 4; i++) {
+        this.panorama.cameraMetadata[i].cy = 0.305432619;
+        this.panorama.cameraMetadata[i].fovH = 1.832595715;
+      }
+    }
   }
 
   async #loadOneTexture(zoom, faceIdx, progress = null) {
