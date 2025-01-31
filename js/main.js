@@ -282,6 +282,7 @@ class Application {
     document.querySelector("#close-pano").style.display = isMapLayout ? "none" : "flex";
     document.querySelector("#pano-info").style.display = isMapLayout ? "none" : "block";
     document.querySelector("#sidebar-container").style.display = isMapLayout ? "flex" : "none";
+    document.querySelector("#color-legend").style.visibility = isMapLayout ? "visible" : "hidden";
   }
 
   #onHashChanged(_) {

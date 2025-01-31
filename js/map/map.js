@@ -11,6 +11,7 @@ import { GeolocationButton } from "./GeolocationButton.js";
 import { CoverageColorer } from "./layers/colors.js";
 import { settings } from "../settings.js";
 import { isAppleMapsUrl, parseAppleMapsUrl } from "../util/url.js";
+import { ColorLegendControl } from "../ui/ColorLegendControl.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
@@ -32,6 +33,7 @@ class MapManager {
 
   #filterControl;
   #coverageColorer;
+  #legendControl;
   #languageTag;
 
   #appleRoad;
@@ -72,6 +74,9 @@ class MapManager {
         rotate: false,
       }),
     });
+
+    this.#coverageColorer = new CoverageColorer();
+    this.#legendControl = new ColorLegendControl(this.#coverageColorer);
 
     this.#createAttributionControl();
     this.#createLayerSwitcher();
@@ -251,7 +256,6 @@ class MapManager {
   }
 
   #setUpFilterControl() {
-    this.#coverageColorer = new CoverageColorer();
     vectorBlueLineLayer.setFilterSettings(this.#filterControl.getFilterSettings());
     vectorBlueLineLayer.setCoverageColorer(this.#coverageColorer);
     lookaroundCoverage.setFilterSettings(this.#filterControl.getFilterSettings());
@@ -261,15 +265,18 @@ class MapManager {
 
   #onFiltersChanged(filterSettings) {
     this.#coverageColorer.filterSettingsChanged(filterSettings);
+
     this.#updateActiveCachedBlueLineLayer(filterSettings.canUseRasterTiles());
+
     vectorBlueLineLayer.setFilterSettings(filterSettings);
     vectorBlueLineLayer.getLayers().forEach((l) => l.changed());
     lookaroundCoverage.setFilterSettings(filterSettings);
     lookaroundCoverage.getLayers().forEach((l) => l.getSource().refresh());
     rasterBlueLineLayer.setFilterSettings(filterSettings);
     rasterBlueLineLayer.changed();
-  }
 
+    this.#legendControl.updateLegend(filterSettings);
+  }
   #updateActiveCachedBlueLineLayer(useRasterTiles) {
     if (useRasterTiles) {
       rasterBlueLineLayer.setVisible(true);

@@ -10,7 +10,7 @@
     "@photo-sphere-viewer/markers-plugin": "^5.7.1",
     "@rollup/plugin-commonjs": "^24.0.1",
     "@rollup/plugin-typescript": "^11.0.0",
-    "d3-scale-chromatic": "^3.0.0",
+    "d3": "^7.9.0",
     "earcut": "^2.2.4",
     "fflate": "^0.7.4",
     "google-protobuf": "^3.21.2",
