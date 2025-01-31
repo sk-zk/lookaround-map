@@ -17,6 +17,8 @@ body {
   --map-ui-bg: #fdfdfd;
   --map-ui-text-color: black;
   --sidebar-inactive-tab-color: #ccc;
+  --layer-explanation-color: #666;
+  --sidebar-show-older-color: #666;
 }
 
 /* dark mode */
@@ -29,6 +31,8 @@ body {
   --ol-partial-background-color: rgba(34, 34, 34, 0.75);
   --ol-subtle-foreground-color: #eee;
   --ol-foreground-color: #f0f0f0;
+  --layer-explanation-color: #999;
+  --sidebar-show-older-color: #999;
 }
 
 :root.dark .ol-ctx-menu-container {
@@ -77,6 +81,10 @@ body {
 
 code {
   font-family: monospace;
+}
+
+a {
+  color: var(--map-ui-text-color);
 }
 
 a:visited {
@@ -285,7 +293,7 @@ a:visited {
 }
 
 .layer-explanation {
-  color: rgba(90, 90, 90, 1);
+  color: var(--layer-explanation-color);
   font-style: italic;
 }
 
@@ -562,7 +570,7 @@ input:checked + .sidebar-tab-label + .sidebar-panel {
 .sidebar-panel-updates summary {
   text-decoration: underline;
   cursor: pointer;
-  color: #666;
+  color: var(--sidebar-show-older-color);
 }
 
 .sidebar-panel-updates summary::marker {
