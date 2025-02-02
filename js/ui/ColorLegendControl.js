@@ -1,6 +1,10 @@
-import { LineColorType } from "../enums";
+import { LineColorType } from "../enums.js";
+import { ceilFirstOfMonth, floorFirstOfMonth } from "../util/misc.js";
 
 import * as d3 from "d3";
+
+const YEAR_LENGTH = 366 * 24 * 60 * 60 * 1000;
+const MONTH_LENGTH = 30 * 24 * 60 * 60 * 1000;
 
 export class ColorLegendControl {
   coverageColorer;
@@ -25,13 +29,15 @@ export class ColorLegendControl {
     let tickConfigFn;
     if (filterSettings.lineColorType === LineColorType.Age) {
       tickConfigFn = (axis) => {
-        axis.tickValues(this.#createAgeTickValues());
-        axis.tickFormat((n) => new Date(n).getFullYear());
+        const { tickValues, tickFormat } = this.#createAgeTickValues();
+        axis.tickValues(tickValues);
+        axis.tickFormat(tickFormat);
       };
     } else if (filterSettings.lineColorType === LineColorType.BuildId) {
       tickConfigFn = (axis) => {
-        axis.tickValues(this.#createBuildIdTickValues());
-        axis.tickFormat((n) => `${(n / 1_000_000) | 0}`);
+        const { tickValues, tickFormat } = this.#createBuildIdTickValues();
+        axis.tickValues(tickValues);
+        axis.tickFormat(tickFormat);
       };
     }
     this.#createAxis(tickConfigFn);
@@ -50,6 +56,7 @@ export class ColorLegendControl {
 
     const scale = this.#createScale();
     const axis = d3.axisBottom(scale);
+    axis.tickSizeOuter(0);
     tickConfigFn(axis);
 
     this.#axisEl.html("");
@@ -68,14 +75,50 @@ export class ColorLegendControl {
   }
 
   #createAgeTickValues() {
+    const scaleWidth = this.#colorsEl.node().getBoundingClientRect().width;
+
     const scale = this.coverageColorer.scale;
-    const earliestYear = new Date(scale.invert(0)).getFullYear();
-    const latestYear = new Date(scale.invert(1)).getFullYear();
-    let tickValues = [scale.invert(0)];
-    for (let i = earliestYear + 1; i < latestYear + 1; i++) {
-      tickValues.push(new Date(i, 0, 1).getTime());
+    const start = scale.invert(0);
+    const end = scale.invert(1);
+
+    if (end - start >= YEAR_LENGTH) {
+      const earliestYear = new Date(start).getFullYear();
+      const latestYear = new Date(end).getFullYear();
+      let tickValues = [scale.invert(0)];
+      for (let i = earliestYear + 1; i < latestYear + 1; i++) {
+        tickValues.push(new Date(i, 0, 1).getTime());
+      }
+      const tickFormat = n => new Date(n).getFullYear();
+      return { tickValues, tickFormat };
+    } else {
+      const earliestDate = new Date(start);
+      const latestDate = new Date(end);
+
+      const startMonth = ceilFirstOfMonth(earliestDate);
+      const endMonth = floorFirstOfMonth(latestDate);  
+
+      let interval = 0;
+      let pxPerMonth = 0;
+      const months = (endMonth.getTime() - startMonth.getTime()) / MONTH_LENGTH;
+      while (pxPerMonth < 40) {
+        interval++;
+        pxPerMonth = scaleWidth / (months / interval);
+      }
+
+      let tickValues = [];
+      let current = startMonth;
+      while (current.getTime() <= endMonth.getTime()) {
+        tickValues.push(current.getTime());
+        current = new Date(current.getFullYear(), current.getMonth() + interval, 1);
+      }
+
+      const tickFormat = n => {
+        const d = new Date(n);
+        return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, "0")}`;
+      };
+
+      return { tickValues, tickFormat };
     }
-    return tickValues;
   }
 
   #createBuildIdTickValues() {
@@ -88,7 +131,8 @@ export class ColorLegendControl {
       tickValues.push(i);
     }
     tickValues.push(end);
-    return tickValues;
+    const tickFormat = n => `${(n / 1_000_000) | 0}`;
+    return { tickValues, tickFormat };
   }
 
   #createGradient() {

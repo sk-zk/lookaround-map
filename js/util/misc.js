@@ -32,3 +32,29 @@ export function isAppleDevice() {
 export function approxEqual(a, b, epsilon=1e-6) {
   return Math.abs(a - b) < epsilon;
 }
+
+export function ceilFirstOfMonth(date) {
+  let year = date.getFullYear();
+  let month = date.getMonth();
+  let day = date.getDate();
+  if (day === 1) {
+    return date;
+  }
+  if (month === 11) {
+    year++;
+    month = 0;
+  } else {
+    month++;
+  }
+  return new Date(year, month, 1);
+}
+
+export function floorFirstOfMonth(date) {
+  let year = date.getFullYear();
+  let month = date.getMonth();
+  let day = date.getDate();
+  if (day === 1) {
+    return date;
+  }
+  return new Date(year, month, 1);
+}
