@@ -344,7 +344,7 @@ a:visited {
   background-image: url("/static/icons/gps-light.svg");
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 18px;
+  background-size: 95%;
 }
 
 .ol-control.ol-search > button::after {
