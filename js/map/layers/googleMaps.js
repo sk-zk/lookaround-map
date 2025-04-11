@@ -8,8 +8,8 @@ import LayerGroup from "ol/layer/Group.js";
 const pixelRatio = getDevicePixelRatio();
 
 class GoogleRoadLayerLabels extends TileLayer {
-  constructor(languageTag, useOldStyle) {
-    const styleParam = useOldStyle ? 18 : 1105;
+  constructor(languageTag) {
+    const styleParam = 1105;
     const split = languageTag.split("-");
     const language = split[0];
     const region = split[1] ?? language;
@@ -32,8 +32,8 @@ class GoogleRoadLayerLabels extends TileLayer {
 }
 
 class GoogleRoadLayer extends LayerGroup {
-  constructor(title, languageTag, useOldStyle) {
-    const styleParam = useOldStyle ? 18 : 1105;
+  constructor(title, languageTag) {
+    const styleParam = 1105;
     const base = new TileLayer({
       source: new XYZ({
         maxZoom: Constants.MAX_ZOOM,
@@ -48,7 +48,7 @@ class GoogleRoadLayer extends LayerGroup {
       }),
       maxZoom: Constants.MAX_ZOOM,
     });
-    const labels = new GoogleRoadLayerLabels(languageTag, useOldStyle);
+    const labels = new GoogleRoadLayerLabels(languageTag);
 
     super({
       title: title,

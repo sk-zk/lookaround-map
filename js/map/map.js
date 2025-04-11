@@ -42,7 +42,6 @@ class MapManager {
   #appleSatelliteOverlay;
   #appleSatellite;
   #googleRoadLayer;
-  #googleRoadLayerOldStyle;
   #baseLayers;
 
   #cachedBlueLines;
@@ -134,10 +133,8 @@ class MapManager {
     });
     this.#appleSatellite.set("settingsName", "appleSatellite");
 
-    this.#googleRoadLayer = new GoogleRoadLayer("Google Maps Road", this.#languageTag, false);
+    this.#googleRoadLayer = new GoogleRoadLayer("Google Maps Road", this.#languageTag);
     this.#googleRoadLayer.set("settingsName", "googleRoad");
-    this.#googleRoadLayerOldStyle = new GoogleRoadLayer("Google Maps Road (Old Style)", this.#languageTag, true);
-    this.#googleRoadLayerOldStyle.set("settingsName", "googleRoadOld");
   
     openStreetMap.set("settingsName", "openStreetMap");
     cartoVoyager.set("settingsName", "cartoVoyager");
@@ -147,8 +144,7 @@ class MapManager {
     this.#baseLayers = new LayerGroup({
       title: "Base layer",
       layers: [this.#appleRoad, this.#appleRoadDark, this.#appleSatellite, 
-        this.#googleRoadLayer, this.#googleRoadLayerOldStyle,
-        openStreetMap, cartoVoyager, cartoPositron, cartoDarkMatter]
+        this.#googleRoadLayer, openStreetMap, cartoVoyager, cartoPositron, cartoDarkMatter]
     });
 
     const lastBaseLayer = settings.get("lastBaseLayer");
@@ -243,7 +239,6 @@ class MapManager {
   #updateLabelZIndex(labelsOnTop) {
     this.#appleSatelliteOverlay.setZIndex(labelsOnTop ? Constants.LABELS_ZINDEX : Constants.LABELS_BELOW_ZINDEX);
     this.#googleRoadLayer.setLabelsOnTop(labelsOnTop);
-    this.#googleRoadLayerOldStyle.setLabelsOnTop(labelsOnTop);
     cartoPositron.setLabelsOnTop(labelsOnTop);
     cartoDarkMatter.setLabelsOnTop(labelsOnTop);
     cartoVoyager.setLabelsOnTop(labelsOnTop);
