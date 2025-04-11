@@ -318,10 +318,10 @@ class MapManager {
           callback: (_) => {
             const center = this.#map.getView().getCenter();
             const extent = this.#map.getView().calculateExtent(this.#map.getSize());
-            const lonSpan = (extent[2] - extent[0])/2;
-            const latSpan = (extent[3] - extent[1])/2;
+            const lonSpan = (extent[2] - extent[0]);
+            const latSpan = (extent[3] - extent[1]);
             window.open(
-              `https://beta.maps.apple.com/?ll=${center[1]},${center[0]}&spn=${lonSpan},${latSpan}`,
+              `https://maps.apple.com/frame?center=${center[1]},${center[0]}&span=${latSpan},${lonSpan}`,
               "_blank"
             );
           },

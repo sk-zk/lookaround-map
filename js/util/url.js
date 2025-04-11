@@ -76,14 +76,14 @@ export function openInGsv(lat, lon, position, fov) {
   );
 }
 
-export function generateAppleMapsUrl(lat, lon, position) {
+export function generateAppleMapsLookAroundUrl(lat, lon, position) {
   const mvsParameter = getMuninViewStateString(lat, lon, position);
   return `https://maps.apple.com/?ll=${lat},${lon}&_mvs=${mvsParameter}`;
 }
 
-export function generateAppleMapsWebUrl(lat, lon, position) {
+export function generateAppleMapsWebLookAroundUrl(lat, lon, position) {
   const mvsParameter = getMuninViewStateString(lat, lon, position);
-  return `https://beta.maps.apple.com/?ll=${lat},${lon}&_mvs=${mvsParameter}]`;
+  return `https://maps.apple.com/look-around?coordinate=${lat},${lon}&_mvs=${mvsParameter}`;
 }
 
 function getMuninViewStateString(lat, lon, position) {
@@ -145,12 +145,23 @@ export function parseAppleMapsUrl(str) {
   const params = {};
   if (url.searchParams.has("ll")) {
     const coords = url.searchParams.get("ll").split(",");
-    params.lat = coords[0];
-    params.lon = coords[1];
+    params.lat = parseFloat(coords[0]);
+    params.lon = parseFloat(coords[1]);
+  }
+  else if (url.searchParams.has("center")) {
+    const coords = url.searchParams.get("center").split(",");
+    params.lat = parseFloat(coords[0]);
+    params.lon = parseFloat(coords[1]);
   }
 
   if (url.searchParams.has("z")) {
     params.zoom = url.searchParams.get("z");
+  }
+  else if (url.searchParams.has("span")) {
+    const span = url.searchParams.get("span").split(",");
+    span[0] = parseFloat(span[0]);
+    span[1] = parseFloat(span[1]);
+    params.span = span;
   }
 
   if (url.searchParams.has("_mvs")) {

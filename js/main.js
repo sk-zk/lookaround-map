@@ -8,7 +8,8 @@ import { Theme, AdditionalMetadata } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
 import { showNotificationTooltip, isAppleDevice, approxEqual } from "./util/misc.js";
-import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsUrl, generateAppleMapsWebUrl, encodeShareLinkPayload } from "./util/url.js";
+import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsLookAroundUrl, 
+  generateAppleMapsWebLookAroundUrl, encodeShareLinkPayload } from "./util/url.js";
 import { PanoMetadataBox } from "./ui/PanoMetadataBox.js";
 import { settings } from "./settings.js";
 import { AddressController } from "./geo/AddressController.js";
@@ -132,14 +133,29 @@ class Application {
   }
 
   #onAppleMapsLinkPasted(params) {
+    const view = this.map.getView();  
     if (params.pano) {
       this.#fetchAndDisplayPanoAt(params.pano.lat, params.pano.lon, params.pano.position);
-      this.map.getView().setZoom(17);
+      view.setZoom(17);
     } else {
       if (params.lat && params.lon) {
-        this.map.getView().setCenter([params.lon, params.lat]);
-        params.zoom ??= 19;
-        this.map.getView().setZoom(params.zoom);
+        view.setCenter([params.lon, params.lat]);
+        if (params.zoom) {
+          view.setZoom(params.zoom);
+        }
+        else if (params.span) {
+          console.log(params);
+          const minX = params.lon - params.span[1] / 2;
+          const maxX = params.lon + params.span[1] / 2;
+          const minY = params.lat - params.span[0] / 2;
+          const maxY = params.lat + params.span[0] / 2;
+          const extent = [minX, minY, maxX, maxY];
+          console.log(extent);
+          view.fit(extent);
+        }
+        else {
+          view.setZoom(19);
+        }
       }
     }
   }
@@ -245,9 +261,9 @@ class Application {
     document.querySelector("#open-in-apple-maps").addEventListener("click", (e) => { 
       let url;
       if (this.isRunningOnAppleDevice) {
-        url = generateAppleMapsUrl(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition());
+        url = generateAppleMapsLookAroundUrl(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition());
       } else {
-        url = generateAppleMapsWebUrl(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition());
+        url = generateAppleMapsWebLookAroundUrl(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition());
       }
       window.open(url, "_blank");
     });
