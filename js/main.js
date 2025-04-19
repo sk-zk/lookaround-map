@@ -3,7 +3,6 @@ import { Authenticator } from "./util/Authenticator.js";
 import { MapManager } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
 import { wrapLon } from "./geo/geo.js";
-import { TimeMachineControl } from "./ui/TimeMachineControl.js";
 import { Theme, AdditionalMetadata } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
@@ -34,17 +33,21 @@ class Application {
   isRunningOnAppleDevice;
 
   settingsControl;
-  timeMachineControl;
   panoMetadataBox;
   addressController;
   address;
 
   constructor() {
     document.title = this.appTitle;
+
     this.api = new Api();
     this.auth = new Authenticator();
     this.isRunningOnAppleDevice = isAppleDevice();
-    this.panoMetadataBox = new PanoMetadataBox(this.appTitle);
+
+    this.panoMetadataBox = new PanoMetadataBox();
+    this.panoMetadataBox.panoSelectedCallback = (pano) => {
+      this.#displayPano(pano);
+    };
 
     this.#setTheme();
     window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (_) => {
@@ -66,11 +69,6 @@ class Application {
         this.#closePanoViewer();
       }
     });
-
-    this.timeMachineControl = new TimeMachineControl();
-    this.timeMachineControl.panoSelectedCallback = (pano) => {
-      this.#displayPano(pano);
-    };
     
     document.querySelector("#pano-share").addEventListener("click", (e) => {
       e.preventDefault();
@@ -144,13 +142,11 @@ class Application {
           view.setZoom(params.zoom);
         }
         else if (params.span) {
-          console.log(params);
           const minX = params.lon - params.span[1] / 2;
           const maxX = params.lon + params.span[1] / 2;
           const minY = params.lat - params.span[0] / 2;
           const maxY = params.lat + params.span[0] / 2;
           const extent = [minX, minY, maxX, maxY];
-          console.log(extent);
           view.fit(extent);
         }
         else {
@@ -174,7 +170,7 @@ class Application {
     });
   
     this.panoViewer.alternativeDatesChangedCallback = (dates) => {
-      this.timeMachineControl.setAlternativeDates(dates);
+      this.panoMetadataBox.setAlternativeDates(dates);
     };
   
     const positionUpdateHandler = tinyDebounce(

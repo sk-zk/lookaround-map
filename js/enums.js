@@ -1,15 +1,22 @@
-const CoverageType = Object.freeze({
+export const CoverageType = Object.freeze({
   Car: 2,
   Trekker: 3,
 });
 
-const LineColorType = Object.freeze({
+export const CameraType = Object.freeze({
+  BigCam: 0,
+  SmallCam: 1,
+  LowCam: 2,
+  Backpack: 3,
+});
+
+export const LineColorType = Object.freeze({
   CoverageType: 0,
   Age: 1,
   BuildId: 2,
 });
 
-const Face = Object.freeze({
+export const Face = Object.freeze({
   Back: 0,
   Left: 1,
   Front: 2,
@@ -18,38 +25,38 @@ const Face = Object.freeze({
   Bottom: 5,
 });
 
-const AddressSource = Object.freeze({
+export const AddressSource = Object.freeze({
   Nominatim: "nominatim",
   Apple: "apple",
 });
 
-const Theme = Object.freeze({
+export const Theme = Object.freeze({
   Automatic: "auto",
   Light: "light",
   Dark: "dark",
 });
 
-const InitialOrientation = Object.freeze({
+export const InitialOrientation = Object.freeze({
 	North: 0,
 	Road: 1,
-})
+});
 
 /**
  * The image format which the viewer will request from the backend.
  */
-const ImageFormat = Object.freeze({
+export const ImageFormat = Object.freeze({
   /** The viewer will request JPEG. */ 
 	JPEG: 0, 
   /** The viewer will request HEIC. */
 	HEIC: 1,
   /** The viewer will request HEVC Main Still Picture in an MP4 container. */
   HEVC: 2,
-})
+});
 
 /**
  * Additional metadata which can be requested from the `closest` endpoint.
  */
-const AdditionalMetadata = Object.freeze({
+export const AdditionalMetadata = Object.freeze({
   /** Heading/pitch/roll of panoramas. */
 	Orientation: "ori",
   /** Camera metadata of panoramas. */
@@ -58,6 +65,4 @@ const AdditionalMetadata = Object.freeze({
   Elevation: "ele",
   /** Time zone of the capture time of panoramas. */
   TimeZone: "tz",
-})
-
-export { CoverageType, LineColorType, Face, AddressSource, Theme, InitialOrientation, ImageFormat, AdditionalMetadata };
+});

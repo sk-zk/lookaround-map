@@ -174,7 +174,7 @@ async function updateMarkers(viewer, pano) {
   const nearbyPanos = await viewer.api.getClosestPanos(
     pano.lat, pano.lon, 
     100, 1000, 
-    [AdditionalMetadata.Elevation, AdditionalMetadata.TimeZone]);
+    [AdditionalMetadata.CameraMetadata, AdditionalMetadata.Elevation, AdditionalMetadata.TimeZone]);
   viewer.plugins.movement.updatePanoMarkers(pano, nearbyPanos);
   const alternativeDates = getAlternativeDates(pano, nearbyPanos);
   viewer.alternativeDatesChangedCallback(alternativeDates);

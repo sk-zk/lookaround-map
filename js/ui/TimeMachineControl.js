@@ -1,3 +1,7 @@
+import { getUserLocale } from "../util/misc.js";
+import { CameraType } from "../enums.js";
+import { approxEqual } from "../util/misc.js";
+
 export class TimeMachineControl {
   panoSelectedCallback = function () {};
 
@@ -6,8 +10,10 @@ export class TimeMachineControl {
   #parent;
   #container;
   #isOpen;
+  #date;
 
   constructor() {
+    this.#date = document.querySelector("#pano-date");
     this.#timeMachineMenu = document.querySelector("#time-machine-menu");
     this.#parent = document.querySelector("#pano-date-and-time-machine-menu-container");
     this.#container = document.querySelector("#time-machine");
@@ -19,6 +25,21 @@ export class TimeMachineControl {
         this.close();
       }
     });
+  }
+
+  setPano(pano) {
+    console.log(pano);
+    const date = new Date(pano.timestamp);
+    const formattedDate = new Intl.DateTimeFormat(getUserLocale(), {
+      dateStyle: "medium",
+      timeStyle: "medium",
+      timeZone: pano.timezone,
+    }).format(date);
+
+    const camType = this.#inferCameraType(pano);
+    const camHtml = this.#getCameraTypeHtml(camType);
+
+    this.#date.innerHTML = formattedDate + camHtml;
   }
 
   setAlternativeDates(dates) {
@@ -41,8 +62,12 @@ export class TimeMachineControl {
         timeStyle: "medium",
         timeZone: pano.timezone,
       }).format(new Date(pano.timestamp));
+
+      const camType = this.#inferCameraType(pano);
+      const camHtml = this.#getCameraTypeHtml(camType);
+
       const option = document.createElement("div");
-      option.innerText = formattedDate;
+      option.innerHTML = formattedDate + camHtml;
       option.className = "time-machine-option";
       option.addEventListener("click", (_) => {
         this.close();
@@ -59,5 +84,42 @@ export class TimeMachineControl {
   close() {
     this.#timeMachineMenu.style.display = "none";
     this.#isOpen = false;
+  }
+
+  #inferCameraType(pano) {
+    if (pano.coverageType == 3) {
+      return CameraType.Backpack;
+    }
+
+    if (approxEqual(pano.cameraMetadata[0].cy, 0.27488935)) {
+      return CameraType.BigCam;
+    } else if (approxEqual(pano.cameraMetadata[0].cy, 0.30543262)) {
+      return CameraType.SmallCam;
+    } else if (approxEqual(pano.cameraMetadata[0].cy, 0.36215582)) {
+      return CameraType.LowCam;
+    }
+
+    // unknown type, fall back to BigCam
+    return CameraType.BigCam;
+  }
+
+  #getCameraTypeHtml(type) {
+    let icon;
+    switch (type) {
+      default:
+      case CameraType.BigCam:
+        icon = "/static/icons/bigcam.png";
+        break;
+      case CameraType.SmallCam:
+        icon = "/static/icons/smallcam.png";
+        break;
+      case CameraType.LowCam:
+        icon = "/static/icons/lowcam.png";
+        break;
+      case CameraType.Backpack:
+        icon = "/static/icons/backpack.png";
+        break;
+    }
+    return `&nbsp;&nbsp;&nbsp;<img src="${icon}" class="pano-info-camera-icon">`;
   }
 }

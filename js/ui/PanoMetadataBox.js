@@ -1,12 +1,14 @@
-import { getUserLocale } from "../util/misc.js";
+import { TimeMachineControl } from "./TimeMachineControl.js";
 
 export class PanoMetadataBox {
+  panoSelectedCallback = function () {};
+
   #pano;
   #panoId;
   #buildId;
   #position;
   #elevation;
-  #date;
+  #timeMachine;
   #addressFirstLine;
   #addressRest;
 
@@ -15,7 +17,10 @@ export class PanoMetadataBox {
     this.#buildId = document.querySelector("#pano-build-id");
     this.#position = document.querySelector("#pano-pos");
     this.#elevation = document.querySelector("#pano-ele");
-    this.#date = document.querySelector("#pano-date");
+    this.#timeMachine = new TimeMachineControl();
+    this.#timeMachine.panoSelectedCallback = (pano) => {
+      this.panoSelectedCallback(pano);
+    };
     this.#addressFirstLine = document.querySelector("#pano-address-first-line");
     this.#addressRest = document.querySelector("#pano-address-rest");
   }
@@ -26,15 +31,11 @@ export class PanoMetadataBox {
     this.#buildId.innerHTML = `${pano.buildId}`;
     this.#position.innerHTML = `${pano.lat.toFixed(6)}, ${pano.lon.toFixed(6)}`;
     this.#elevation.innerHTML = `${pano.elevation.toFixed(2)} m`;
-    /*document.querySelector("#dbg").innerHTML = 
-        `<br>Y:${pano.heading * RAD2DEG}° P:${pano.pitch * RAD2DEG}° R:${pano.roll * RAD2DEG}°`;*/
-    const date = new Date(pano.timestamp);
-    const formattedDate = new Intl.DateTimeFormat(getUserLocale(), {
-      dateStyle: "medium",
-      timeStyle: "medium",
-      timeZone: pano.timezone,
-    }).format(date);
-    this.#date.innerHTML = formattedDate;
+    this.#timeMachine.setPano(pano);
+  }
+
+  setAlternativeDates(dates) {
+    this.#timeMachine.setAlternativeDates(dates);
   }
 
   setAddress(address, attribution) {

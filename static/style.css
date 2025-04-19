@@ -223,6 +223,11 @@ a:visited {
   border-top: 1px solid white;
 }
 
+.pano-info-camera-icon {
+  height: 1.2em;
+  vertical-align: text-bottom;
+}
+
 #pano-metadata {
   font-size: smaller;
   position: relative;
