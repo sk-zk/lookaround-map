@@ -28,7 +28,6 @@ export class TimeMachineControl {
   }
 
   setPano(pano) {
-    console.log(pano);
     const date = new Date(pano.timestamp);
     const formattedDate = new Intl.DateTimeFormat(getUserLocale(), {
       dateStyle: "medium",
