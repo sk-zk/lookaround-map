@@ -86,19 +86,23 @@ export class TimeMachineControl {
   }
 
   #inferCameraType(pano) {
+    // Backpack cam
     if (pano.coverageType == 3) {
       return CameraType.Backpack;
     }
 
+    // Big cam (2018-)
     if (approxEqual(pano.cameraMetadata[0].cy, 0.27488935)) {
       return CameraType.BigCam;
+    // Small cam (2024-)
     } else if (approxEqual(pano.cameraMetadata[0].cy, 0.30543262)) {
       return CameraType.SmallCam;
+    // Switzerland low cam (2021-2022)
     } else if (approxEqual(pano.cameraMetadata[0].cy, 0.36215582)) {
       return CameraType.LowCam;
     }
 
-    // unknown type, fall back to BigCam
+    // Unknown type, fall back to big cam
     return CameraType.BigCam;
   }
 
