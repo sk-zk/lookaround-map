@@ -222,6 +222,8 @@ export class LookaroundAdapter extends AbstractAdapter {
     textureData.texture?.forEach((texture) => texture.dispose());
   }
 
+  disposeMesh(mesh) { }
+
   /**
    * @private
    */

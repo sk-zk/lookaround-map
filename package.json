@@ -5,23 +5,23 @@
   "type": "module",
   "main": "rollup.config.js",
   "dependencies": {
-    "@photo-sphere-viewer/compass-plugin": "^5.7.1",
-    "@photo-sphere-viewer/core": "^5.7.1",
-    "@photo-sphere-viewer/markers-plugin": "^5.7.1",
-    "@rollup/plugin-commonjs": "^24.0.1",
-    "@rollup/plugin-typescript": "^11.0.0",
+    "@photo-sphere-viewer/compass-plugin": "^5.13.2",
+    "@photo-sphere-viewer/core": "^5.13.2",
+    "@photo-sphere-viewer/markers-plugin": "^5.13.2",
+    "@rollup/plugin-commonjs": "^24.1.0",
+    "@rollup/plugin-typescript": "^11.1.6",
     "d3": "^7.9.0",
     "earcut": "^2.2.4",
     "fflate": "^0.7.4",
     "google-protobuf": "^3.21.2",
     "js-base64": "^3.7.5",
-    "ol": "^8.1.0",
-    "ol-contextmenu": "^5.3.0",
-    "ol-ext": "^4.0.11",
-    "ol-layerswitcher": "^4.1.1",
+    "ol": "^10.5.0",
+    "ol-contextmenu": "^5.5.0",
+    "ol-ext": "^4.0.31",
+    "ol-layerswitcher": "^4.1.2",
     "pbf": "^3.2.1",
-    "rollup": "^2.79.0",
-    "rollup-plugin-import-css": "^3.1.0",
+    "rollup": "^2.79.2",
+    "rollup-plugin-import-css": "^3.5.8",
     "rollup-plugin-terser": "^7.0.2",
     "tiny-debounce": "^0.1.1",
     "tslib": "^2.5.0",
@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^15.0.1",
-    "eslint": "^8.39.0"
+    "eslint": "^8.57.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
