@@ -26,7 +26,7 @@ export default [
         if (message.code === 'EVAL') return;
         warn(message);
       },
-    plugins: [css(), nodeResolve(), typescript({compilerOptions: {target: "es6"}}), commonjs()]
+    plugins: [css({output: "main.css"}), nodeResolve(), typescript({compilerOptions: {target: "es6"}}), commonjs()]
   },
   {
     input: 'js/viewer/viewer.js',
@@ -39,6 +39,6 @@ export default [
         format: 'es',
         plugins: [terser(terserConfig)]
     },
-    plugins: [css(), nodeResolve()]
+    plugins: [css({output: "viewer.css"}), nodeResolve()]
   }
 ];
