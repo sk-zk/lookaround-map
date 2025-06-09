@@ -12,6 +12,7 @@ import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsLookArou
 import { PanoMetadataBox } from "./ui/PanoMetadataBox.js";
 import { settings } from "./settings.js";
 import { AddressController } from "./geo/AddressController.js";
+import { generateReportString } from "./util/virtualStreets.js";
 
 import Point from "ol/geom/Point.js";
 import tinyDebounce from "tiny-debounce";
@@ -50,9 +51,11 @@ class Application {
     };
 
     this.#setTheme();
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (_) => {
-      this.#setTheme();
-    });
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (_) => {
+        this.#setTheme();
+      });
 
     this.#initSidebar();
     this.panoMetadataBox.updateVisibility();
@@ -67,43 +70,67 @@ class Application {
     document.addEventListener("keydown", async (e) => {
       if (e.code === "Escape") {
         this.#closePanoViewer();
+      } else if (e.code === "KeyR" && e.altKey && e.shiftKey) {
+        this.#generateVirtualStreetsUpdateReport();
       }
     });
-    
-    document.querySelector("#pano-share").addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.#writeShareLinkToClipboard();
-      showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500);
-    }, true);
+
+    document.querySelector("#pano-share").addEventListener(
+      "click",
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.#writeShareLinkToClipboard();
+        showNotificationTooltip("Copied!", e.clientX, e.clientY, 1500);
+      },
+      true
+    );
     this.#hookUpOpenLinks();
 
-    document.querySelector("#pano-screenshot").addEventListener("click", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.#takeScreenshotOfViewer();
-    }, true);
+    document.querySelector("#pano-screenshot").addEventListener(
+      "click",
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.#takeScreenshotOfViewer();
+      },
+      true
+    );
 
     this.addressController = new AddressController();
     document.addEventListener("addressChanged", (e) => {
       if (e.error) console.log(e.error);
 
       this.address = e.address;
-      this.panoMetadataBox.setAddress(e.address, e.attribution);
-      if (e.address) {
-        document.title = `${e.address[0]} – ${this.appTitle}`;
+      this.panoMetadataBox.setAddress(e.address.formatted, e.attribution);
+      if (e.address && e.address.formatted) {
+        document.title = `${e.address.formatted[0]} – ${this.appTitle}`;
       } else {
         document.title = this.appTitle;
       }
     });
   }
 
-  async init() {       
+  #generateVirtualStreetsUpdateReport() {
+    if (this.currentPano && this.address) {
+      const report = generateReportString(
+        this.currentPano,
+        this.address,
+        this.#getShareLink("https://lookmap.eu.pythonanywhere.com/")
+      );
+      navigator.clipboard.writeText(report);
+    }
+  }
+
+  async init() {
     const params = parseHashParams();
     if (params.pano) {
       this.#initMap(params);
       this.#switchMapToPanoLayout();
-      await this.#fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude);
+      await this.#fetchAndDisplayPanoAt(
+        params.pano.latitude,
+        params.pano.longitude
+      );
       this.panoViewer.rotate(params.pano.position);
     } else {
       this.#initMap(params);
@@ -117,39 +144,50 @@ class Application {
         auth: this.auth,
       },
       new FilterControl(),
-      (params) => { this.#onAppleMapsLinkPasted(params) },
+      (params) => {
+        this.#onAppleMapsLinkPasted(params);
+      }
     );
     this.map = mapMgr.getMap();
     this.map.on("moveend", (_) => {
-      updateHashParams(this.map, this.currentPano, this.panoViewer?.getPosition());
+      updateHashParams(
+        this.map,
+        this.currentPano,
+        this.panoViewer?.getPosition()
+      );
     });
     this.map.on("click", async (e) => {
       const clickCoordinates = this.map.getEventCoordinate(e.originalEvent);
       clickCoordinates[0] = wrapLon(clickCoordinates[0]);
-      await this.#fetchAndDisplayPanoAt(clickCoordinates[1], clickCoordinates[0]);
+      await this.#fetchAndDisplayPanoAt(
+        clickCoordinates[1],
+        clickCoordinates[0]
+      );
     });
   }
 
   #onAppleMapsLinkPasted(params) {
-    const view = this.map.getView();  
+    const view = this.map.getView();
     if (params.pano) {
-      this.#fetchAndDisplayPanoAt(params.pano.lat, params.pano.lon, params.pano.position);
+      this.#fetchAndDisplayPanoAt(
+        params.pano.lat,
+        params.pano.lon,
+        params.pano.position
+      );
       view.setZoom(17);
     } else {
       if (params.lat && params.lon) {
         view.setCenter([params.lon, params.lat]);
         if (params.zoom) {
           view.setZoom(params.zoom);
-        }
-        else if (params.span) {
+        } else if (params.span) {
           const minX = params.lon - params.span[1] / 2;
           const maxX = params.lon + params.span[1] / 2;
           const minY = params.lat - params.span[0] / 2;
           const maxY = params.lat + params.span[0] / 2;
           const extent = [minX, minY, maxX, maxY];
           view.fit(extent);
-        }
-        else {
+        } else {
           view.setZoom(19);
         }
       }
@@ -164,20 +202,26 @@ class Application {
       initialOrientation: settings.get("initialOrientation"),
       canMoveWithKeyboard: true,
     });
-  
+
     this.panoViewer.plugins.movement.addEventListener("moved", async (e) => {
       this.#onPanoChanged(e);
     });
-  
+
     this.panoViewer.alternativeDatesChangedCallback = (dates) => {
       this.panoMetadataBox.setAlternativeDates(dates);
     };
-  
+
     const positionUpdateHandler = tinyDebounce(
-      (_) => {updateHashParams(this.map, this.currentPano, this.panoViewer.getPosition())}, 
-      500, 
+      (_) => {
+        updateHashParams(
+          this.map,
+          this.currentPano,
+          this.panoViewer.getPosition()
+        );
+      },
+      500,
       { trailing: true, maxWait: 500 }
-      );
+    );
     this.panoViewer.addEventListener("position-updated", positionUpdateHandler);
   }
 
@@ -189,11 +233,14 @@ class Application {
     } else {
       radius = 100;
     }
-    const pano = (await this.api.getClosestPanos(
-      lat, lon, radius, 1, 
-      [AdditionalMetadata.CameraMetadata, AdditionalMetadata.Elevation, 
-        AdditionalMetadata.Orientation, AdditionalMetadata.TimeZone])
-      )[0];
+    const pano = (
+      await this.api.getClosestPanos(lat, lon, radius, 1, [
+        AdditionalMetadata.CameraMetadata,
+        AdditionalMetadata.Elevation,
+        AdditionalMetadata.Orientation,
+        AdditionalMetadata.TimeZone,
+      ])
+    )[0];
     this.currentPano = pano;
     if (pano) {
       await this.#displayPano(pano, position);
@@ -226,10 +273,10 @@ class Application {
 
   #closePanoViewer() {
     if (!this.panoViewer) return;
-  
+
     this.currentPano = null;
     this.#destroyPanoViewer();
-  
+
     document.querySelector("#map").classList.remove("pano-overlay");
     this.map.updateSize();
     this.map.getLayers().forEach((layer) => {
@@ -237,9 +284,9 @@ class Application {
         layer.getSource().getFeatures()[0].setGeometry(null);
       }
     });
-  
+
     this.#toggleLayoutControlVisibility(true);
-  
+
     document.title = this.appTitle;
   }
 
@@ -250,19 +297,34 @@ class Application {
   }
 
   #hookUpOpenLinks() {
-    document.querySelector("#open-in-gsv").addEventListener("click", (_) => { 
-      openInGsv(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition(), this.panoViewer.renderer.camera.fov);
+    document.querySelector("#open-in-gsv").addEventListener("click", (_) => {
+      openInGsv(
+        this.currentPano.lat,
+        this.currentPano.lon,
+        this.panoViewer.getPosition(),
+        this.panoViewer.renderer.camera.fov
+      );
     });
-  
-    document.querySelector("#open-in-apple-maps").addEventListener("click", (e) => { 
-      let url;
-      if (this.isRunningOnAppleDevice) {
-        url = generateAppleMapsLookAroundUrl(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition());
-      } else {
-        url = generateAppleMapsWebLookAroundUrl(this.currentPano.lat, this.currentPano.lon, this.panoViewer.getPosition());
-      }
-      window.open(url, "_blank");
-    });
+
+    document
+      .querySelector("#open-in-apple-maps")
+      .addEventListener("click", (e) => {
+        let url;
+        if (this.isRunningOnAppleDevice) {
+          url = generateAppleMapsLookAroundUrl(
+            this.currentPano.lat,
+            this.currentPano.lon,
+            this.panoViewer.getPosition()
+          );
+        } else {
+          url = generateAppleMapsWebLookAroundUrl(
+            this.currentPano.lat,
+            this.currentPano.lon,
+            this.panoViewer.getPosition()
+          );
+        }
+        window.open(url, "_blank");
+      });
   }
 
   async #updateMapMarker(pano) {
@@ -274,7 +336,7 @@ class Application {
           .setGeometry(new Point([pano.lon, pano.lat]));
       }
     });
-  
+
     this.map.getView().animate({
       center: [pano.lon, pano.lat],
       duration: 100,
@@ -290,31 +352,47 @@ class Application {
   }
 
   #toggleLayoutControlVisibility(isMapLayout) {
-    document.querySelector(".ol-overlaycontainer-stopevent").style.display = isMapLayout ? "block" : "none";
-    document.querySelector("#close-pano").style.display = isMapLayout ? "none" : "flex";
-    document.querySelector("#pano-info").style.display = isMapLayout ? "none" : "block";
-    document.querySelector("#sidebar-container").style.display = isMapLayout ? "flex" : "none";
-    document.querySelector("#color-legend").style.visibility = isMapLayout ? "visible" : "hidden";
+    document.querySelector(".ol-overlaycontainer-stopevent").style.display =
+      isMapLayout ? "block" : "none";
+    document.querySelector("#close-pano").style.display = isMapLayout
+      ? "none"
+      : "flex";
+    document.querySelector("#pano-info").style.display = isMapLayout
+      ? "none"
+      : "block";
+    document.querySelector("#sidebar-container").style.display = isMapLayout
+      ? "flex"
+      : "none";
+    document.querySelector("#color-legend").style.visibility = isMapLayout
+      ? "visible"
+      : "hidden";
   }
 
   #onHashChanged(_) {
     const params = parseHashParams();
-  
-    this.map.getView().setCenter([params.center.longitude, params.center.latitude]);
+
+    this.map
+      .getView()
+      .setCenter([params.center.longitude, params.center.latitude]);
     this.map.getView().setZoom(params.center.zoom);
-  
+
     if (!params.pano) {
       this.#closePanoViewer();
       return;
     }
-  
-    if (this.currentPano && approxEqual(params.pano.latitude, this.currentPano.lat)
-                         && approxEqual(params.pano.longitude, this.currentPano.lon)
-                         && params.pano.position) {
-          this.panoViewer.rotate(params.pano.position);
+
+    if (
+      this.currentPano &&
+      approxEqual(params.pano.latitude, this.currentPano.lat) &&
+      approxEqual(params.pano.longitude, this.currentPano.lon) &&
+      params.pano.position
+    ) {
+      this.panoViewer.rotate(params.pano.position);
     } else {
-      this.#fetchAndDisplayPanoAt(params.pano.latitude, params.pano.longitude)
-      .then(() => {
+      this.#fetchAndDisplayPanoAt(
+        params.pano.latitude,
+        params.pano.longitude
+      ).then(() => {
         if (params.pano.position) {
           this.panoViewer.rotate(params.pano.position);
         }
@@ -325,7 +403,7 @@ class Application {
   #initSidebar() {
     const sidebar = document.querySelector("#sidebar");
     const sidebarToggle = document.querySelector("#sidebar-toggle");
-  
+
     sidebarToggle.addEventListener("click", (_) => {
       if (!sidebar.style.display || sidebar.style.display === "none") {
         sidebar.style.display = "block";
@@ -337,22 +415,27 @@ class Application {
         sidebarToggle.classList.add("sidebar-toggle-closed");
       }
     });
-  
+
     this.#createSettingsControl();
   }
 
   #createSettingsControl() {
     this.settingsControl = new SettingsControl();
     document.addEventListener("settingChanged", (e) => {
-      if (e.setting[0] === "theme") { this.#setTheme(); }
-    })
+      if (e.setting[0] === "theme") {
+        this.#setTheme();
+      }
+    });
   }
-  
+
   #setTheme() {
     switch (settings.get("theme")) {
       case Theme.Automatic:
       default:
-        if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        if (
+          window.matchMedia &&
+          window.matchMedia("(prefers-color-scheme: dark)").matches
+        ) {
           document.documentElement.classList.remove("light");
           document.documentElement.classList.add("dark");
         } else {
@@ -372,10 +455,22 @@ class Application {
   }
 
   #writeShareLinkToClipboard() {
-    const position = this.panoViewer.getPosition();
-    const payload = encodeShareLinkPayload(this.currentPano.lat, this.currentPano.lon, position.yaw, position.pitch);
-    const link = `${document.location.protocol}//${document.location.host}${document.location.pathname}#s=${payload}`;
+    const link = this.#getShareLink(
+      `${document.location.protocol}//${document.location.host}${document.location.pathname}`
+    );
     navigator.clipboard.writeText(link);
+  }
+
+  #getShareLink(baseUrl) {
+    const position = this.panoViewer.getPosition();
+    const payload = encodeShareLinkPayload(
+      this.currentPano.lat,
+      this.currentPano.lon,
+      position.yaw,
+      position.pitch
+    );
+    const link = `${baseUrl}#s=${payload}`;
+    return link;
   }
 
   #takeScreenshotOfViewer() {

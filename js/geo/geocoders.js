@@ -29,7 +29,13 @@ export class NominatimReverseGeocoder {
 
     this.#lastCall = Date.now();
 
-    return this.#formatAddress(place.address);
+    return {
+      "formatted": this.#formatAddress(place.address),
+      "city": this.#getCity(place.address),
+      "country": place.address.country,
+      "country_code": place.address.country_code,
+      "administrative_area": place.address.state,
+    };
   }
 
   #formatAddress(address) {
@@ -60,6 +66,9 @@ export class NominatimReverseGeocoder {
     if (address.town) {
       town.push(address.town);
     }
+    if (!address.city && address.city_district) {
+      town.push(address.city_district);
+    }
     if (address.city) {
       town.push(address.city);
     }
@@ -76,6 +85,25 @@ export class NominatimReverseGeocoder {
     output.push(admin.join(", "));
 
     return output;
+  }
+
+  #getCity(address) {
+    if (address.city) {
+      return address.city;
+    }
+    if (!address.town && address.city_district) {
+      return address.city_district;
+    }
+    if (address.town) {
+      return address.town;
+    }
+    if (address.village) {
+      return address.village;
+    }
+    if (address.hamlet) {
+      return address.hamlet;
+    }
+    return "";
   }
 }
 
