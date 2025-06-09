@@ -55,8 +55,7 @@ export class TimeMachineControl {
 
     this.#timeMachineMenu.innerHTML = "";
     for (const pano of this.#alternativeDates) {
-      const locale = navigator.languages[0] ?? "en-GB";
-      const formattedDate = new Intl.DateTimeFormat(locale, {
+      const formattedDate = new Intl.DateTimeFormat(getUserLocale(), {
         dateStyle: "medium",
         timeStyle: "medium",
         timeZone: pano.timezone,
