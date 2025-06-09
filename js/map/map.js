@@ -272,6 +272,7 @@ class MapManager {
 
     this.#legendControl.updateLegend(filterSettings);
   }
+  
   #updateActiveCachedBlueLineLayer(useRasterTiles) {
     if (useRasterTiles) {
       rasterBlueLineLayer.setVisible(true);
