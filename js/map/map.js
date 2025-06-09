@@ -13,7 +13,7 @@ import { settings } from "../settings.js";
 import { isAppleMapsUrl, parseAppleMapsUrl } from "../util/url.js";
 import { ColorLegendControl } from "../ui/ColorLegendControl.js";
 
-import { useGeographic } from "ol/proj.js";
+import { useGeographic, transformExtent, transform } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
 import Map from "ol/Map.js";
 import View from "ol/View.js";
@@ -23,6 +23,7 @@ import Icon from "ol/style/Icon.js";
 import Feature from "ol/Feature.js";
 import VectorSource from "ol/source/Vector.js";
 import VectorLayer from "ol/layer/Vector.js";
+import { createOrUpdateFromCoordinates } from "ol/extent.js";
 
 import LayerSwitcher from "../external/ol-layerswitcher/ol-layerswitcher.js";
 import ContextMenu from "ol-contextmenu";
@@ -44,7 +45,7 @@ class MapManager {
   #googleRoadLayer;
   #baseLayers;
 
-  #cachedBlueLines;
+  #coverageOverlaysGroup;
   #overlays;
 
   constructor(config, filterControl, onAppleMapsLinkPasted) {
@@ -101,7 +102,58 @@ class MapManager {
   getMap() {
     return this.#map;
   }
+
+  getClosestPanoPosition(originalEvent, coordinate) {
+    const coordinateMercator = transform(coordinate, "EPSG:4326", "EPSG:3857");
+    const extent = this.#getExtentAroundPoint(50, originalEvent);
+    const mercatorExtent = transformExtent(extent, "EPSG:4326", "EPSG:3857");
+
+    const layers = vectorBlueLineLayer.getLayers();
+    for (const layer of layers.getArray()) {
+      if (layer.isVisible()) {
+        // get visible lines, then insert them into a VectorSource
+        // so we can call `getClosestFeatureToCoordinate` on them
+        const features = layer.getFeaturesInExtent(mercatorExtent);
+
+        if (features.length === 0) {
+          return null;
+        }
+        
+        // no idea why I need to do this
+        for (let i = 0; i < features.length; i++) {
+          features[i].id_ = i + 1;
+        }
+
+        var tempSource = new VectorSource();
+        tempSource.addFeatures(features);
+
+        const closestLine = tempSource.getClosestFeatureToCoordinate(coordinateMercator).getGeometry();
+        const closestPoint = closestLine.getClosestPoint(coordinateMercator);
+        const closestPointWgs84 = transform(closestPoint, "EPSG:3857", "EPSG:4326");
+
+        return closestPointWgs84;
+      }
+    }
+    return null;
+  }
   
+  #getExtentAroundPoint(diameter, mouseEvent) {
+    const radius = diameter / 2;
+
+    const rect = this.#map.getTargetElement().getBoundingClientRect();
+    const mouseX = mouseEvent.clientX - rect.left;
+    const mouseY = mouseEvent.clientY - rect.top;
+
+    const topLeftPixel = [mouseX - radius, mouseY - radius];
+    const bottomRightPixel = [mouseX + radius, mouseY + radius];
+
+    const topLeftCoord = this.#map.getCoordinateFromPixel(topLeftPixel);
+    const bottomRightCoord = this.#map.getCoordinateFromPixel(bottomRightPixel);
+
+    const extent = createOrUpdateFromCoordinates([topLeftCoord, bottomRightCoord]);
+    return extent;
+  }
+
   #setUpBaseLayers() {
     this.#appleRoad = new AppleTileLayer({
       title: "Apple Maps Road",
@@ -166,7 +218,7 @@ class MapManager {
   }
 
   #setUpOverlays() {
-    this.#cachedBlueLines = new LayerGroup({
+    this.#coverageOverlaysGroup = new LayerGroup({
       visible: true,
       title: `
       Apple Look Around cached blue lines<br>
@@ -179,7 +231,7 @@ class MapManager {
 
     this.#overlays = new LayerGroup({
       title: "Overlays",
-      layers: [lookaroundCoverage, this.#cachedBlueLines, googleStreetView]
+      layers: [lookaroundCoverage, this.#coverageOverlaysGroup, googleStreetView]
     });
   }
 
@@ -272,7 +324,7 @@ class MapManager {
 
     this.#legendControl.updateLegend(filterSettings);
   }
-  
+
   #updateActiveCachedBlueLineLayer(useRasterTiles) {
     if (useRasterTiles) {
       rasterBlueLineLayer.setVisible(true);

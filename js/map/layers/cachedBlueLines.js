@@ -13,7 +13,7 @@ import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ.js";
 import { createXYZ } from "ol/tilegrid";
 import TileLayer from "ol/layer/Tile.js";
-import { ImageTile } from "ol";
+import { Feature } from "ol";
 
 const OPACITY = 0.8;
 
@@ -90,7 +90,7 @@ function determineLineWidth(zoom) {
   }
 }
 
-class CachedBlueLinesSource extends VectorTile {
+class VectorCoverageSource extends VectorTile {
   constructor(options) {
     options = options || {};
     options.tileSize ??= 256;
@@ -102,7 +102,9 @@ class CachedBlueLinesSource extends VectorTile {
       zDirection: options.zDirection,
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
-      format: new MVT(),
+      format: new MVT({
+        featureClass: Feature,
+      }),
       tileGrid: createXYZ({
         minZoom: options.minZoom,
         maxZoom: options.maxZoom,
@@ -115,7 +117,7 @@ class CachedBlueLinesSource extends VectorTile {
   }
 }
 
-class CachedBlueLinesLayer extends VectorTileLayer {
+class VectorCoverageLayer extends VectorTileLayer {
   #filterSettings = new FilterSettings();
   #currentPolygonFilter = null;
   #coverageColorer = null;
@@ -128,7 +130,7 @@ class CachedBlueLinesLayer extends VectorTileLayer {
       opacity: OPACITY,
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
-      source: new CachedBlueLinesSource({
+      source: new VectorCoverageSource({
         minZoom: Constants.MIN_ZOOM-1,
         maxZoom: 14,
         tileSize: options.tileSize,
@@ -156,13 +158,13 @@ class CachedBlueLinesLayer extends VectorTileLayer {
   }
 }
 
-const blueLineLayerMain = new CachedBlueLinesLayer({
+const blueLineLayerMain = new VectorCoverageLayer({
   minZoom: Constants.MIN_ZOOM-1,
   maxZoom: 14,
 });
 // my static tiles end at z=14 and the layer that comes directly from apple
 // is displayed at z>=16. this is a workaround to stop z=15 from being blurry.
-const blueLineLayer15 = new CachedBlueLinesLayer({
+const blueLineLayer15 = new VectorCoverageLayer({
   minZoom: 14,
   maxZoom: 15,
 });
@@ -185,7 +187,7 @@ vectorBlueLineLayer.setCoverageColorer = (coverageColorer) => {
   blueLineLayer15.setCoverageColorer(coverageColorer);
 };
 
-class RasterBlueLineLayer extends TileLayer {
+class RasterCoverageLayer extends TileLayer {
   #filterSettings = new FilterSettings();
   #currentPolygonFilter;
 
@@ -219,6 +221,6 @@ class RasterBlueLineLayer extends TileLayer {
     }
   } 
 }
-const rasterBlueLineLayer = new RasterBlueLineLayer();
+const rasterBlueLineLayer = new RasterCoverageLayer();
 
 export { rasterBlueLineLayer, vectorBlueLineLayer };
