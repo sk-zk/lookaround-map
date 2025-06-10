@@ -102,40 +102,6 @@ class MapManager {
   getMap() {
     return this.#map;
   }
-
-  getClosestPanoPosition(originalEvent, coordinate) {
-    const coordinateMercator = transform(coordinate, "EPSG:4326", "EPSG:3857");
-    const extent = this.#getExtentAroundPoint(50, originalEvent);
-    const mercatorExtent = transformExtent(extent, "EPSG:4326", "EPSG:3857");
-
-    const layers = vectorBlueLineLayer.getLayers();
-    for (const layer of layers.getArray()) {
-      if (layer.isVisible()) {
-        // get visible lines, then insert them into a VectorSource
-        // so we can call `getClosestFeatureToCoordinate` on them
-        const features = layer.getFeaturesInExtent(mercatorExtent);
-
-        if (features.length === 0) {
-          return null;
-        }
-        
-        // no idea why I need to do this
-        for (let i = 0; i < features.length; i++) {
-          features[i].id_ = i + 1;
-        }
-
-        var tempSource = new VectorSource();
-        tempSource.addFeatures(features);
-
-        const closestLine = tempSource.getClosestFeatureToCoordinate(coordinateMercator).getGeometry();
-        const closestPoint = closestLine.getClosestPoint(coordinateMercator);
-        const closestPointWgs84 = transform(closestPoint, "EPSG:3857", "EPSG:4326");
-
-        return closestPointWgs84;
-      }
-    }
-    return null;
-  }
   
   #getExtentAroundPoint(diameter, mouseEvent) {
     const radius = diameter / 2;

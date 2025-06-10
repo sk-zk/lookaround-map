@@ -159,13 +159,9 @@ class Application {
     this.map.on("click", async (e) => {
       const clickCoordinates = this.map.getEventCoordinate(e.originalEvent);
       clickCoordinates[0] = wrapLon(clickCoordinates[0]);
-      let closestPoint = mapMgr.getClosestPanoPosition(e.originalEvent, clickCoordinates);
-      if (!closestPoint) {
-        closestPoint = clickCoordinates;
-      }
       await this.#fetchAndDisplayPanoAt(
-        closestPoint[1],
-        closestPoint[0]
+        clickCoordinates[1],
+        clickCoordinates[0]
       );
     });
   }

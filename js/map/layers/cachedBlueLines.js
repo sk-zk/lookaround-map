@@ -103,7 +103,7 @@ class VectorCoverageSource extends VectorTile {
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
       format: new MVT({
-        featureClass: Feature,
+        //featureClass: Feature,
       }),
       tileGrid: createXYZ({
         minZoom: options.minZoom,
