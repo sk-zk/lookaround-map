@@ -15,6 +15,7 @@
     "fflate": "^0.7.4",
     "google-protobuf": "^3.21.2",
     "js-base64": "^3.7.5",
+    "libheif-js": "^1.18.2",
     "ol": "^10.5.0",
     "ol-contextmenu": "^5.5.0",
     "ol-ext": "^4.0.31",
@@ -23,6 +24,7 @@
     "rollup": "^2.79.2",
     "rollup-plugin-import-css": "^3.5.8",
     "rollup-plugin-terser": "^7.0.2",
+    "three": "^0.177.0",
     "tiny-debounce": "^0.1.1",
     "tslib": "^2.5.0",
     "typescript": "^4.9.4"

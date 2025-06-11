@@ -147,7 +147,7 @@
               <input type="radio" id="spawn-facing-north" name="initial-orientation"><label for="spawn-facing-north">North</label><br>
               <input type="radio" id="spawn-facing-road" name="initial-orientation"><label for="spawn-facing-road">Direction of travel</label>
             </p>
-            <input type="checkbox" id="enable-hevc" name="enable-hevc"><label for="enable-hevc">Load panoramas as HEVC if&nbsp;supported</label><br>
+            <input type="checkbox" id="decode-clientside" name="decode-clientside"><label for="decode-clientside">Decode images clientside</label><br>
           </div>
           <p></p>
           <div class="sidebar-control-group">
@@ -161,6 +161,11 @@
           <label class="sidebar-tab-label tab-updates-bg" for="tab-updates" title="What's new?"></label>
           <div class="sidebar-panel sidebar-panel-updates" tabindex="1">
             <h2>What's new?</h2>
+            <h3>2025-06-11</h3>
+            <div>Panoramas are now decoded in the client by default. This should take some load off the public instance
+              of the server, which has been struggling to handle the recent increase in traffic. If this is too slow
+              on your device, you can revert to the server-side JPEG conversion in the settings.
+            </div>
             <h3>2025-04-19</h3>
             <div>The metadata box now displays an icon of the camera model which the current panorama was captured with.</div>
             <h3>2025-02-02</h3>
@@ -173,15 +178,15 @@
             <h3>2024-09-14</h3>
             <div>You can now view the last modification date of coverage tiles.
             </div>
-            <h3>2024-05-10</h3>
-            <div>Keyboard movement is now available! Use the arrow keys to move to the closest panorama
-              in that direction.
-            </div>
-            <h3>2024-05-07</h3>
-            <div>Added the ability to enable the muted emphasis versions of Apple Maps base layers.</div>
             <p></p>
             <details>
               <summary>show older</summary>
+              <h3>2024-05-10</h3>
+              <div>Keyboard movement is now available! Use the arrow keys to move to the closest panorama
+                in that direction.
+              </div>
+              <h3>2024-05-07</h3>
+              <div>Added the ability to enable the muted emphasis versions of Apple Maps base layers.</div>
               <h3>2024-03-02</h3>
               <div>HEVC in Firefox on Windows is now working properly. (There is, however, a bug in the underlying
                 WMF codec causing it to decode the image with the wrong color profile, like my

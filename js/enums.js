@@ -49,8 +49,6 @@ export const ImageFormat = Object.freeze({
 	JPEG: 0, 
   /** The viewer will request HEIC. */
 	HEIC: 1,
-  /** The viewer will request HEVC Main Still Picture in an MP4 container. */
-  HEVC: 2,
 });
 
 /**

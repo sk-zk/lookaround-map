@@ -5,7 +5,7 @@ import { CONSTANTS, utils, AbstractAdapter } from "@photo-sphere-viewer/core";
 
 import { ScreenFrustum } from "./ScreenFrustum.js";
 import { Face, ImageFormat } from "../enums.js";
-import { getFirstFrameOfVideo } from "../util/media.js";
+import { isHeicSupported } from "../util/media.js";
 
 const NUM_FACES = 6;
 
@@ -24,9 +24,12 @@ export class LookaroundAdapter extends AbstractAdapter {
 
     this.imageFormat = psv.config.panoData.imageFormat;
     this.apiBaseUrl = psv.config.panoData.apiBaseUrl;
-    this.navigationCrossfadeDisablesPanning = psv.config.panoData.navigationCrossfadeDisablesPanning;
-    this.navigationCrossfadeDuration = psv.config.panoData.navigationCrossfadeDuration;
-    this.upgradeCrossfadeDuration = psv.config.panoData.upgradeCrossfadeDuration;
+    this.navigationCrossfadeDisablesPanning =
+      psv.config.panoData.navigationCrossfadeDisablesPanning;
+    this.navigationCrossfadeDuration =
+      psv.config.panoData.navigationCrossfadeDuration;
+    this.upgradeCrossfadeDuration =
+      psv.config.panoData.upgradeCrossfadeDuration;
     this.panorama = psv.config.panorama.panorama;
     this.url = psv.config.panorama.panorama.url;
     this.previousFovH = this.panorama.cameraMetadata[0].fovH;
@@ -41,6 +44,9 @@ export class LookaroundAdapter extends AbstractAdapter {
     this.dynamicLoadingEnabled = true;
 
     this.timestamp = 0;
+
+    this.hasNativeHeicSupport = null;
+    this.heicWorker = new Worker("/static/dist/heicWorker.js");
   }
 
   /**
@@ -73,7 +79,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     for (let i = 0; i < NUM_FACES; i++) {
       promises.push(this.#loadOneTexture(startZoom, i, progress));
     }
-    return Promise.all(promises).then((texture) => { 
+    return Promise.all(promises).then((texture) => {
       // if this pano has different camera paremeters from the last one, the mesh needs to be rebuilt.
       this.#recreateMeshIfNecessary();
       return { panorama: panoramaMetadata, texture };
@@ -81,53 +87,67 @@ export class LookaroundAdapter extends AbstractAdapter {
   }
 
   async #loadOneTexture(zoom, faceIdx, progress = null) {
-    let faceUrl = `${this.apiBaseUrl}${this.url}${zoom}/${faceIdx}/`;
-    if (this.imageFormat === ImageFormat.HEIC) {
-      faceUrl += "?format=heic";
-    } else if (this.imageFormat === ImageFormat.HEVC) {
-      faceUrl += "?format=hevc";
+    if (this.hasNativeHeicSupport === null) {
+      this.hasNativeHeicSupport = await isHeicSupported();
     }
-    // otherwise, load JPEG; no parameter necessary
 
-    return this.psv.textureLoader
-      .loadFile(faceUrl, (p) => {
-        if (progress) {
-          progress[faceIdx] = p;
-          this.psv.loader.setProgress(
-            utils.sum(progress) / 4
-          );
-        }
-      })
-      .then(async (file) => {
-        // if HEVC is requested but heic2rgb is not installed in the backend,
-        // JPEG will be returned instead, so let's double check what we
-        // actually got
-        let receivedFormat = this.imageFormat;
-        if (this.imageFormat === ImageFormat.HEVC) {
-          const bytes = new Uint8Array(await file.slice(0, 2).arrayBuffer());
-          if (bytes[0] === 0xff && bytes[1] === 0xd8) {
-            receivedFormat = ImageFormat.JPEG;
+    let faceUrl = `${this.apiBaseUrl}${this.url}${zoom}/${faceIdx}/`;
+
+    if (this.imageFormat === ImageFormat.JPEG || this.hasNativeHeicSupport) {
+      if (this.hasNativeHeicSupport) {
+        faceUrl += "?format=heic";
+      }
+      return this.psv.textureLoader
+        .loadFile(faceUrl, (p) => {
+          if (progress) {
+            progress[faceIdx] = p;
+            this.psv.loader.setProgress(
+              utils.sum(progress) / 4
+            );
           }
-        }
-
-        let texture = null;
-        if (receivedFormat === ImageFormat.HEVC) {
-          const objectUrl = URL.createObjectURL(file);
-          const frame = await getFirstFrameOfVideo(objectUrl, "video/mp4");
-          texture = utils.createTexture(frame);
-          URL.revokeObjectURL(objectUrl);
-        } else {
+        })
+        .then(async (file) => {
           const img = await this.psv.textureLoader.blobToImage(file);
-          texture = utils.createTexture(img);
-        }
-
-        texture.userData = { zoom: zoom, url: this.url };
-
-        return texture;
-      });
+          const texture = utils.createTexture(img);
+          texture.userData = { zoom: zoom, url: this.url };
+          return texture;
+        });
+    } else {
+      const data = await this.#fetchHeicAsRgbArray(faceUrl);
+  
+      const canvas = document.createElement("canvas");
+      canvas.width = data.width;
+      canvas.height = data.height;
+      const context = canvas.getContext("2d");
+      const imageData = new ImageData(data.buffer, canvas.width, canvas.height);
+      context.putImageData(imageData, 0, 0);
+  
+      const texture = utils.createTexture(canvas);
+      texture.userData = { zoom: zoom, url: this.url };
+      this.psv.loader.setProgress(1); // TODO
+      return texture;
+    }
   }
 
-  #recreateMeshIfNecessary() {   
+  async #fetchHeicAsRgbArray(faceUrl) {
+    return new Promise((res, rej) => {
+      const channel = new MessageChannel();
+
+      channel.port1.onmessage = ({ data }) => {
+        channel.port1.close();
+        if (data.error) {
+          rej(data.error);
+        } else {
+          res(data.data);
+        }
+      };
+
+      const data = { url: faceUrl };
+      this.heicWorker.postMessage(data, [channel.port2]);
+    });
+  }
+
+  #recreateMeshIfNecessary() {
     const fovH = this.panorama.cameraMetadata[0].fovH;
     if (this.previousFovH !== fovH) {
       const mesh = this.createMesh();
@@ -156,20 +176,32 @@ export class LookaroundAdapter extends AbstractAdapter {
 
     for (let i = 0; i < NUM_FACES; i++) {
       params.push({
-        phiStart: this.panorama.cameraMetadata[i].yaw - (this.panorama.cameraMetadata[i].fovS / 2) - (Math.PI / 2),
+        phiStart:
+          this.panorama.cameraMetadata[i].yaw -
+          this.panorama.cameraMetadata[i].fovS / 2 -
+          Math.PI / 2,
         phiLength: this.panorama.cameraMetadata[i].fovS,
-        thetaStart: (Math.PI / 2) - (this.panorama.cameraMetadata[i].fovH / 2) - this.panorama.cameraMetadata[i].cy,
+        thetaStart:
+          Math.PI / 2 -
+          this.panorama.cameraMetadata[i].fovH / 2 -
+          this.panorama.cameraMetadata[i].cy,
         thetaLength: this.panorama.cameraMetadata[i].fovH,
       });
-      
+
       if (i > 0 && i < Face.Top) {
-        let overlap = params[i-1].phiStart + params[i-1].phiLength - params[i].phiStart;
-        params[i-1].phiLength -= overlap;
+        let overlap =
+          params[i - 1].phiStart + params[i - 1].phiLength - params[i].phiStart;
+        params[i - 1].phiLength -= overlap;
       }
 
       const faceGeom = new SphereGeometry(
-        radius, 24, 32, 
-        params[i].phiStart, params[i].phiLength, params[i].thetaStart, params[i].thetaLength
+        radius,
+        24,
+        32,
+        params[i].phiStart,
+        params[i].phiLength,
+        params[i].thetaStart,
+        params[i].thetaLength
       ).scale(-1, 1, 1);
 
       if (i === Face.Top || i === Face.Bottom) {
@@ -182,10 +214,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     }
 
     const mergedGeometry = mergeGeometries(geometries, true);
-    const mesh = new Mesh(
-      mergedGeometry,
-      this.#createPanoFaceMaterials(),
-    );
+    const mesh = new Mesh(mergedGeometry, this.#createPanoFaceMaterials());
     this.mesh = mesh;
     return mesh;
   }
@@ -202,7 +231,7 @@ export class LookaroundAdapter extends AbstractAdapter {
       }
     }
     // immediately replace the low quality tiles from intial load
-    this.refresh(); 
+    this.refresh();
   }
 
   /**
@@ -222,7 +251,7 @@ export class LookaroundAdapter extends AbstractAdapter {
     textureData.texture?.forEach((texture) => texture.dispose());
   }
 
-  disposeMesh(mesh) { }
+  disposeMesh(mesh) {}
 
   /**
    * @private
@@ -255,20 +284,21 @@ export class LookaroundAdapter extends AbstractAdapter {
           mat.uniforms.mixAmount.value = 0;
           mat.uniforms.mixAmount.elapsed = 0;
         } else {
-          mat.uniforms.mixAmount.value = 1 - (mat.uniforms.mixAmount.elapsed / this.upgradeCrossfadeDuration);
+          mat.uniforms.mixAmount.value =
+            1 - mat.uniforms.mixAmount.elapsed / this.upgradeCrossfadeDuration;
           mat.uniforms.mixAmount.elapsed += elapsed;
         }
       }
     }
 
     if (needsUpdate) this.psv.needsUpdate();
-   }
+  }
 
   refresh() {
     if (!this.mesh) return;
     if (this.mesh.material.length === 0) return;
     if (!this.dynamicLoadingEnabled) return;
-    
+
     const visibleFaces = this.#getVisibleFaces();
     // TODO finetune this
     if (this.psv.renderer.state.vFov < 55) {
@@ -347,9 +377,9 @@ export class LookaroundAdapter extends AbstractAdapter {
         }
       `,
       uniforms: {
-        "texture1": { value: null, userData: {} },
-        "texture2": { value: null, userData: {} },
-        "mixAmount": { value: 0.0, elapsed: 0.0, active: false },
+        texture1: { value: null, userData: {} },
+        texture2: { value: null, userData: {} },
+        mixAmount: { value: 0.0, elapsed: 0.0, active: false },
       },
       glslVersion: GLSL3,
     });
@@ -381,7 +411,7 @@ export class LookaroundAdapter extends AbstractAdapter {
 
     const psvCanvas = document.querySelector(".psv-canvas");
     if (!psvCanvas) return;
-   
+
     const crossfadeCanvas = document.querySelector("#crossfade-canvas");
     crossfadeCanvas.width = psvCanvas.clientWidth;
     crossfadeCanvas.height = psvCanvas.clientHeight;
@@ -389,7 +419,13 @@ export class LookaroundAdapter extends AbstractAdapter {
     const ctx = crossfadeCanvas.getContext("2d");
     ctx.clearRect(0, 0, crossfadeCanvas.width, crossfadeCanvas.height);
     crossfadeCanvas.style.opacity = 1;
-    ctx.drawImage(psvCanvas, 0, 0, crossfadeCanvas.width, crossfadeCanvas.height);
+    ctx.drawImage(
+      psvCanvas,
+      0,
+      0,
+      crossfadeCanvas.width,
+      crossfadeCanvas.height
+    );
     const prevMoveSpeed = this.psv.config.moveSpeed;
     if (this.navigationCrossfadeDisablesPanning) {
       this.psv.setOption("moveSpeed", 0);
@@ -402,7 +438,8 @@ export class LookaroundAdapter extends AbstractAdapter {
         this.psv.setOption("moveSpeed", prevMoveSpeed);
         return clearInterval(interval);
       }
-      crossfadeCanvas.style.opacity = 1 - (elapsed / this.navigationCrossfadeDuration);
+      crossfadeCanvas.style.opacity =
+        1 - elapsed / this.navigationCrossfadeDuration;
     }, 16.6666);
   }
 }

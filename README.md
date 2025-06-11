@@ -28,15 +28,17 @@ flask run
 ```
 
 ### Decoding
-For browsers which don't natively support HEIC (which is every browser except Safari 17 or higher), the panorama faces must be converted to a supported format before sending them to the client.
-To do so, one of these three libraries can be used. Simply install the one you like and it will be selected automatically.
+In any browser which doesn't natively support HEIC (which is every browser except Safari 17+), the panorama faces
+must be decoded by the app itself. By default, this is done clientside using libheif-js, but a serverside JPEG conversion 
+is provided as a fallback. For this to work, one of these three libraries must be installed. Simply install the one
+you like and it will be selected automatically.
 
 #1: By default, [pillow-heif](https://github.com/bigcat88/pillow_heif) will be used to decode images. Supports Linux, Mac and Windows.
 
 #2: [pyheif](https://github.com/carsales/pyheif) used to be faster than pillow-heif and is supported for this reason. Supports Linux and Mac.
 
-#3: However, **the fastest option** (that I'm aware of) is my own [heic2rgb](https://github.com/sk-zk/heic2rgb/), which is noticeably faster than the previous two. Supports Linux and Windows.
-heic2rgb can also remux the HEVC bitstream of the image to MP4 for browsers which don't support HEIC, but do support HEVC.
+#3: However, the fastest option (that I'm aware of) is my own [heic2rgb](https://github.com/sk-zk/heic2rgb/), 
+which is noticeably faster than the previous two. Supports Linux and Windows.
 
 ## TODO
 - [ ] Decode the official blue line layer

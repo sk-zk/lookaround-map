@@ -6,9 +6,7 @@ import { Api } from "../Api.js";
 import { LookaroundAdapter } from "./LookaroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
 import { distanceBetween, DEG2RAD } from "../geo/geo.js";
-import { isHeicSupported, isHevcSupported } from "../util/media.js";
-import { InitialOrientation, ImageFormat, AdditionalMetadata } from "../enums.js";
-import { settings } from "../settings.js";
+import { InitialOrientation, AdditionalMetadata, ImageFormat } from "../enums.js";
 
 import "@photo-sphere-viewer/core/index.css";
 import "@photo-sphere-viewer/markers-plugin/index.css";
@@ -26,24 +24,13 @@ export async function createPanoViewer(config) {
   config.defaultZoomLevel ??= 20;
   config.minFov ??= 10;
   config.maxFov ??= 100;
+  config.imageFormat ??= ImageFormat.HEIC;
   const plugins = configurePlugins(config);
   const defaultYaw = getHeading(config.initialOrientation, config.initialPano.heading);
 
   if (config.canMoveWithKeyboard) {
     config.container.tabIndex = "-1";
     config.container.focus();
-  }
-
-  let imageFormat;
-  if (await isHeicSupported()) {
-    imageFormat = ImageFormat.HEIC;
-    console.log("fetching faces as HEIC");
-  } else if (isHevcSupported() && settings.get("enableHevc")) {
-    imageFormat = ImageFormat.HEVC;
-    console.log("fetching faces as HEVC");
-  } else {
-    imageFormat = ImageFormat.JPEG;
-    console.log("fetching faces as JPEG");
   }
 
   const viewer = new Viewer({
@@ -55,10 +42,10 @@ export async function createPanoViewer(config) {
     },
     panoData: { 
       apiBaseUrl: apiBaseUrl,
-      imageFormat: imageFormat,
       navigationCrossfadeDisablesPanning: config.navigationCrossfadeDisablesPanning,
       navigationCrossfadeDuration: config.navigationCrossfadeDuration,
-      upgradeCrossfadeDuration: config.upgradeCrossfadeDuration
+      upgradeCrossfadeDuration: config.upgradeCrossfadeDuration,
+      imageFormat: config.imageFormat,
     },
     minFov: config.minFov,
     maxFov: config.maxFov,

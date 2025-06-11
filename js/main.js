@@ -3,7 +3,7 @@ import { Authenticator } from "./util/Authenticator.js";
 import { MapManager } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
 import { wrapLon } from "./geo/geo.js";
-import { Theme, AdditionalMetadata } from "./enums.js";
+import { Theme, AdditionalMetadata, ImageFormat } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
 import { showNotificationTooltip, isAppleDevice, approxEqual } from "./util/misc.js";
@@ -196,11 +196,25 @@ class Application {
 
   async #initPanoViewer(pano) {
     const container = document.querySelector("#pano");
+
+    let imageFormat;
+    const decodeClientside = settings.get("decodeClientside");
+    if (decodeClientside === null || decodeClientside === undefined) {
+      imageFormat = ImageFormat.HEIC;
+    }
+    else if (decodeClientside) {
+      imageFormat = ImageFormat.HEIC;
+    }
+    else {
+      imageFormat = ImageFormat.JPEG;
+    }
+
     this.panoViewer = await createPanoViewer({
       container: container,
       initialPano: pano,
       initialOrientation: settings.get("initialOrientation"),
       canMoveWithKeyboard: true,
+      imageFormat: imageFormat,
     });
 
     this.panoViewer.plugins.movement.addEventListener("moved", async (e) => {

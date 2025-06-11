@@ -19,7 +19,7 @@ class Settings {
       labelsOnTop: true,
       theme: Theme.Automatic,
       initialOrientation: InitialOrientation.North,
-      enableHevc: true,
+      decodeClientside: true,
       useMuted: false,
       showTileModifiedDate: false,
     };

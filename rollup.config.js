@@ -39,6 +39,19 @@ export default [
         format: 'es',
         plugins: [terser(terserConfig)]
     },
-    plugins: [css({output: "viewer.css"}), nodeResolve()]
+    plugins: [css({output: "viewer.css"}), nodeResolve(), commonjs()]
+  },
+  {
+    input: 'js/viewer/heicWorker.js',
+    watch: {
+      include: 'js/viewer/heicWorker.js',
+      clearScreen: false
+    },
+    output: {
+        file: 'static/dist/heicWorker.js',
+        format: 'es',
+        plugins: [terser(terserConfig)]
+    },
+    plugins: [nodeResolve(), commonjs()]
   }
 ];
