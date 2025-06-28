@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import { interpolateTurbo } from "d3-scale-chromatic";
 
 const earliestDate = Math.floor(new Date("2018-06-01").getTime());
-const latestDate =   Math.floor(new Date("2025-04-01").getTime());
+const latestDate =   Math.floor(new Date("2025-06-01").getTime());
 
 const carLineColor = "rgba(26, 159, 176, 1)";
 const trekkerLineColor = "rgba(173, 140, 191, 1)";
