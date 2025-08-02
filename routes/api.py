@@ -5,7 +5,7 @@ import importlib
 import io
 import math
 
-from flask import Blueprint, abort, jsonify, request, send_file
+from flask import Blueprint, abort, jsonify, request, send_file, current_app
 from flask_cors import cross_origin
 import numpy as np
 from PIL import Image
@@ -20,6 +20,7 @@ import geo
 from config import config
 from lookaround.panorama import CoverageTile
 from misc.util import to_bool, panos_to_dicts, AdditionalMetadata
+from limiter import limiter
 
 
 def is_package_installed(package_name):
@@ -43,7 +44,6 @@ movement_session = requests.session()
 map_session = requests.session()
 addr_session = requests.session()
 auth = Authenticator()
-
 
 use_heic2rgb = is_package_installed("heic2rgb")
 use_pyheif = is_package_installed("pyheif")
@@ -72,6 +72,7 @@ def relay_coverage_tile(x, y):
 
 @api.route("/closest")
 @cross_origin()
+@limiter.limit("5/second")
 def closest():
     """
     Retrieves the closest panoramas to a given point from the Look Around API.
@@ -116,6 +117,7 @@ def closest():
     return jsonify(panos_to_dicts([x[0] for x in panos], additional_metadata))
 
 
+@limiter.limit("2/second")
 @api.route("/address")
 def address():
     lat = request.args.get("lat", default=None, type=float)

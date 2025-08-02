@@ -1,15 +1,18 @@
+import sys
+import mimetypes
+
 from flask import Flask, render_template, request, redirect, send_from_directory
 from flask_cors import CORS
 from flask_compress import Compress
-import mimetypes
+
 import pillow_heif
-import sys
 
 sys.path.append("lookaround")
 
 from routes.api import api
 from config import config
 from misc.util import load_ip_blacklist
+from limiter import limiter
 
 
 def create_app():
@@ -33,12 +36,14 @@ def create_app():
     mimetypes.add_type('text/javascript', '.js')
     pillow_heif.register_heif_opener()
 
+    limiter.init_app(app)
+
     app.register_blueprint(api)
 
     @app.route("/")
     def index():
         return render_template('index.html')
-    
+
     @app.route("/apple-touch-icon.png")
     def apple_touch_icon():
         return send_from_directory("static/favicons", "apple-touch-icon.png")
