@@ -2,7 +2,7 @@
 
 **lookaround-map** is a web app for viewing Apple Look Around panoramas on any platform, using reverse-engineered requests to Apple's internal Maps API.
 
-*Please don't make automated requests against prod.* Check if my Python library [streetlevel](https://github.com/sk-zk/streetlevel) satisfies your usecase, and if not, set up a local instance of the server to make requests against instead.
+In light of recent events, I'm gonna have to put it in big bold letters again: **Do not make automated requests against the public instance. The server is not equipped to handle the volume of requests you are producing, and you are degrading the service for everybody else.** Check if my Python library [streetlevel](https://github.com/sk-zk/streetlevel) satisfies your usecase, and if not, set up a local instance of the server to make requests against instead.
 
 ## Features
 * View panoramas in any modern browser, on any device
