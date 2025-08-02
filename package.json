@@ -5,9 +5,9 @@
   "type": "module",
   "main": "rollup.config.js",
   "dependencies": {
-    "@photo-sphere-viewer/compass-plugin": "^5.13.2",
-    "@photo-sphere-viewer/core": "^5.13.2",
-    "@photo-sphere-viewer/markers-plugin": "^5.13.2",
+    "@photo-sphere-viewer/compass-plugin": "^5.13.4",
+    "@photo-sphere-viewer/core": "^5.13.4",
+    "@photo-sphere-viewer/markers-plugin": "^5.13.4",
     "@rollup/plugin-commonjs": "^24.1.0",
     "@rollup/plugin-typescript": "^11.1.6",
     "d3": "^7.9.0",
