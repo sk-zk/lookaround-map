@@ -3,7 +3,7 @@ Flask~=3.1.1
 flask_compress~=1.18
 flask_cors~=6.0.1
 flask_limiter~=3.12
-numpy~=2.3.2
+numpy
 Pillow~=11.3.0
 pillow_heif~=0.21.0
 pycryptodome~=3.20.0
@@ -11,6 +11,6 @@ pyheif~=0.8.0
 pyliblzfse~=0.4.1
 pyproj~=3.6.1
 Requests~=2.32.4
-scipy~=1.16.1
+scipy
 simplejpeg~=1.8.2
 timezonefinder~=7.0.1
