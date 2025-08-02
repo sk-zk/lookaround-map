@@ -4,7 +4,7 @@
 # The larger the radius, the more tiles have to be downloaded.
 CLOSEST_MAX_RADIUS = 100
 
-# JPEG quality of the relayed panorama faces.
+# JPEG quality of the relayed panorama faces if conversion to JPEG is requested.
 JPEG_QUALITY = 85
 
 # Configures the IP blacklist.
