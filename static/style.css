@@ -633,3 +633,7 @@ input:checked + .sidebar-tab-label + .sidebar-panel {
   height: 25px;
   font-weight: bold;
 }
+
+.psv-canvas-container {
+  user-select: none !important;
+}
