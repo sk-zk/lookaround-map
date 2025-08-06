@@ -5,6 +5,8 @@ from flask import Flask, render_template, request, redirect, send_from_directory
 from flask_cors import CORS
 from flask_compress import Compress
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 import pillow_heif
 
 sys.path.append("lookaround")
@@ -19,6 +21,9 @@ def create_app():
     ip_blacklist = load_ip_blacklist()
 
     app = Flask(__name__)
+
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
+
     CORS(app, resources={r"/static/*": {"origins": "*"}})
 
     app.config["COMPRESS_MIMETYPES"] = [
