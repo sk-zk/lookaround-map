@@ -8,4 +8,5 @@ limiter = Limiter(
     storage_uri=_storage_uri,
     storage_options={"socket_connect_timeout": 30},
     strategy="fixed-window",
+    meta_limits=["1/day"],
 )
