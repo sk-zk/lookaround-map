@@ -117,7 +117,7 @@ def closest():
     return jsonify(panos_to_dicts([x[0] for x in panos], additional_metadata))
 
 
-@limiter.limit("2/second")
+@limiter.limit("3/second")
 @api.route("/address")
 def address():
     lat = request.args.get("lat", default=None, type=float)
