@@ -9,8 +9,9 @@ pillow_heif~=0.21.0
 pycryptodome~=3.20.0
 pyheif~=0.8.0
 pyliblzfse~=0.4.1
-pyproj~=3.6.1
+pyproj~=3.7.2
 Requests~=2.32.4
 scipy
 simplejpeg~=1.8.2
 timezonefinder~=7.0.1
+protobuf~=4.21.12
