@@ -8,7 +8,7 @@ import LayerGroup from "ol/layer/Group.js";
 const pixelRatio = getDevicePixelRatio();
 
 const openStreetMap = new TileLayer({
-  title: "OpenStreetMap (Carto)",
+  title: "OpenStreetMap (osm-carto)",
   type: "base",
   visible: false,
   source: new XYZ({
