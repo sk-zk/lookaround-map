@@ -5,6 +5,7 @@ import TileLayer from "ol/layer/Tile.js";
 import XYZ from "ol/source/XYZ.js";
 
 const auth = new Authenticator();
+const pixelRatio = getDevicePixelRatio();
 
 async function tileLoadFunction(imageTile, src) {
   imageTile.getImage().src = await auth.authenticateUrl(src);
@@ -59,7 +60,6 @@ class AppleTileSource extends XYZ {
     opts ??= {};
     opts.tileType ??= AppleMapsTileType.Road;
     opts.lang ??= "en";
-    const pixelRatio = getDevicePixelRatio();
 
     super({
       maxZoom: 20,
@@ -75,7 +75,13 @@ class AppleTileSource extends XYZ {
 
   setEmphasis(emphasis) {
     this.opts.emphasis = emphasis;
-    this.setUrl(generateTileUrl(this.opts, getDevicePixelRatio()))
+    this.setUrl(generateTileUrl(this.opts, pixelRatio))
+    this.changed();
+  }
+
+  setLanguage(lang) {
+    this.opts.lang = lang;
+    this.setUrl(generateTileUrl(this.opts, pixelRatio))
     this.changed();
   }
 }
@@ -128,6 +134,10 @@ class AppleTileLayer extends TileLayer {
       superOpts.visible = opts.visible;
     }
     super(superOpts);
+  }
+
+    setLanguage(lang) {
+      this.getSource().setLanguage(lang);
   }
 }
 

@@ -5,7 +5,7 @@ import { openStreetMap, cartoDarkMatter, cartoPositron, cartoVoyager } from "./l
 import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
 import { Constants } from "./Constants.js";
 import { wrapLon } from "../geo/geo.js";
-import { Theme } from "../enums.js";
+import { DataLang, Theme } from "../enums.js";
 import { getUserLocale } from "../util/misc.js";
 import { GeolocationButton } from "./GeolocationButton.js";
 import { CoverageColorer } from "./layers/colors.js";
@@ -13,7 +13,7 @@ import { settings } from "../settings.js";
 import { isAppleMapsUrl, parseAppleMapsUrl } from "../util/url.js";
 import { ColorLegendControl } from "../ui/ColorLegendControl.js";
 
-import { useGeographic, transformExtent, transform } from "ol/proj.js";
+import { useGeographic } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
 import Map from "ol/Map.js";
 import View from "ol/View.js";
@@ -23,7 +23,6 @@ import Icon from "ol/style/Icon.js";
 import Feature from "ol/Feature.js";
 import VectorSource from "ol/source/Vector.js";
 import VectorLayer from "ol/layer/Vector.js";
-import { createOrUpdateFromCoordinates } from "ol/extent.js";
 
 import LayerSwitcher from "../external/ol-layerswitcher/ol-layerswitcher.js";
 import ContextMenu from "ol-contextmenu";
@@ -35,7 +34,6 @@ class MapManager {
   #filterControl;
   #coverageColorer;
   #legendControl;
-  #languageTag;
 
   #appleRoad;
   #appleRoadDark;
@@ -53,7 +51,6 @@ class MapManager {
 
     useGeographic();
 
-    this.#languageTag = getUserLocale();
     this.#setUpBaseLayers();
     this.#setUpOverlays();
   
@@ -96,41 +93,42 @@ class MapManager {
       else if (e.setting[0] == "showTileModifiedDate") {
         lookaroundCoverage.getLayers().forEach((l) => l.getSource().refresh());
       }
+      else if (e.setting[0] == "dataLang") {
+        let lang = e.setting[1];
+        if (lang === DataLang.Default) {
+          lang = getUserLocale();
+        }
+
+        const layers = this.#baseLayers.getLayers();
+        layers.forEach((l) => {
+          if (l.setLanguage) {
+            l.setLanguage(lang);
+          }
+        });
+      }
     })
   }
 
   getMap() {
     return this.#map;
-  }
-  
-  #getExtentAroundPoint(diameter, mouseEvent) {
-    const radius = diameter / 2;
-
-    const rect = this.#map.getTargetElement().getBoundingClientRect();
-    const mouseX = mouseEvent.clientX - rect.left;
-    const mouseY = mouseEvent.clientY - rect.top;
-
-    const topLeftPixel = [mouseX - radius, mouseY - radius];
-    const bottomRightPixel = [mouseX + radius, mouseY + radius];
-
-    const topLeftCoord = this.#map.getCoordinateFromPixel(topLeftPixel);
-    const bottomRightCoord = this.#map.getCoordinateFromPixel(bottomRightPixel);
-
-    const extent = createOrUpdateFromCoordinates([topLeftCoord, bottomRightCoord]);
-    return extent;
-  }
+  } 
 
   #setUpBaseLayers() {
+    let lang = settings.get("dataLang");
+    if (lang === DataLang.Default) {
+      lang = getUserLocale();
+    }
+
     this.#appleRoad = new AppleTileLayer({
       title: "Apple Maps Road",
       layerType: AppleMapsLayerType.Road,
-      lang: this.#languageTag,
+      lang: lang,
     });
     this.#appleRoad.set("settingsName", "appleRoad");
     this.#appleRoadDark = new AppleTileLayer({
       title: "Apple Maps Road (Dark)",
       layerType: AppleMapsLayerType.RoadDark,
-      lang: this.#languageTag,
+      lang: lang,
     });
     this.#appleRoadDark.set("settingsName", "appleRoadDark");
     this.#updateEmphasis(settings.get("useMuted"));
@@ -140,7 +138,7 @@ class MapManager {
     });
     this.#appleSatelliteOverlay = new AppleTileLayer({
       layerType: AppleMapsLayerType.SatelliteOverlay,
-      lang: this.#languageTag,
+      lang: lang,
     });
     this.#appleSatellite = new LayerGroup({
       title: "Apple Maps Satellite",
@@ -149,9 +147,12 @@ class MapManager {
       visible: false,
       layers: [this.#appleSatelliteImage, this.#appleSatelliteOverlay],
     });
+    this.#appleSatellite.setLanguage = (lang) => {
+      this.#appleSatelliteOverlay.setLanguage(lang);
+    }
     this.#appleSatellite.set("settingsName", "appleSatellite");
 
-    this.#googleRoadLayer = new GoogleRoadLayer("Google Maps Road", this.#languageTag);
+    this.#googleRoadLayer = new GoogleRoadLayer("Google Maps Road", lang);
     this.#googleRoadLayer.set("settingsName", "googleRoad");
   
     openStreetMap.set("settingsName", "openStreetMap");

@@ -1,4 +1,4 @@
-import { AddressSource, Theme, InitialOrientation } from "./enums.js";
+import { AddressSource, Theme, InitialOrientation, DataLang } from "./enums.js";
 
 class Settings {
   #settings = {};
@@ -22,6 +22,7 @@ class Settings {
       decodeClientside: true,
       useMuted: false,
       showTileModifiedDate: false,
+      dataLang: DataLang.Default,
     };
     for (const entry of Object.entries(defaults)) {
       this.#settings[entry[0]] ??= entry[1];

@@ -46,6 +46,12 @@ export class SettingsControl {
       settings.set("theme", Theme.Dark);
     });
 
+    const tileLang = document.querySelector("#data-lang");
+    tileLang.value = settings.get("dataLang");
+    tileLang.addEventListener("change", (_) => {
+      settings.set("dataLang", tileLang.value);
+    });
+
     const labelsOnTop = document.querySelector("#labels-on-top");
     labelsOnTop.checked = settings.get("labelsOnTop");
     labelsOnTop.addEventListener("change", (_) => {

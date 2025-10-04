@@ -64,3 +64,7 @@ export const AdditionalMetadata = Object.freeze({
   /** Time zone of the capture time of panoramas. */
   TimeZone: "tz",
 });
+
+export const DataLang = Object.freeze({
+  Default: "default",
+});
