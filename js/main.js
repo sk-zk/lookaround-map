@@ -3,10 +3,10 @@ import { Authenticator } from "./util/Authenticator.js";
 import { MapManager } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
 import { wrapLon } from "./geo/geo.js";
-import { Theme, AdditionalMetadata, ImageFormat } from "./enums.js";
+import { Theme, AdditionalMetadata, ImageFormat, DataLang } from "./enums.js";
 import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
-import { showNotificationTooltip, isAppleDevice, approxEqual } from "./util/misc.js";
+import { showNotificationTooltip, isAppleDevice, approxEqual, getUserLocale } from "./util/misc.js";
 import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsLookAroundUrl, 
   generateAppleMapsWebLookAroundUrl, encodeShareLinkPayload } from "./util/url.js";
 import { PanoMetadataBox } from "./ui/PanoMetadataBox.js";
@@ -37,6 +37,7 @@ class Application {
   panoMetadataBox;
   addressController;
   address;
+  userLocale;
 
   constructor() {
     document.title = this.appTitle;
@@ -44,6 +45,7 @@ class Application {
     this.api = new Api();
     this.auth = new Authenticator();
     this.isRunningOnAppleDevice = isAppleDevice();
+    this.userLocale = getUserLocale();
 
     this.panoMetadataBox = new PanoMetadataBox();
     this.panoMetadataBox.panoSelectedCallback = (pano) => {
@@ -263,7 +265,7 @@ class Application {
 
   async #displayPano(pano, position = null) {
     this.panoMetadataBox.setPano(pano);
-    this.addressController.fetchAddress(pano.lat, pano.lon);
+    this.addressController.fetchAddress(pano.lat, pano.lon, this.#getDataLang());
     updateHashParams(this.map, pano, this.panoViewer?.getPosition());
     if (this.panoViewer) {
       await this.panoViewer.navigateTo(pano);
@@ -281,8 +283,16 @@ class Application {
     this.currentPano = pano;
     this.#updateMapMarker(pano);
     this.panoMetadataBox.setPano(pano);
-    this.addressController.fetchAddress(pano.lat, pano.lon);
+    this.addressController.fetchAddress(pano.lat, pano.lon, this.#getDataLang());
     updateHashParams(this.map, pano, this.panoViewer.getPosition());
+  }
+
+  #getDataLang() {
+    let lang = settings.get("dataLang");
+    if (!lang || lang === DataLang.Default) {
+      lang = this.userLocale;
+    }
+    return lang;
   }
 
   #closePanoViewer() {

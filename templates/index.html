@@ -130,10 +130,9 @@
             <input type="radio" id="theme-dark" name="theme"><label for="theme-dark">Dark</label><br>
           </div>
           <p></p>
-          <div class="sidebar-control-group">
-            <h3>Map</h3>
-            <p>
-              <label for="data-lang">Label language:</label>
+           <div class="sidebar-control-group">
+            <h3>Language</h3>
+              <label for="data-lang">Label/address language:</label><br>
               <select id="data-lang" name="data-lang">
                 <option value="default">Browser default</option>
                 <option value="en-US">English</option>
@@ -185,7 +184,10 @@
                 <option value="vi">Vietnamese</option>
               </select><br>
               <span class="settings-note">(Not all languages are supported by all providers.)</span>
-            </p>
+          </div>
+          <p></p>
+          <div class="sidebar-control-group">
+            <h3>Map</h3>
             <input type="checkbox" id="labels-on-top" name="labels-on-top">
             <label for="labels-on-top">Display labels above lines (if supported by layer)</label><br>
             <input type="checkbox" id="use-muted" name="use-muted">

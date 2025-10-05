@@ -1,4 +1,3 @@
-import { getUserLocale } from "../util/misc.js";
 import {
   NominatimReverseGeocoder,
   AppleReverseGeocoder,
@@ -18,11 +17,11 @@ export class AddressController {
     });
   }
 
-  async fetchAddress(lat, lon) {
+  async fetchAddress(lat, lon, lang) {
     let address;
     let error = null;
     try {
-      address = await this.#geocoder.reverseGeocode(lat, lon, getUserLocale());
+      address = await this.#geocoder.reverseGeocode(lat, lon, lang);
     } catch (err) {
       error = err;
     }
