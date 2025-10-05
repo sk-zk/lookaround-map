@@ -297,6 +297,10 @@ a:visited {
   background: none !important;
 }
 
+.settings-note {
+  color: var(--layer-explanation-color);
+}
+
 .layer-explanation {
   color: var(--layer-explanation-color);
   font-style: italic;
