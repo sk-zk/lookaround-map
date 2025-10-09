@@ -13,7 +13,7 @@ export function generateReportString(pano, address, shareLink) {
 
   const trekkerStr = pano.coverageType === CoverageType.Trekker ? "trekkers " : "";
 
-  const report = `${emoji} [Apple] ${date} ${trekkerStr}in [${place}](${shareLink})`;
+  const report = `${emoji} [Apple] ${date} ${trekkerStr}in ${place} ${shareLink}`;
   return report;
 }
 
