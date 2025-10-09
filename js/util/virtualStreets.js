@@ -1,7 +1,5 @@
 import { CoverageType } from "../enums.js";
 
-const addAdminAreaFor = new Set(["us", "ca", "au", "gb", "br", "mx", "in"]);
-
 export function generateReportString(pano, address, shareLink) {
   const place = getLocationName(address);
 
@@ -15,7 +13,7 @@ export function generateReportString(pano, address, shareLink) {
 
   const trekkerStr = pano.coverageType === CoverageType.Trekker ? "trekkers " : "";
 
-  const report = `${emoji} ${date} ${trekkerStr}in [${place}](${shareLink})`;
+  const report = `${emoji} [Apple] ${date} ${trekkerStr}in [${place}](${shareLink})`;
   return report;
 }
 
@@ -36,15 +34,14 @@ function getLocationName(address) {
     placeComponents.push(address.city);
   }
 
-  if (address.administrative_area &&
-    addAdminAreaFor.has(address.country_code.toLowerCase())) {
+  if (address.administrative_area) {
     placeComponents.push(address.administrative_area);
   }
 
   if (address.country) {
     const addrLower = address.country.toLowerCase();
-    if (addrLower === "united states" || addrLower === "united states of america") {
-      placeComponents.push("USA");
+    if (addrLower === "us" || addrLower === "usa" || addrLower === "united states of america") {
+      placeComponents.push("United States");
     } else {
       placeComponents.push(address.country);
     }
