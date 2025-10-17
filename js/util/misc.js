@@ -1,3 +1,5 @@
+import { CameraType } from "../enums";
+
 export function getUserLocale() {
   return navigator.languages[0] ?? "en-GB";
 }
@@ -58,3 +60,30 @@ export function floorFirstOfMonth(date) {
   }
   return new Date(year, month, 1);
 }
+
+/**
+ * Infers the kind of camera the given panorama was taken with from the projection parameters.
+ * @param {object} pano The panorama object.
+ * @returns {number} The camera type.
+ */
+export function inferCameraType(pano) {
+    // Backpack cam
+    if (pano.coverageType == 3) {
+      return CameraType.Backpack;
+    }
+
+    // Big cam (2018-)
+    if (approxEqual(pano.cameraMetadata[0].cy, 0.27488935)) {
+      return CameraType.BigCam;
+    // Small cam (2024-)
+    } else if (approxEqual(pano.cameraMetadata[0].cy, 0.30543262)) {
+      return CameraType.SmallCam;
+    // Switzerland low cam (2021-2022)
+    } else if (approxEqual(pano.cameraMetadata[0].cy, 0.36215582)) {
+      return CameraType.LowCam;
+    }
+
+    // Unknown type; fall back to big cam
+    return CameraType.BigCam;
+  }
+  

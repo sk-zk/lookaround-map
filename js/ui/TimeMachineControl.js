@@ -1,6 +1,6 @@
 import { getUserLocale } from "../util/misc.js";
 import { CameraType } from "../enums.js";
-import { approxEqual } from "../util/misc.js";
+import { inferCameraType } from "../util/misc.js";
 
 export class TimeMachineControl {
   panoSelectedCallback = function () {};
@@ -35,7 +35,7 @@ export class TimeMachineControl {
       timeZone: pano.timezone,
     }).format(date);
 
-    const camType = this.#inferCameraType(pano);
+    const camType = inferCameraType(pano);
     const camHtml = this.#getCameraTypeHtml(camType);
 
     this.#date.innerHTML = formattedDate + camHtml;
@@ -61,7 +61,7 @@ export class TimeMachineControl {
         timeZone: pano.timezone,
       }).format(new Date(pano.timestamp));
 
-      const camType = this.#inferCameraType(pano);
+      const camType = inferCameraType(pano);
       const camHtml = this.#getCameraTypeHtml(camType);
 
       const option = document.createElement("div");
@@ -82,27 +82,6 @@ export class TimeMachineControl {
   close() {
     this.#timeMachineMenu.style.display = "none";
     this.#isOpen = false;
-  }
-
-  #inferCameraType(pano) {
-    // Backpack cam
-    if (pano.coverageType == 3) {
-      return CameraType.Backpack;
-    }
-
-    // Big cam (2018-)
-    if (approxEqual(pano.cameraMetadata[0].cy, 0.27488935)) {
-      return CameraType.BigCam;
-    // Small cam (2024-)
-    } else if (approxEqual(pano.cameraMetadata[0].cy, 0.30543262)) {
-      return CameraType.SmallCam;
-    // Switzerland low cam (2021-2022)
-    } else if (approxEqual(pano.cameraMetadata[0].cy, 0.36215582)) {
-      return CameraType.LowCam;
-    }
-
-    // Unknown type, fall back to big cam
-    return CameraType.BigCam;
   }
 
   #getCameraTypeHtml(type) {

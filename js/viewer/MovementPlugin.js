@@ -4,10 +4,11 @@ import { Vector2 } from "three";
 import { geodeticToEnu, enuToPhotoSphere, distanceBetween } from "../geo/geo.js";
 import { ScreenFrustum } from "./ScreenFrustum.js";
 import { DEG2RAD, wrap } from "../geo/geo.js";
+import { inferCameraType } from "../util/misc.js";
+import { CameraType } from "../enums.js";
 
 const MARKER_ID = "0";
 const MAX_DISTANCE = 100;
-const CAMERA_HEIGHT = 2.4; // the approximated height of the camera
 
 /**
  * A plugin which encapsulates navigating between Look Around panoramas.
@@ -59,6 +60,8 @@ export class MovementPlugin extends AbstractPlugin {
     this.current = refPano;
     this.nearbyPanos = [];
 
+    const cameraHeight = this.#getCameraHeight(refPano);
+
     for (const pano of panos) {
       if (refPano.lat === pano.lat && refPano.lon === pano.lon) {
         // don't show a marker for the pano we're currently on
@@ -72,7 +75,7 @@ export class MovementPlugin extends AbstractPlugin {
         deltaEle,
         refPano.lon,
         refPano.lat,
-        CAMERA_HEIGHT
+        cameraHeight
       );
       const position = enuToPhotoSphere(enu, 0);
 
@@ -91,6 +94,26 @@ export class MovementPlugin extends AbstractPlugin {
   destroy() {
     this.abortController.abort();
     super.destroy();
+  }
+
+  /**
+   * Returns the guesstimated camera height of a panorama.
+   * @param {object} pano The panorama object.
+   * @returns {number} The camera height.
+   */
+  #getCameraHeight(pano) {
+    const cameraType = inferCameraType(pano);
+    switch (cameraType) {
+      default:
+      case CameraType.BigCam:
+        return 2.4;
+      case CameraType.SmallCam:
+        return 2.2;
+      case CameraType.LowCam:
+        return 2.2;
+      case CameraType.Backpack:
+        return 2;
+    }
   }
 
   #onMouseMove(e) {
@@ -244,7 +267,6 @@ export class MovementPlugin extends AbstractPlugin {
     }
     return closest;
   }
-
 
   #markerPositionIsOffScreen(panoPosition) {
     const viewerCoords = this.psv.dataHelper.sphericalCoordsToViewerCoords({
