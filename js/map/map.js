@@ -7,11 +7,11 @@ import { Constants } from "./Constants.js";
 import { wrapLon } from "../geo/geo.js";
 import { DataLang, Theme } from "../enums.js";
 import { getUserLocale } from "../util/misc.js";
-import { GeolocationButton } from "./GeolocationButton.js";
+import { GeolocationButton } from "./ui/GeolocationButton.js";
 import { CoverageColorer } from "./layers/colors.js";
 import { settings } from "../settings.js";
-import { isAppleMapsUrl, parseAppleMapsUrl } from "../util/url.js";
 import { ColorLegendControl } from "../ui/ColorLegendControl.js";
+import { ExtendedSearchControl } from "./ui/ExtendedSearchControl.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
@@ -26,7 +26,6 @@ import VectorLayer from "ol/layer/Vector.js";
 
 import LayerSwitcher from "../external/ol-layerswitcher/ol-layerswitcher.js";
 import ContextMenu from "ol-contextmenu";
-import SearchNominatim from "ol-ext/control/SearchNominatim.js";
 
 class MapManager {
   #map;
@@ -236,7 +235,7 @@ class MapManager {
   }
 
   #createSearch(onAppleMapsLinkPasted) {
-    const searchControl = new SearchNominatimPlusAppleLinkParser({}, onAppleMapsLinkPasted);
+    const searchControl = new ExtendedSearchControl({}, onAppleMapsLinkPasted);
     searchControl.addEventListener("select", (e) => {
       try {
         const bounds = e.search.boundingbox;
@@ -248,8 +247,9 @@ class MapManager {
         this.#map.getView().fit(extent);
       } catch (error) {
         console.error(error);
-        this.#map.getView().setCenter([e.search.lon, e.search.lat]);
-        this.#map.getView().setZoom(17);
+        const view = this.#map.getView();
+        view.setCenter([e.search.lon, e.search.lat]);
+        view.setZoom(17);
       }
     });
     this.#map.addControl(searchControl);
@@ -415,36 +415,6 @@ function isDarkThemeEnabled() {
     (window.matchMedia &&
       window.matchMedia("(prefers-color-scheme: dark)").matches)
   );
-}
-
-class SearchNominatimPlusAppleLinkParser extends SearchNominatim {
-  constructor(options, onAppleMapsLinkPasted) {
-    // the base class olcontrolSearch is a big ol' pile of shit
-    // where 90% of the logic, and the part I need to modify,
-    // is located in a function created in the constructor
-    // with no way to override it short of literally hijacking
-    // the addEventListener function and grabbing it out of there.
-    const originalAddEventListener = EventTarget.prototype.addEventListener;
-    EventTarget.prototype.addEventListener = function (...args) {
-      if (args[0] === "keyup") {     
-        const origCallback = args[1];
-        const patchedCallback = function (e) {
-          if (e.key === "Enter" && isAppleMapsUrl(e.target.value)) {
-            onAppleMapsLinkPasted(parseAppleMapsUrl(e.target.value));
-            e.target.value = "";
-          } else {
-            origCallback(e);
-          }
-        };
-        return originalAddEventListener.apply(this, [args[0], patchedCallback])
-      }
-      return originalAddEventListener.apply(this, args);
-    };
-
-    super(options);
-
-    EventTarget.prototype.addEventListener = originalAddEventListener;
-  }
 }
 
 export { MapManager };
