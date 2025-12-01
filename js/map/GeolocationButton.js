@@ -1,8 +1,8 @@
 import { Control } from "ol/control.js";
 
 class GeolocationButton extends Control {
-  constructor(opt_options) {
-    const options = opt_options || {};
+  constructor(options) {
+    options = options || {};
 
     const button = document.createElement("button");
     const element = document.createElement("div");
