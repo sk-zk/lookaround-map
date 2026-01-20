@@ -51,7 +51,7 @@ function generateTileUrl(opts, pixelRatio) {
         `&labels=${opts.labels ? "1" : "0"}`;
     case AppleMapsTileType.Satellite:
       return `https://sat-cdn{1-4}.apple-mapkit.com/tile?` +
-        `style=7&size=${Math.min(2, pixelRatio)}&scale=1&x={x}&y={y}&z={z}&v=10271`;
+        `style=7&size=${Math.min(2, pixelRatio)}&scale=1&x={x}&y={y}&z={z}&v=10301`;
   }
 }
 
