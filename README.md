@@ -46,9 +46,7 @@ which is noticeably faster than the previous two. Supports Linux and Windows.
    - Not hugely important because I've got my own, but it would be nice as fallback and for whenever an update drops
    - Out of all the network requests that happen when you tap the Look Around button, the most likely candidate
      for containing that information is style 53 at z=15 specifically.  
-   - Vector tiles are in Apple's custom `VMP4` format. The general structure of the format [has been decoded](https://github.com/19h/vmp4-dump),
-     but the actual content of the individual sections has not, and a quick glance at Ghidra's decompiler output for the parsing functions makes me
-     put this one in the "let's get back to this in another year or two" category.
+   - Vector tiles use Apple's custom `VMP4` format, which has been [partially reversed](https://github.com/19h/vmp4-dump).
 - [ ] Decode the mesh, render it, and use it to improve movement etc.
    - There are three types of pano data Apple Maps will request. One is `/t/<face>/<zoom>`, which returns the pano faces as HEIC,
       but there are two others: `/m/<zoom>` and `/mt/7`, in a custom container format starting with the magic string `MCP4`. These files contain the mesh,
