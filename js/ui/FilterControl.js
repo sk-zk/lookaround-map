@@ -6,6 +6,8 @@ import Crop from "ol-ext/filter/Crop.js";
 
 export class FilterControl {
   #filterSettings = new FilterSettings();
+  #coverageMinDate;
+  #coverageMaxDate;
   filtersChanged = function(filters) {};
 
   constructor() {
@@ -14,22 +16,37 @@ export class FilterControl {
       this.#filterSettings.filterByDate = e.target.checked;
       this.onFiltersChanged();
     });
-    const coverageMinDate = document.querySelector("#coverage-min-date");
-    coverageMinDate.value = new Date(this.#filterSettings.minDate).toISOString().split("T")[0];
-    coverageMinDate.addEventListener("blur", (_) => {
-      this.#filterSettings.minDate = Math.floor(
+    this.#coverageMinDate = document.querySelector("#coverage-min-date");
+    this.#coverageMaxDate = document.querySelector("#coverage-max-date");
+    this.#syncDateSelectors();
+    this.#coverageMinDate.addEventListener("blur", (_) => {
+      const newDate = Math.floor(
         new Date(document.querySelector("#coverage-min-date").value).getTime()
       );
+      if (this.#filterSettings.maxDate < newDate) {
+        this.#filterSettings.minDate = this.#filterSettings.maxDate;
+        this.#filterSettings.maxDate = newDate;
+        this.#syncDateSelectors();
+      }
+      else {
+        this.#filterSettings.minDate = newDate;
+      }
       if (this.#filterSettings.filterByDate) {
         this.onFiltersChanged();
       }
     });
-    const coverageMaxDate = document.querySelector("#coverage-max-date");
-    coverageMaxDate.value = new Date(this.#filterSettings.maxDate).toISOString().split("T")[0];
-    coverageMaxDate.addEventListener("blur", (_) => {
-      this.#filterSettings.maxDate = Math.floor(
+    this.#coverageMaxDate.addEventListener("blur", (_) => {
+      const newDate = Math.floor(
         new Date(document.querySelector("#coverage-max-date").value).getTime()
       );
+      if (this.#filterSettings.minDate > newDate) {
+        this.#filterSettings.maxDate = this.#filterSettings.minDate;
+        this.#filterSettings.minDate = newDate;
+        this.#syncDateSelectors();
+      }
+      else {
+        this.#filterSettings.maxDate = newDate;
+      }
       if (this.#filterSettings.filterByDate) {
         this.onFiltersChanged();
       }
@@ -84,6 +101,11 @@ export class FilterControl {
         this.onFiltersChanged();
       }
     });
+  }
+
+  #syncDateSelectors() {
+    this.#coverageMinDate.value = new Date(this.#filterSettings.minDate).toISOString().split("T")[0];
+    this.#coverageMaxDate.value = new Date(this.#filterSettings.maxDate).toISOString().split("T")[0];   
   }
 
   #polygonSelected(e) {
