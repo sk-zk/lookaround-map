@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import { interpolateTurbo } from "d3-scale-chromatic";
 
 const earliestDate = Math.floor(new Date("2018-06-01").getTime());
-const latestDate =   Math.floor(new Date("2025-12-01").getTime());
+const latestDate =   Math.floor(new Date("2026-02-01").getTime());
 
 const carLineColor = "rgba(26, 159, 176, 1)";
 const trekkerLineColor = "rgba(173, 140, 191, 1)";
@@ -63,7 +63,7 @@ class CoverageColorer {
       this.unscaledColorFunction = metadata => this.colorFunction(this.scale(metadata.timestamp));
     } else if (filterSettings.lineColorType === LineColorType.BuildId) {
       const start = 511228947; // lowest value discovered since I started scraping
-      const end = 2200000000; // highest value plus some breathing room
+      const end = 2200000000; // highest value plus some breathing room 
       this.scale = d3.scaleLinear().domain([start, end]);
       this.colorFunction = n => interpolateTurbo(offsetTurbo(n));
       this.unscaledColorFunction = metadata => this.colorFunction(this.scale(metadata.buildId));

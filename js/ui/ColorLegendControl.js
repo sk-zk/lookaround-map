@@ -88,7 +88,13 @@ export class ColorLegendControl {
       for (let i = earliestYear + 1; i < latestYear + 1; i++) {
         tickValues.push(new Date(i, 0, 1).getTime());
       }
-      const tickFormat = n => new Date(n).getFullYear();
+      let tickFormat;
+      if (tickValues.length > 8) {
+        tickFormat = n => "'" + new Date(n).getFullYear().toString().slice(-2);
+      }
+      else {
+        tickFormat = n => new Date(n).getFullYear().toString();
+      }
       return { tickValues, tickFormat };
     } else {
       const earliestDate = new Date(start);
