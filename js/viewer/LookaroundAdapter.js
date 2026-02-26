@@ -96,11 +96,11 @@ export class LookaroundAdapter extends AbstractAdapter {
     }
 
     let faceUrl = `${this.apiBaseUrl}${this.url}${zoom}/${faceIdx}/`;
+    if (this.imageFormat === ImageFormat.HEIC || this.hasNativeHeicSupport) {
+      faceUrl += "?format=heic";
+    }
 
     if (this.imageFormat === ImageFormat.JPEG || this.hasNativeHeicSupport) {
-      if (this.hasNativeHeicSupport) {
-        faceUrl += "?format=heic";
-      }
       return this.psv.textureLoader
         .loadFile(faceUrl, (p) => {
           if (progress) {
