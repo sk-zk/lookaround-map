@@ -47,6 +47,7 @@ export class LookaroundAdapter extends AbstractAdapter {
 
     this.hasNativeHeicSupport = null;
     this.heicWorker = new Worker("/static/dist/heicWorker.js");
+  }
 
   destroy() {
     this.heicWorker.terminate();
