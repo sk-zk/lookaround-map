@@ -75,15 +75,27 @@ export function inferCameraType(pano) {
     // Big cam (2018-)
     if (approxEqual(pano.cameraMetadata[0].cy, 0.27488935)) {
       return CameraType.BigCam;
-    // Small cam (2024-)
-    } else if (approxEqual(pano.cameraMetadata[0].cy, 0.30543262)) {
-      return CameraType.SmallCam;
+    }
+    else if (approxEqual(pano.cameraMetadata[0].cy, 0.30543262)
+    ) {
+      // Small cam (2024-)
+      if (pano.timestamp > 1704067200000) {
+        return CameraType.SmallCam;
+      }
+      // Switzerland low cam (2022) published 2026-04-09 
+      else if (pano.timezone == "Europe/Zurich") {
+        return CameraType.LowCam;
+      }
+      // Unknown type; fall back to small cam
+      else {
+        return CameraType.SmallCam;
+      }
+    }
     // Switzerland low cam (2021-2022)
-    } else if (approxEqual(pano.cameraMetadata[0].cy, 0.36215582)) {
+    else if (approxEqual(pano.cameraMetadata[0].cy, 0.36215582)) {
       return CameraType.LowCam;
     }
 
     // Unknown type; fall back to big cam
     return CameraType.BigCam;
   }
-  

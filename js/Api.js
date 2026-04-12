@@ -57,8 +57,9 @@ export class Api {
       // be smallcam.
       if (pano.coverageType === CoverageType.Car 
         && approxEqual(pano.cameraMetadata[0].cy, 0.30543262)
-        && pano.timestamp < 1704067200000)
-      {
+        && pano.timestamp < 1704067200000
+        && pano.timezone != "Europe/Zurich" // does not apply to 2022 CH coverage published on 2026-04-09
+      ) {
         for (let i = 0; i < 4; i++) {
           pano.cameraMetadata[i].cy = 0.27488935;
           pano.cameraMetadata[i].fovH = 1.6144296;
