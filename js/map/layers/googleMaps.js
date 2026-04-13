@@ -1,11 +1,11 @@
 import { Constants } from "../Constants.js";
-import { getDevicePixelRatio } from "../../util/misc.js";
+import { getDevicePixelRatioAsInt } from "../../util/misc.js";
 
 import TileLayer from "ol/layer/Tile.js";
 import XYZ from "ol/source/XYZ.js";
 import LayerGroup from "ol/layer/Group.js";
 
-const pixelRatio = getDevicePixelRatio();
+const pixelRatio = getDevicePixelRatioAsInt();
 
 function generateRoadLabelsTileUrl(languageTag) {
   const styleParam = 1105;

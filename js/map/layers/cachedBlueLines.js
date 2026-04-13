@@ -1,7 +1,7 @@
 import { Constants } from "../Constants.js";
 import { CoverageType, LineColorType } from "../../enums.js";
 import { CoverageColorer, carLineColor, trekkerLineColor } from "./colors.js";
-import { getDevicePixelRatio } from "../../util/misc.js";
+import { getDevicePixelRatioAsInt } from "../../util/misc.js";
 import { FilterSettings } from "../FilterSettings.js";
 
 import LayerGroup from "ol/layer/Group.js";
@@ -17,7 +17,7 @@ import { Feature } from "ol";
 
 const OPACITY = 0.8;
 
-const pixelRatio = getDevicePixelRatio();
+const pixelRatio = getDevicePixelRatioAsInt();
 
 const carLinesStyle = new Style({
   stroke: new Stroke({

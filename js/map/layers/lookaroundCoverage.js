@@ -3,7 +3,7 @@ import { Constants } from "../Constants.js";
 import { Api } from "../../Api.js";
 import { wgs84ToTileCoord } from "../../geo/geo.js";
 import { FilterSettings } from "../FilterSettings.js";
-import { getDevicePixelRatio } from "../../util/misc.js";
+import { getDevicePixelRatioAsInt } from "../../util/misc.js";
 import { LineColorType } from "../../enums.js";
 import { getTileModifiedColor } from "./colors.js";
 import { settings } from "../../settings.js";
@@ -26,7 +26,7 @@ class LookaroundCoverageSource extends XYZ {
   constructor(options) {
     options = options || {};
 
-    const pixelRatio = getDevicePixelRatio();
+    const pixelRatio = getDevicePixelRatioAsInt();
 
     super({
       opaque: false,

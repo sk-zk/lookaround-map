@@ -1,11 +1,11 @@
 import { Authenticator } from "../../util/Authenticator.js";
-import { getDevicePixelRatio } from "../../util/misc.js";
+import { getDevicePixelRatioAsInt } from "../../util/misc.js";
 
 import TileLayer from "ol/layer/Tile.js";
 import XYZ from "ol/source/XYZ.js";
 
 const auth = new Authenticator();
-const pixelRatio = getDevicePixelRatio();
+const pixelRatio = getDevicePixelRatioAsInt();
 
 async function tileLoadFunction(imageTile, src) {
   imageTile.getImage().src = await auth.authenticateUrl(src);

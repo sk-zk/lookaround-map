@@ -4,8 +4,11 @@ export function getUserLocale() {
   return navigator.languages[0] ?? "en-GB";
 }
 
-export function getDevicePixelRatio() {
-  return window.devicePixelRatio || 1;
+export function getDevicePixelRatioAsInt() {
+  if (window.devicePixelRatio) {
+    return Math.ceil(window.devicePixelRatio);
+  }
+  return 1;
 }
 
 export function showNotificationTooltip(text, xPos, yPos, duration) {
