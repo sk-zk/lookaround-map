@@ -118,7 +118,7 @@ class Application {
       const report = generateReportString(
         this.currentPano,
         this.address,
-        this.#getShareLink("https://lookmap.eu.pythonanywhere.com/")
+        this.#getShareLink("https://lookmap.skzk.dev/")
       );
       navigator.clipboard.writeText(report);
     }

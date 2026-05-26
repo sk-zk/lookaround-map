@@ -111,8 +111,7 @@ class VectorCoverageSource extends VectorTile {
         tileSize: [options.tileSize, options.tileSize],
       }),
       tilePixelRatio: pixelRatio,
-      //url: "http://localhost:8111/lookaround_cache/lookaround/{z}/{x}/{y}",
-      url: "https://lookmap.eu.pythonanywhere.com/bluelines2/{z}/{x}/{y}/",
+      url: "https://lookmap.skzk.dev/bluelines2/{z}/{x}/{y}/",
     });
   }
 }
@@ -196,7 +195,7 @@ class RasterCoverageLayer extends TileLayer {
       visible: true,
       type: "overlay",
       source: new XYZ({
-        url: `https://lookmap.eu.pythonanywhere.com/bluelines_raster${pixelRatio > 1 ? "_2x" : ""}/{z}/{x}/{y}.png`,
+        url: `https://lookmap.skzk.dev/bluelines_raster${pixelRatio > 1 ? "_2x" : ""}/{z}/{x}/{y}.png`,
         minZoom: Constants.MIN_ZOOM,
         maxZoom: 7,
         tilePixelRatio: Math.min(2, pixelRatio)
