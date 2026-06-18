@@ -7,6 +7,7 @@ import { getDevicePixelRatioAsInt } from "../../util/misc.js";
 import { LineColorType } from "../../enums.js";
 import { getTileModifiedColor } from "./colors.js";
 import { settings } from "../../settings.js";
+import { OverlappingCanvasTileLayerRenderer } from "../OverlappingCanvasTileLayerRenderer.js";
 
 import { LRUMap } from "../../external/js_lru/lru.js";
 
@@ -22,10 +23,14 @@ const api = new Api();
 class LookaroundCoverageSource extends XYZ {
   #filterSettings = new FilterSettings();
   #coverageColorer = null;
+  #markerSize;
+  #tileOverlap;
 
   constructor(options) {
     options = options || {};
 
+    const markerSize = options.markerSize ?? 5;
+    const tileOverlap = options.tileOverlap ?? 16;
     const pixelRatio = getDevicePixelRatioAsInt();
 
     super({
@@ -38,28 +43,33 @@ class LookaroundCoverageSource extends XYZ {
       maxZoom: 17,
       tilePixelRatio: pixelRatio,
       tileLoadFunction: async (mapTile, url) => {
-        // `tile.tileCoords` returns unwrapped tile coordinates, but the `url` string
+        // `mapTile.tileCoords` returns unwrapped tile coordinates, but the `url` string
         // has wrapped coordinates inserted into it, which is what we actually want
         const tileCoords = url.split(",");
         const tileSize = [options.canvasSize * pixelRatio, options.canvasSize * pixelRatio];
-        const ctx = createCanvasContext2D(tileSize[0], tileSize[1]);
+        const ctx = createCanvasContext2D(tileSize[0] + 2*tileOverlap, tileSize[1] + 2*tileOverlap);
 
         const tile = await this.#getTile(tileCoords[0], tileCoords[1]);
 
-        if (settings.get("showTileModifiedDate") && tile.panos.length > 0) {
+        const showModifiedDate = settings.get("showTileModifiedDate") && tile.panos.length > 0;
+
+        if (showModifiedDate) {
           this.#drawTileModifiedBg(tile.lastModified, tileSize, ctx);
         }
 
         this.#drawPanos(tile.panos, tileCoords, tileSize, pixelRatio, ctx);
 
-        if (settings.get("showTileModifiedDate") && tile.panos.length > 0) {
+        if (showModifiedDate) {
+          this.#drawTileBoundary(ctx, tileSize);
           this.#drawLastModifiedText(tile.lastModified, tileSize, ctx);
         }
 
         mapTile.setImage(ctx.canvas);
       },
     });
-    this.markerSize = options.markerSize;
+
+    this.#markerSize = markerSize;
+    this.#tileOverlap = tileOverlap;
   }
 
   #drawLastModifiedText(lastModified, tileSize, ctx) {
@@ -88,26 +98,34 @@ class LookaroundCoverageSource extends XYZ {
     const actualHeight = textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent;
     const padding = 3;
     ctx.fillStyle = "rgba(255,255,255,0.6)";
-    ctx.fillRect(textCenterX - textMetrics.width / 2 - padding,
-      textTopY - padding,
+    ctx.fillRect(
+      textCenterX - textMetrics.width / 2 - padding + this.#tileOverlap,
+      textTopY - padding + this.#tileOverlap,
       textMetrics.width + padding * 2,
-      actualHeight + padding * 2);
+      actualHeight + padding * 2
+    );
 
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
     ctx.fillStyle = "rgba(0,0,0,0.8)";
-    ctx.fillText(formattedDate, textCenterX, textTopY);
+    ctx.fillText(
+      formattedDate, 
+      textCenterX + this.#tileOverlap, 
+      textTopY + this.#tileOverlap
+    );
   }
 
   #drawTileModifiedBg(lastModified, tileSize, ctx) {
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 1;
-    ctx.strokeRect(0, 0, tileSize[0], tileSize[1]);
-
     let color = rgb(getTileModifiedColor(lastModified));
     color.opacity = 0.15;
     ctx.fillStyle = color.formatRgb();
-    ctx.fillRect(0, 0, tileSize[0], tileSize[1]);
+    ctx.fillRect(this.#tileOverlap, this.#tileOverlap, tileSize[0], tileSize[1]);
+  }
+
+  #drawTileBoundary(ctx, tileSize) {
+    ctx.strokeStyle = "rgba(0,0,0,0.7)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(this.#tileOverlap, this.#tileOverlap, tileSize[0], tileSize[1]);
   }
 
   async #getTile(x, y) {
@@ -160,7 +178,14 @@ class LookaroundCoverageSource extends XYZ {
       const xOffset = (panoTileCoords.x - tileCoords[0]) * tileSize[0] - 1;
       const yOffset = (panoTileCoords.y - tileCoords[1]) * tileSize[1] - 1;
       ctx.beginPath();
-      ctx.arc(xOffset, yOffset, this.markerSize * pixelRatio, 0, 2 * Math.PI, false);
+      ctx.arc(
+        xOffset + this.#tileOverlap, 
+        yOffset + this.#tileOverlap, 
+        this.#markerSize * pixelRatio, 
+        0, 
+        2 * Math.PI, 
+        false
+      );
       ctx.fill();
       ctx.stroke();
     }
@@ -178,18 +203,34 @@ class LookaroundCoverageSource extends XYZ {
 class LookaroundCoverageLayer extends TileLayer {
   #currentPolygonFilter = null;
   #filterSettings = new FilterSettings();
+  #tileOverlap;
 
   constructor(options) {
     options = options || {};
+    const tileOverlap = options.tileOverlap ?? 16;
+    const markerSize = options.markerSize ?? 5;
 
     super({
       source: new LookaroundCoverageSource({
         canvasSize: options.canvasSize,
-        markerSize: options.markerSize,
+        markerSize: markerSize,
+        tileOverlap: tileOverlap,
       }),
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
       zIndex: Constants.BLUE_LINES_ZINDEX,
+    });
+
+    this.#tileOverlap = tileOverlap;
+  }
+
+  /**
+   * @override
+   */
+  createRenderer() {
+    return new OverlappingCanvasTileLayerRenderer(this, {
+      cacheSize: this.getCacheSize(),
+      overlap: this.#tileOverlap,
     });
   }
 
@@ -218,30 +259,36 @@ const lookaroundCoverage16 = new LookaroundCoverageLayer({
   markerSize: 2.5,
   minZoom: 15,
   maxZoom: 16,
+  tileOverlap: 16,
 });
 const lookaroundCoverage17 = new LookaroundCoverageLayer({
   canvasSize: 256,
   markerSize: 3.5,
   minZoom: 16,
   maxZoom: 17,
+  tileOverlap: 16,
+
 });
 const lookaroundCoverage18 = new LookaroundCoverageLayer({
   canvasSize: 512,
   markerSize: 4.5,
   minZoom: 17,
   maxZoom: 18,
+  tileOverlap: 16,
 });
 const lookaroundCoverage19 = new LookaroundCoverageLayer({
   canvasSize: 1024,
   markerSize: 5.5,
   minZoom: 18,
   maxZoom: 19,
+  tileOverlap: 16,
 });
 const lookaroundCoverage20 = new LookaroundCoverageLayer({
   canvasSize: 2048,
   markerSize: 6.5,
   minZoom: 19,
   maxZoom: 20,
+  tileOverlap: 16,
 });
 const lookaroundCoverage = new LayerGroup({
   title: "Apple Look Around (z≥16)",
