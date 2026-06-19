@@ -10,11 +10,11 @@ import { isHeicSupported } from "../util/media.js";
 const NUM_FACES = 6;
 
 /**
- * @summary Adapter for Look Around panoramas
+ * @summary Adapter for Look Around panoramas.
  * @memberof PSV.adapters
  * @extends PSV.adapters.AbstractAdapter
  */
-export class LookaroundAdapter extends AbstractAdapter {
+export class LookAroundAdapter extends AbstractAdapter {
   static id = "lookaround";
   static supportsDownload = false;
 

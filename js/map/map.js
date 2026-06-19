@@ -2,7 +2,7 @@ import { vectorBlueLineLayer, rasterBlueLineLayer } from "./layers/cachedBlueLin
 import { AppleTileLayer, AppleMapsLayerType, Emphasis } from "./layers/appleMaps.js";
 import { GoogleRoadLayer, googleStreetView } from "./layers/googleMaps.js";
 import { openStreetMap, cartoDarkMatter, cartoPositron, cartoVoyager } from "./layers/openStreetMap.js";
-import { lookaroundCoverage } from "./layers/lookaroundCoverage.js";
+import { lookAroundCoverage } from "./layers/lookAroundCoverage.js";
 import { Constants } from "./Constants.js";
 import { wrapLon } from "../geo/geo.js";
 import { DataLang, Theme } from "../enums.js";
@@ -90,7 +90,7 @@ class MapManager {
         this.#updateEmphasis(e.setting[1]);
       }
       else if (e.setting[0] == "showTileModifiedDate") {
-        lookaroundCoverage.getLayers().forEach((l) => l.getSource().refresh());
+        lookAroundCoverage.getLayers().forEach((l) => l.getSource().refresh());
       }
       else if (e.setting[0] == "dataLang") {
         let lang = e.setting[1];
@@ -197,7 +197,7 @@ class MapManager {
 
     this.#overlays = new LayerGroup({
       title: "Overlays",
-      layers: [lookaroundCoverage, this.#coverageOverlaysGroup, googleStreetView]
+      layers: [lookAroundCoverage, this.#coverageOverlaysGroup, googleStreetView]
     });
   }
 
@@ -272,8 +272,8 @@ class MapManager {
   #setUpFilterControl() {
     vectorBlueLineLayer.setFilterSettings(this.#filterControl.getFilterSettings());
     vectorBlueLineLayer.setCoverageColorer(this.#coverageColorer);
-    lookaroundCoverage.setFilterSettings(this.#filterControl.getFilterSettings());
-    lookaroundCoverage.setCoverageColorer(this.#coverageColorer);
+    lookAroundCoverage.setFilterSettings(this.#filterControl.getFilterSettings());
+    lookAroundCoverage.setCoverageColorer(this.#coverageColorer);
     this.#filterControl.filtersChanged = (filterSettings) => this.#onFiltersChanged(filterSettings);
   }
 
@@ -284,8 +284,8 @@ class MapManager {
 
     vectorBlueLineLayer.setFilterSettings(filterSettings);
     vectorBlueLineLayer.getLayers().forEach((l) => l.changed());
-    lookaroundCoverage.setFilterSettings(filterSettings);
-    lookaroundCoverage.getLayers().forEach((l) => l.getSource().refresh());
+    lookAroundCoverage.setFilterSettings(filterSettings);
+    lookAroundCoverage.getLayers().forEach((l) => l.getSource().refresh());
     rasterBlueLineLayer.setFilterSettings(filterSettings);
     rasterBlueLineLayer.changed();
 

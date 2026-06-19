@@ -20,7 +20,7 @@ import { rgb } from "d3-color";
 const coverageTileCache = new LRUMap(2 ** 12);
 const api = new Api();
 
-class LookaroundCoverageSource extends XYZ {
+class LookAroundCoverageSource extends XYZ {
   #filterSettings = new FilterSettings();
   #coverageColorer = null;
   #markerSize;
@@ -200,7 +200,7 @@ class LookaroundCoverageSource extends XYZ {
   }
 }
 
-class LookaroundCoverageLayer extends TileLayer {
+class LookAroundCoverageLayer extends TileLayer {
   #currentPolygonFilter = null;
   #filterSettings = new FilterSettings();
   #tileOverlap;
@@ -211,7 +211,7 @@ class LookaroundCoverageLayer extends TileLayer {
     const markerSize = options.markerSize ?? 5;
 
     super({
-      source: new LookaroundCoverageSource({
+      source: new LookAroundCoverageSource({
         canvasSize: options.canvasSize,
         markerSize: markerSize,
         tileOverlap: tileOverlap,
@@ -254,14 +254,14 @@ class LookaroundCoverageLayer extends TileLayer {
 }
 
 // doing it this way to prevent openlayers from scaling
-const lookaroundCoverage16 = new LookaroundCoverageLayer({
+const lookAroundCoverage16 = new LookAroundCoverageLayer({
   canvasSize: 128,
   markerSize: 2.5,
   minZoom: 15,
   maxZoom: 16,
   tileOverlap: 16,
 });
-const lookaroundCoverage17 = new LookaroundCoverageLayer({
+const lookAroundCoverage17 = new LookAroundCoverageLayer({
   canvasSize: 256,
   markerSize: 3.5,
   minZoom: 16,
@@ -269,52 +269,52 @@ const lookaroundCoverage17 = new LookaroundCoverageLayer({
   tileOverlap: 16,
 
 });
-const lookaroundCoverage18 = new LookaroundCoverageLayer({
+const lookAroundCoverage18 = new LookAroundCoverageLayer({
   canvasSize: 512,
   markerSize: 4.5,
   minZoom: 17,
   maxZoom: 18,
   tileOverlap: 16,
 });
-const lookaroundCoverage19 = new LookaroundCoverageLayer({
+const lookAroundCoverage19 = new LookAroundCoverageLayer({
   canvasSize: 1024,
   markerSize: 5.5,
   minZoom: 18,
   maxZoom: 19,
   tileOverlap: 16,
 });
-const lookaroundCoverage20 = new LookaroundCoverageLayer({
+const lookAroundCoverage20 = new LookAroundCoverageLayer({
   canvasSize: 2048,
   markerSize: 6.5,
   minZoom: 19,
   maxZoom: 20,
   tileOverlap: 16,
 });
-const lookaroundCoverage = new LayerGroup({
+const lookAroundCoverage = new LayerGroup({
   title: "Apple Look Around (z≥16)",
   visible: true,
   combine: "true",
   layers: [
-    lookaroundCoverage16,
-    lookaroundCoverage17,
-    lookaroundCoverage18,
-    lookaroundCoverage19,
-    lookaroundCoverage20,
+    lookAroundCoverage16,
+    lookAroundCoverage17,
+    lookAroundCoverage18,
+    lookAroundCoverage19,
+    lookAroundCoverage20,
   ],
 });
-lookaroundCoverage.setFilterSettings = (filterSettings) => {
-  lookaroundCoverage16.setFilterSettings(filterSettings);
-  lookaroundCoverage17.setFilterSettings(filterSettings);
-  lookaroundCoverage18.setFilterSettings(filterSettings);
-  lookaroundCoverage19.setFilterSettings(filterSettings);
-  lookaroundCoverage20.setFilterSettings(filterSettings);
+lookAroundCoverage.setFilterSettings = (filterSettings) => {
+  lookAroundCoverage16.setFilterSettings(filterSettings);
+  lookAroundCoverage17.setFilterSettings(filterSettings);
+  lookAroundCoverage18.setFilterSettings(filterSettings);
+  lookAroundCoverage19.setFilterSettings(filterSettings);
+  lookAroundCoverage20.setFilterSettings(filterSettings);
 };
-lookaroundCoverage.setCoverageColorer = (coverageColorer) => {
-  lookaroundCoverage16.setCoverageColorer(coverageColorer);
-  lookaroundCoverage17.setCoverageColorer(coverageColorer);
-  lookaroundCoverage18.setCoverageColorer(coverageColorer);
-  lookaroundCoverage19.setCoverageColorer(coverageColorer);
-  lookaroundCoverage20.setCoverageColorer(coverageColorer);
+lookAroundCoverage.setCoverageColorer = (coverageColorer) => {
+  lookAroundCoverage16.setCoverageColorer(coverageColorer);
+  lookAroundCoverage17.setCoverageColorer(coverageColorer);
+  lookAroundCoverage18.setCoverageColorer(coverageColorer);
+  lookAroundCoverage19.setCoverageColorer(coverageColorer);
+  lookAroundCoverage20.setCoverageColorer(coverageColorer);
 };
 
-export { lookaroundCoverage };
+export { lookAroundCoverage };

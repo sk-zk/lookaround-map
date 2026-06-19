@@ -3,7 +3,7 @@ import { MarkersPlugin } from "@photo-sphere-viewer/markers-plugin";
 import { CompassPlugin } from "@photo-sphere-viewer/compass-plugin";
 
 import { Api } from "../Api.js";
-import { LookaroundAdapter } from "./LookaroundAdapter.js";
+import { LookAroundAdapter } from "./LookAroundAdapter.js";
 import { MovementPlugin } from "./MovementPlugin.js";
 import { distanceBetween, DEG2RAD } from "../geo/geo.js";
 import { InitialOrientation, AdditionalMetadata, ImageFormat } from "../enums.js";
@@ -35,7 +35,7 @@ export async function createPanoViewer(config) {
 
   const viewer = new Viewer({
     container: config.container,
-    adapter: LookaroundAdapter,
+    adapter: LookAroundAdapter,
     panorama: { 
       panorama: config.initialPano, 
       url: `/pano/${config.initialPano.panoid}/${config.initialPano.buildId}/`,
