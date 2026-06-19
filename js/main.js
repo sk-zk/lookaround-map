@@ -19,7 +19,6 @@ import tinyDebounce from "tiny-debounce";
 
 import "ol/ol.css";
 import "ol-ext/dist/ol-ext.css";
-import "ol-contextmenu/ol-contextmenu.css";
 import "./external/ol-layerswitcher/ol-layerswitcher.css";
 import "../static/style.css";
 
