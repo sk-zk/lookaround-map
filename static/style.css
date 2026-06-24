@@ -641,3 +641,7 @@ input:checked + .sidebar-tab-label + .sidebar-panel {
 .psv-canvas-container {
   user-select: none !important;
 }
+
+.first-col-right td:first-child {
+    text-align: right;
+}
