@@ -22,7 +22,7 @@ class CartoLayer extends TileLayer {
   constructor(style, zIndex = null) {
     const opts = {
       source: new XYZ({
-        url: `https://{a-d}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}${pixelRatio > 1 ? "@2x" : ""}.png`,
+        url: `https://{a-d}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}${pixelRatio > 1 ? "@2x" : ""}.png?key=cb1_25ut_1_21d2ec97480ae2a8f26bf231`,
         attributions: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, <a href="https://carto.com/attributions">CARTO</a>',
         tilePixelRatio: Math.min(2, pixelRatio),
         maxZoom: 20,
