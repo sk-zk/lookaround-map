@@ -45,5 +45,8 @@
   "bugs": {
     "url": "https://github.com/sk-zk/lookaround-map/issues"
   },
-  "homepage": "https://github.com/sk-zk/lookaround-map#readme"
+  "homepage": "https://github.com/sk-zk/lookaround-map#readme",
+  "overrides": {
+    "brace-expansion": "5.0.9"
+  }
 }
