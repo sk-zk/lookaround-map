@@ -43,7 +43,7 @@ function generateTileUrl(opts, pixelRatio) {
       opts.poi ??= true;
       opts.style ??= 0;
       return `https://cdn{1-4}.apple-mapkit.com/ti/tile?` +
-        `style=${opts.style}&size=1&x={x}&y={y}&z={z}&v=2303284&scale=${pixelRatio}` +
+        `style=${opts.style}&size=1&x={x}&y={y}&z={z}&v=2609233&scale=${pixelRatio}` +
         `&lang=${opts.lang}` +
         `&poi=${(opts.poi && opts.labels) ? "1" : "0"}` +
         `&tint=${opts.tint}` +
@@ -51,7 +51,7 @@ function generateTileUrl(opts, pixelRatio) {
         `&labels=${opts.labels ? "1" : "0"}`;
     case AppleMapsTileType.Satellite:
       return `https://sat-cdn{1-4}.apple-mapkit.com/tile?` +
-        `style=7&size=${Math.min(2, pixelRatio)}&scale=1&x={x}&y={y}&z={z}&v=10421`;
+        `style=7&size=${Math.min(2, pixelRatio)}&scale=1&x={x}&y={y}&z={z}&v=10461`;
   }
 }
 
