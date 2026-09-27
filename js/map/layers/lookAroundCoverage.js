@@ -238,6 +238,7 @@ class LookAroundCoverageLayer extends TileLayer {
     this.#filterSettings = filterSettings;
     this.getSource().setFilterSettings(this.#filterSettings);
     this.#setPolygonFilter();
+    this.getSource().refresh()
   }
 
   #setPolygonFilter() {
@@ -302,19 +303,17 @@ const lookAroundCoverage = new LayerGroup({
     lookAroundCoverage20,
   ],
 });
+
 lookAroundCoverage.setFilterSettings = (filterSettings) => {
-  lookAroundCoverage16.setFilterSettings(filterSettings);
-  lookAroundCoverage17.setFilterSettings(filterSettings);
-  lookAroundCoverage18.setFilterSettings(filterSettings);
-  lookAroundCoverage19.setFilterSettings(filterSettings);
-  lookAroundCoverage20.setFilterSettings(filterSettings);
+  lookAroundCoverage.getLayers().forEach((l) => {
+    l.setFilterSettings(filterSettings);
+  });
+
 };
 lookAroundCoverage.setCoverageColorer = (coverageColorer) => {
-  lookAroundCoverage16.setCoverageColorer(coverageColorer);
-  lookAroundCoverage17.setCoverageColorer(coverageColorer);
-  lookAroundCoverage18.setCoverageColorer(coverageColorer);
-  lookAroundCoverage19.setCoverageColorer(coverageColorer);
-  lookAroundCoverage20.setCoverageColorer(coverageColorer);
+  lookAroundCoverage.getLayers().forEach((l) => {
+    l.setCoverageColorer(coverageColorer)
+  });
 };
 
 export { lookAroundCoverage };

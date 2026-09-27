@@ -55,4 +55,5 @@ which is noticeably faster than the previous two. Supports Linux and Windows.
    - Everyone's least favorite feature, but it makes sense to add it for completion's sake.
 
 ## Credits
-This app uses icons by [eva-icons](https://github.com/akveo/eva-icons), [boxicons](https://github.com/atisawd/boxicons) and [Liz Bravo](https://openmoji.org/library/emoji-1F34E/).
+This app uses icons by [eva-icons](https://github.com/akveo/eva-icons), [boxicons](https://github.com/atisawd/boxicons),
+[Font Awesome](https://fontawesome.com/license/free) and [Liz Bravo](https://openmoji.org/library/emoji-1F34E/).

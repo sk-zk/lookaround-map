@@ -1,4 +1,5 @@
-import { vectorBlueLineLayer, rasterBlueLineLayer } from "./layers/cachedBlueLines.js";
+import { vectorBlueLineLayer, rasterBlueLineLayer, historicalBlueLineLayer, historicalRasterBlueLineLayer } from "./layers/coverageLayer.js";
+import { diffingCoverageLayer } from "./layers/diffingCoverageLayer.js";
 import { AppleTileLayer, AppleMapsLayerType, Emphasis } from "./layers/appleMaps.js";
 import { GoogleRoadLayer, googleStreetView } from "./layers/googleMaps.js";
 import { openStreetMap, cartoDarkMatter, cartoPositron, cartoVoyager } from "./layers/openStreetMap.js";
@@ -12,6 +13,8 @@ import { CoverageColorer } from "./layers/colors.js";
 import { settings } from "../settings.js";
 import { ColorLegendControl } from "../ui/ColorLegendControl.js";
 import { ExtendedSearchControl } from "./ui/ExtendedSearchControl.js";
+import { FilterControl } from "../ui/FilterControl.js";
+import { HistoricalControl } from "../ui/HistoricalControl.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
@@ -31,6 +34,7 @@ class MapManager {
   #map;
 
   #filterControl;
+  #historicalControl;
   #coverageColorer;
   #legendControl;
 
@@ -45,10 +49,12 @@ class MapManager {
   #coverageOverlaysGroup;
   #overlays;
 
-  constructor(config, filterControl, onAppleMapsLinkPasted) {
-    this.#filterControl = filterControl;
-
+  constructor(config, onAppleMapsLinkPasted) {
     useGeographic();
+
+    this.#coverageColorer = new CoverageColorer();
+    this.#setUpFilterControl();
+    this.#setUpHistoricalControl();
 
     this.#setUpBaseLayers();
     this.#setUpOverlays();
@@ -71,7 +77,6 @@ class MapManager {
       }),
     });
 
-    this.#coverageColorer = new CoverageColorer();
     this.#legendControl = new ColorLegendControl(this.#coverageColorer);
 
     this.#createAttributionControl();
@@ -79,7 +84,6 @@ class MapManager {
     this.#createSearch(onAppleMapsLinkPasted);
     this.#createContextMenu();
     this.#createPanoMarkerLayer();
-    this.#setUpFilterControl();
     this.#createGeolocationButton();
 
     document.addEventListener("settingChanged", (e) => {
@@ -191,9 +195,9 @@ class MapManager {
       <span class="layer-explanation">(<a class='layer-link' href='https://gist.github.com/sk-zk/53dfc36fa70dae7f4848ce812002fd16' target='_blank'>what is this?</a>)</span>
       `,
       combine: "true",
-      layers: [rasterBlueLineLayer, vectorBlueLineLayer],
+      layers: [rasterBlueLineLayer, vectorBlueLineLayer, historicalBlueLineLayer, historicalRasterBlueLineLayer, diffingCoverageLayer],
     });
-    this.#updateActiveCachedBlueLineLayer(true);
+    this.#updateActiveCachedBlueLineLayer();
 
     this.#overlays = new LayerGroup({
       title: "Overlays",
@@ -270,35 +274,81 @@ class MapManager {
   }
 
   #setUpFilterControl() {
-    vectorBlueLineLayer.setFilterSettings(this.#filterControl.getFilterSettings());
+    this.#filterControl = new FilterControl();
+    const settings = this.#filterControl.getFilterSettings();
+    vectorBlueLineLayer.setFilterSettings(settings);
     vectorBlueLineLayer.setCoverageColorer(this.#coverageColorer);
-    lookAroundCoverage.setFilterSettings(this.#filterControl.getFilterSettings());
+    lookAroundCoverage.setFilterSettings(settings);
     lookAroundCoverage.setCoverageColorer(this.#coverageColorer);
-    this.#filterControl.filtersChanged = (filterSettings) => this.#onFiltersChanged(filterSettings);
+    historicalBlueLineLayer.setFilterSettings(settings);
+    historicalBlueLineLayer.setCoverageColorer(this.#coverageColorer);
+    this.#filterControl.filtersChanged = (f) => this.#onFiltersChanged(f);
+  }
+
+  #setUpHistoricalControl() {
+    this.#historicalControl = new HistoricalControl();
+    diffingCoverageLayer.setHistoricalSettings(this.#historicalControl.getSettings());
+    this.#historicalControl.settingsChanged = (settings) => {
+      historicalBlueLineLayer.setHistoricalSettings(settings);
+      historicalRasterBlueLineLayer.setHistoricalSettings(settings);
+      diffingCoverageLayer.setHistoricalSettings(settings);
+      this.#updateActiveCachedBlueLineLayer();
+    };
   }
 
   #onFiltersChanged(filterSettings) {
     this.#coverageColorer.filterSettingsChanged(filterSettings);
 
-    this.#updateActiveCachedBlueLineLayer(filterSettings.canUseRasterTiles());
+    this.#updateActiveCachedBlueLineLayer();
 
     vectorBlueLineLayer.setFilterSettings(filterSettings);
-    vectorBlueLineLayer.getLayers().forEach((l) => l.changed());
     lookAroundCoverage.setFilterSettings(filterSettings);
-    lookAroundCoverage.getLayers().forEach((l) => l.getSource().refresh());
     rasterBlueLineLayer.setFilterSettings(filterSettings);
     rasterBlueLineLayer.changed();
+    historicalBlueLineLayer.setFilterSettings(filterSettings);
+    diffingCoverageLayer.setFilterSettings(filterSettings);
 
     this.#legendControl.updateLegend(filterSettings);
   }
 
-  #updateActiveCachedBlueLineLayer(useRasterTiles) {
-    if (useRasterTiles) {
-      rasterBlueLineLayer.setVisible(true);
-      vectorBlueLineLayer.setMinZoom(rasterBlueLineLayer.getMaxZoom());
-    } else {
+  #updateActiveCachedBlueLineLayer() {
+    // TODO refactor this
+
+    const filterSettings = this.#filterControl.getFilterSettings();
+    const historicalSettings = this.#historicalControl.getSettings();
+
+    if (historicalSettings.enabled) {
       rasterBlueLineLayer.setVisible(false);
-      vectorBlueLineLayer.setMinZoom(Constants.MIN_ZOOM-1);
+      vectorBlueLineLayer.setVisible(false);
+      lookAroundCoverage.setVisible(false);
+      if (historicalSettings.diffingEnabled) {
+        diffingCoverageLayer.setVisible(true);
+        historicalBlueLineLayer.setVisible(false);
+        historicalRasterBlueLineLayer.setVisible(false);
+      } else {
+        diffingCoverageLayer.setVisible(false);
+        historicalBlueLineLayer.setVisible(true);
+        if (filterSettings.canUseRasterTiles()) {
+          historicalRasterBlueLineLayer.setVisible(true);
+          historicalBlueLineLayer.setMinZoom(Constants.VECTOR_TRANSITION_LEVEL-1);
+        } else {
+          historicalRasterBlueLineLayer.setVisible(false);
+          historicalBlueLineLayer.setMinZoom(Constants.MIN_ZOOM-1);
+        }
+      }
+    } else {
+      diffingCoverageLayer.setVisible(false);
+      historicalBlueLineLayer.setVisible(false);
+      historicalRasterBlueLineLayer.setVisible(false);
+      vectorBlueLineLayer.setVisible(true);
+      lookAroundCoverage.setVisible(true);
+      if (filterSettings.canUseRasterTiles()) {
+        rasterBlueLineLayer.setVisible(true);
+        vectorBlueLineLayer.setMinZoom(Constants.VECTOR_TRANSITION_LEVEL-1);
+      } else {
+        rasterBlueLineLayer.setVisible(false);
+        vectorBlueLineLayer.setMinZoom(Constants.MIN_ZOOM-1);
+      }
     }
   }
 

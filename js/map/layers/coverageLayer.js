@@ -1,10 +1,9 @@
 import { Constants } from "../Constants.js";
 import { CoverageType, LineColorType } from "../../enums.js";
-import { CoverageColorer, carLineColor, trekkerLineColor } from "./colors.js";
+import { carLineColor, trekkerLineColor } from "./colors.js";
 import { getDevicePixelRatioAsInt } from "../../util/misc.js";
 import { FilterSettings } from "../FilterSettings.js";
 
-import LayerGroup from "ol/layer/Group.js";
 import VectorTile from "ol/source/VectorTile.js";
 import VectorTileLayer from "ol/layer/VectorTile.js";
 import Style from "ol/style/Style.js";
@@ -13,9 +12,6 @@ import MVT from "ol/format/MVT.js";
 import XYZ from "ol/source/XYZ.js";
 import { createXYZ } from "ol/tilegrid";
 import TileLayer from "ol/layer/Tile.js";
-import { Feature } from "ol";
-
-const OPACITY = 0.8;
 
 const pixelRatio = getDevicePixelRatioAsInt();
 
@@ -96,6 +92,7 @@ class VectorCoverageSource extends VectorTile {
     options.tileSize ??= 256;
 
     super({
+      crossOrigin: "anonymous",
       opaque: false,
       projection: options.projection,
       wrapX: options.wrapX !== undefined ? options.wrapX : true,
@@ -111,7 +108,8 @@ class VectorCoverageSource extends VectorTile {
         tileSize: [options.tileSize, options.tileSize],
       }),
       tilePixelRatio: pixelRatio,
-      url: "https://lookmap.skzk.dev/bluelines2/{z}/{x}/{y}/",
+      url: "https://boskop.skzk.dev/vector/{z}/{x}/{y}/",
+      //url: "http://localhost:8111/lookaround_cache/lookaround/{z}/{x}/{y}",
     });
   }
 }
@@ -122,11 +120,12 @@ class VectorCoverageLayer extends VectorTileLayer {
   #coverageColorer = null;
 
   constructor(options) {
-    options = options || {};
+    options ??= {};
     super({
+      crossOrigin: "anonymous",
       title: options.title,
       visible: options.visible,
-      opacity: OPACITY,
+      opacity: Constants.LINE_OPACITY,
       minZoom: options.minZoom,
       maxZoom: options.maxZoom,
       source: new VectorCoverageSource({
@@ -142,6 +141,7 @@ class VectorCoverageLayer extends VectorTileLayer {
   setFilterSettings(filterSettings) {
     this.#filterSettings = filterSettings;
     this.#setPolygonFilter();
+    this.changed();
   }
 
   #setPolygonFilter() {
@@ -157,34 +157,36 @@ class VectorCoverageLayer extends VectorTileLayer {
   }
 }
 
-const blueLineLayerMain = new VectorCoverageLayer({
+const vectorBlueLineLayer = new VectorCoverageLayer({
+  visible: true,
   minZoom: Constants.MIN_ZOOM-1,
-  maxZoom: 14,
-});
-// my static tiles end at z=14 and the layer that comes directly from apple
-// is displayed at z>=16. this is a workaround to stop z=15 from being blurry.
-const blueLineLayer15 = new VectorCoverageLayer({
-  minZoom: 14,
   maxZoom: 15,
+  title: `Apple Look Around cached blue lines<br>
+      <span class="layer-explanation">
+        (<a class='layer-link' href='https://gist.github.com/sk-zk/53dfc36fa70dae7f4848ce812002fd16' target='_blank'>what is this?</a>)
+      </span>`,
 });
 
-const vectorBlueLineLayer = new LayerGroup({
-  visible: true,
-  title: `
-    Apple Look Around cached blue lines<br>
-    <span class="layer-explanation">(<a class='layer-link' href='https://gist.github.com/sk-zk/53dfc36fa70dae7f4848ce812002fd16' target='_blank'>what is this?</a>)</span>
-    `,
-  combine: "true",
-  layers: [blueLineLayerMain, blueLineLayer15],
-});
-vectorBlueLineLayer.setFilterSettings = (filterSettings) => {
-  blueLineLayerMain.setFilterSettings(filterSettings);
-  blueLineLayer15.setFilterSettings(filterSettings);
-};
-vectorBlueLineLayer.setCoverageColorer = (coverageColorer) => {
-  blueLineLayerMain.setCoverageColorer(coverageColorer);
-  blueLineLayer15.setCoverageColorer(coverageColorer);
-};
+class HistoricalVectorCoverageLayer extends VectorCoverageLayer {
+  constructor() {
+    super({
+      visible: false,
+    });
+    this.setUrl(null);
+  }
+
+  setUrl(timestamp) {
+    if (!timestamp || !Number.isInteger(timestamp)) {
+      timestamp = Math.floor(Date.now() / 1000);
+    }
+    this.getSource().setUrl(`https://boskop.skzk.dev/vector/{z}/{x}/{y}/?before=${timestamp}`);
+  }
+
+  setHistoricalSettings(settings) {
+    this.setUrl(Math.floor(settings.dateA / 1000));
+  }
+}
+const historicalBlueLineLayer = new HistoricalVectorCoverageLayer();
 
 class RasterCoverageLayer extends TileLayer {
   #filterSettings = new FilterSettings();
@@ -192,17 +194,19 @@ class RasterCoverageLayer extends TileLayer {
 
   constructor() {
     super({
+      crossOrigin: "anonymous",
       visible: true,
       type: "overlay",
       source: new XYZ({
-        url: `https://lookmap.skzk.dev/bluelines_raster${pixelRatio > 1 ? "_2x" : ""}/{z}/{x}/{y}.png`,
+        crossOrigin: "anonymous",
+        url: `https://boskop.skzk.dev/raster${pixelRatio > 1 ? "_2x" : ""}/{z}/{x}/{y}/`,
         minZoom: Constants.MIN_ZOOM,
         maxZoom: 7,
         tilePixelRatio: Math.min(2, pixelRatio)
       }),
       minZoom: Constants.MIN_ZOOM-1,
       maxZoom: 7,
-      opacity: OPACITY,
+      opacity: Constants.LINE_OPACITY,
       zIndex: Constants.BLUE_LINES_ZINDEX,
     });
   }
@@ -222,4 +226,25 @@ class RasterCoverageLayer extends TileLayer {
 }
 const rasterBlueLineLayer = new RasterCoverageLayer();
 
-export { rasterBlueLineLayer, vectorBlueLineLayer };
+class HistoricalRasterCoverageLayer extends RasterCoverageLayer {
+  constructor() {
+    super({
+      visible: false,
+    });
+    this.setUrl(null);
+  }
+
+  setUrl(timestamp) {
+    if (!timestamp || !Number.isInteger(timestamp)) {
+      timestamp = Math.floor(Date.now() / 1000);
+    }
+    this.getSource().setUrl(`https://boskop.skzk.dev/raster${pixelRatio > 1 ? "_2x" : ""}/{z}/{x}/{y}/?before=${timestamp}`);
+  }
+
+  setHistoricalSettings(settings) {
+    this.setUrl(Math.floor(settings.dateA / 1000));
+  }
+}
+const historicalRasterBlueLineLayer = new HistoricalRasterCoverageLayer();
+
+export { rasterBlueLineLayer, vectorBlueLineLayer, historicalBlueLineLayer, historicalRasterBlueLineLayer };

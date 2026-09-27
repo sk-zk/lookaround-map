@@ -103,7 +103,7 @@
               </tr>
               <tr>
                 <td>To:</td>
-                <td><input type="date" id="coverage-max-date" name="coverage-max-date" value="2026-09-01"></td>
+                <td><input type="date" id="coverage-max-date" name="coverage-max-date" value="2026-10-01"></td>
               </tr>
             </table>
             </div>
@@ -119,6 +119,41 @@
             </div>
           </div>
   
+          <input class="sidebar-tab" name="tabs" tabindex="1" type="radio" id="tab-historical">
+          <label class="sidebar-tab-label tab-historical-bg" for="tab-historical" title="Historical"></label>
+          <div class="sidebar-panel" tabindex="1">
+            <h2>Historical</h2>
+            <div class="sidebar-control-group">
+              <div>
+                <input type="checkbox" id="enable-historical" name="enable-historical"><label for="enable-historical">Show historical coverage layer:</label><br>
+                <input type="date" id="historical-date-a" name="historical-date-a" value="2026-06-01" min="2026-05-25"><br>
+                <div id="historical-date-a-buttons"></div>
+              </div>
+              <p></p>
+              <div>
+                <input type="checkbox" id="enable-diff" name="enable-diff"><label for="enable-diff">Compare to:</label><br>
+                <input type="date" id="historical-date-b" name="historical-date-b" value="2026-07-01" min="2026-05-25"><br>
+                <div id="historical-date-b-buttons"></div>
+              </div>
+            </div>
+            <div class="sidebar-control-group">
+              <p>Here, you can view and compare older versions of this site's custom blue line layer.
+                When comparing two dates, added footage is shown in purple and removed footage is shown in red.</p>
+              <p>NB:</p>
+              <ul class="less-list-padding">
+                <li>This feature does not enable access to older imagery.</li>
+                <li>Changes to this layer reflect the scraping date, not the publication date.</li>
+                <li>The type and date filters on the filter tab apply to this layer as well.</li>
+                <li>Raster levels 3&zwj;&ndash;&zwj;7 and vector levels 3&zwj;&ndash;&zwj;5 are regenerated infrequently, particularly in Europe.
+                  Compare raster 8+ or vector 6+ for best results.
+                </li>
+                <li>The earliest date you can return to is the 25th of May 2026. Note, however, that the archive
+                  was not yet fully populated at this point.
+                </li>
+              </ul>
+            </div>
+          </div>
+
           <input class="sidebar-tab" name="tabs" tabindex="1" type="radio" id="tab-settings">
           <label class="sidebar-tab-label tab-settings-bg" for="tab-settings" title="Settings"></label>
           <div class="sidebar-panel" tabindex="1">

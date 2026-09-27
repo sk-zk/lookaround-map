@@ -3,7 +3,7 @@ import { LineColorType } from "../enums";
 const defaults = {
     filterByDate: false,
     minDate: Math.floor(new Date("2018-06-01").getTime()),
-    maxDate: Math.floor(new Date("2026-09-01").getTime()),
+    maxDate: Math.floor(new Date("2026-10-01").getTime()),
     showCars: true,
     showTrekkers: true,
     polygonFilter: null,
@@ -13,23 +13,27 @@ const defaults = {
 };
 
 export class FilterSettings {
-    constructor() {
-        Object.assign(this, defaults);
-    }
+  constructor() {
+    Object.assign(this, defaults);
+  }
 
-    isDefault() {
-        return this.filterByDate === defaults.filterByDate
-            && this.showCars === defaults.showCars
-            && this.showTrekkers === defaults.showTrekkers
-            && this.polygonFilter === defaults.polygonFilter
-            && this.lineColorType === defaults.lineColorType
-            && this.filterByBuildId === defaults.filterByBuildId;
-    }
+  isDefault() {
+    return (
+      this.filterByDate === defaults.filterByDate &&
+      this.showCars === defaults.showCars &&
+      this.showTrekkers === defaults.showTrekkers &&
+      this.polygonFilter === defaults.polygonFilter &&
+      this.lineColorType === defaults.lineColorType &&
+      this.filterByBuildId === defaults.filterByBuildId
+    );
+  }
 
-    canUseRasterTiles() {
-        return this.filterByDate === defaults.filterByDate
-            && this.showCars === defaults.showCars
-            && this.showTrekkers === defaults.showTrekkers
-            && this.lineColorType !== LineColorType.Age;
-    }
+  canUseRasterTiles() {
+    return (
+      this.filterByDate === defaults.filterByDate &&
+      this.showCars === defaults.showCars &&
+      this.showTrekkers === defaults.showTrekkers &&
+      this.lineColorType !== LineColorType.Age
+    );
+  }
 }

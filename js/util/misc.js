@@ -65,6 +65,18 @@ export function floorFirstOfMonth(date) {
 }
 
 /**
+ * Adds an offset of n days to the current date.
+ * @param {number} n The offset in days. This number can be positive or negative.
+ * @returns {Date} The date in n days.
+ */
+export function getDateInNDays(n) {
+  const date = new Date();
+  date.setUTCHours(0, 0, 0, 0);
+  date.setDate(date.getDate() + n);
+  return date;
+}
+
+/**
  * Infers the kind of camera the given panorama was taken with from the projection parameters.
  * @param {object} pano The panorama object.
  * @returns {number} The camera type.

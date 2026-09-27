@@ -6,5 +6,9 @@ const Constants = Object.freeze({
   BLUE_LINES_ZINDEX: 10,
   LABELS_ZINDEX: 50,
   MARKERS_ZINDEX: 51,
+
+  LINE_OPACITY: 0.8,
+
+  VECTOR_TRANSITION_LEVEL: 8,
 });
 export { Constants };

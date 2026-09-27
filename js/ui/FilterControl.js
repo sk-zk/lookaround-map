@@ -16,12 +16,14 @@ export class FilterControl {
       this.#filterSettings.filterByDate = e.target.checked;
       this.onFiltersChanged();
     });
+
     this.#coverageMinDate = document.querySelector("#coverage-min-date");
     this.#coverageMaxDate = document.querySelector("#coverage-max-date");
     this.#syncDateSelectors();
+    
     this.#coverageMinDate.addEventListener("blur", (_) => {
       const newDate = Math.floor(
-        new Date(document.querySelector("#coverage-min-date").value).getTime()
+        new Date(this.#coverageMinDate.value).getTime()
       );
       if (this.#filterSettings.maxDate < newDate) {
         this.#filterSettings.minDate = this.#filterSettings.maxDate;
@@ -35,9 +37,10 @@ export class FilterControl {
         this.onFiltersChanged();
       }
     });
+
     this.#coverageMaxDate.addEventListener("blur", (_) => {
       const newDate = Math.floor(
-        new Date(document.querySelector("#coverage-max-date").value).getTime()
+        new Date(this.#coverageMaxDate.value).getTime()
       );
       if (this.#filterSettings.minDate > newDate) {
         this.#filterSettings.maxDate = this.#filterSettings.minDate;
@@ -63,7 +66,9 @@ export class FilterControl {
       this.onFiltersChanged();
     });
 
-    document.querySelector("#color-by-type").addEventListener("change", (_) => {
+    const colorByType = document.querySelector("#color-by-type");
+    colorByType.checked = true;
+    colorByType.addEventListener("change", (_) => {
       this.#filterSettings.lineColorType = LineColorType.CoverageType;
       this.onFiltersChanged();
     });

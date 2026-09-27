@@ -4,7 +4,6 @@ import { MapManager } from "./map/map.js";
 import { createPanoViewer } from "./viewer/viewer.js";
 import { wrapLon } from "./geo/geo.js";
 import { Theme, AdditionalMetadata, ImageFormat, DataLang } from "./enums.js";
-import { FilterControl } from "./ui/FilterControl.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
 import { showNotificationTooltip, isAppleDevice, approxEqual, getUserLocale } from "./util/misc.js";
 import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsLookAroundUrl, 
@@ -20,7 +19,8 @@ import tinyDebounce from "tiny-debounce";
 import "ol/ol.css";
 import "ol-ext/dist/ol-ext.css";
 import "./external/ol-layerswitcher/ol-layerswitcher.css";
-import "../static/style.css";
+import "../static/main.css";
+import "../static/icons.css";
 
 class Application {
   appTitle = "Apple Look Around Viewer";
@@ -139,12 +139,10 @@ class Application {
   }
 
   #initMap(params) {
-    const mapMgr = new MapManager(
-      {
+    const mapMgr = new MapManager({
         center: params.center,
         auth: this.auth,
       },
-      new FilterControl(),
       (params) => {
         this.#onAppleMapsLinkPasted(params);
       }
@@ -158,11 +156,10 @@ class Application {
       );
     });
     this.map.on("click", async (e) => {
-      const clickCoordinates = this.map.getEventCoordinate(e.originalEvent);
-      clickCoordinates[0] = wrapLon(clickCoordinates[0]);
+      const coordinate = e.coordinate;
       await this.#fetchAndDisplayPanoAt(
-        clickCoordinates[1],
-        clickCoordinates[0]
+        coordinate[1],
+        wrapLon(coordinate[0])
       );
     });
   }
