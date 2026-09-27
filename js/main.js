@@ -6,7 +6,7 @@ import { wrapLon } from "./geo/geo.js";
 import { Theme, AdditionalMetadata, ImageFormat, DataLang } from "./enums.js";
 import { SettingsControl } from "./ui/SettingsControl.js";
 import { showNotificationTooltip, isAppleDevice, approxEqual, getUserLocale } from "./util/misc.js";
-import { parseHashParams, updateHashParams, openInGsv, generateAppleMapsLookAroundUrl, 
+import { parseFragmentParams, updateFragmentParams, openInGsv, generateAppleMapsLookAroundUrl, 
   generateAppleMapsWebLookAroundUrl, encodeShareLinkPayload } from "./util/url.js";
 import { PanoMetadataBox } from "./ui/PanoMetadataBox.js";
 import { settings } from "./settings.js";
@@ -64,7 +64,7 @@ class Application {
       this.panoMetadataBox.updateVisibility();
     });
 
-    window.addEventListener("hashchange", (_) => this.#onHashChanged());
+    window.addEventListener("hashchange", (_) => this.#onFragmentChanged());
     document.querySelector("#close-pano").addEventListener("click", (_) => {
       this.#closePanoViewer();
     });
@@ -124,7 +124,7 @@ class Application {
   }
 
   async init() {
-    const params = parseHashParams();
+    const params = parseFragmentParams();
     if (params.pano) {
       this.#initMap(params);
       this.#switchMapToPanoLayout();
@@ -149,7 +149,7 @@ class Application {
     );
     this.map = mapMgr.getMap();
     this.map.on("moveend", (_) => {
-      updateHashParams(
+      updateFragmentParams(
         this.map,
         this.currentPano,
         this.panoViewer?.getPosition()
@@ -225,7 +225,7 @@ class Application {
 
     const positionUpdateHandler = tinyDebounce(
       (_) => {
-        updateHashParams(
+        updateFragmentParams(
           this.map,
           this.currentPano,
           this.panoViewer.getPosition()
@@ -262,7 +262,7 @@ class Application {
   async #displayPano(pano, position = null) {
     this.panoMetadataBox.setPano(pano);
     this.addressController.fetchAddress(pano.lat, pano.lon, this.#getDataLang());
-    updateHashParams(this.map, pano, this.panoViewer?.getPosition());
+    updateFragmentParams(this.map, pano, this.panoViewer?.getPosition());
     if (this.panoViewer) {
       await this.panoViewer.navigateTo(pano);
       if (position) this.panoViewer.rotate(position);
@@ -280,7 +280,7 @@ class Application {
     this.#updateMapMarker(pano);
     this.panoMetadataBox.setPano(pano);
     this.addressController.fetchAddress(pano.lat, pano.lon, this.#getDataLang());
-    updateHashParams(this.map, pano, this.panoViewer.getPosition());
+    updateFragmentParams(this.map, pano, this.panoViewer.getPosition());
   }
 
   #getDataLang() {
@@ -388,8 +388,8 @@ class Application {
       : "hidden";
   }
 
-  #onHashChanged(_) {
-    const params = parseHashParams();
+  #onFragmentChanged(_) {
+    const params = parseFragmentParams();
 
     this.map
       .getView()

@@ -4,7 +4,7 @@ import "../proto/MuninViewState_pb.js";
 
 import { Base64 } from "js-base64";
 
-export function parseHashParams() {
+export function parseFragmentParams() {
   const params = new URLSearchParams(window.location.hash.substring(1));
 
   // share link
@@ -46,25 +46,25 @@ export function parseHashParams() {
   };
 }
 
-export function updateHashParams(map, currentPano, panoViewerPosition) {
+export function updateFragmentParams(map, currentPano, panoViewerPosition) {
   const view = map.getView();
   const center = view.getCenter();
   const zoom = view.getZoom();
-  let newHash = `c=${zoom}/${center[1].toFixed(6)}/${wrapLon(center[0]).toFixed(6)}`;
+  let newFragment = `c=${zoom}/${center[1].toFixed(6)}/${wrapLon(center[0]).toFixed(6)}`;
   if (currentPano) {
     // there's no API call known to me which will return metadata for a
     // specific panoid like there is with streetview. this means that to fetch
     // pano metadata, its location must also be known, so I've decided to use
     // that for permalinks rather than panoids until I have a better solution
-    newHash += `&p=${currentPano.lat.toFixed(6)}/${currentPano.lon.toFixed(6)}`;
+    newFragment += `&p=${currentPano.lat.toFixed(6)}/${currentPano.lon.toFixed(6)}`;
 
     if (panoViewerPosition) {
-      newHash += `&a=${(panoViewerPosition.yaw * RAD2DEG).toFixed(2)}/${(panoViewerPosition.pitch * RAD2DEG).toFixed(2)}`;
+      newFragment += `&a=${(panoViewerPosition.yaw * RAD2DEG).toFixed(2)}/${(panoViewerPosition.pitch * RAD2DEG).toFixed(2)}`;
     }
   }
   // instead of setting window.location.hash directly, I set it like this
   // to not trigger a hashchanged event
-  history.replaceState(null, null, document.location.pathname + "#" + newHash);
+  history.replaceState(null, null, document.location.pathname + "#" + newFragment);
 }
 
 export function openInGsv(lat, lon, position, fov) {
