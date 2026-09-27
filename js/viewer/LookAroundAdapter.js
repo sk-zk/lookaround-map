@@ -117,12 +117,13 @@ export class LookAroundAdapter extends AbstractAdapter {
         });
     } else {
       const data = await this.#fetchHeicAsRgbArray(faceUrl);
+      const array = new Uint8ClampedArray(data.buffer);
   
       const canvas = document.createElement("canvas");
       canvas.width = data.width;
       canvas.height = data.height;
       const context = canvas.getContext("2d");
-      const imageData = new ImageData(data.buffer, canvas.width, canvas.height);
+      const imageData = new ImageData(array, canvas.width, canvas.height);
       context.putImageData(imageData, 0, 0);
   
       const texture = utils.createTexture(canvas);

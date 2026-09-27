@@ -8,9 +8,6 @@ async function decodeHeic(url) {
   let heicBuffer = await req.arrayBuffer();
   let data = heifDecoder.decode(heicBuffer);
 
-  heicBuffer = undefined;
-  req = undefined;
-
   let image = data[0];
   const width = image.get_width();
   const height = image.get_height();
@@ -27,16 +24,14 @@ async function decodeHeic(url) {
     ); 
   });
 
-  image.free();
-
-  return { buffer: array, width: width, height: height };
+  return { buffer: array.buffer, width: width, height: height };
 }
 
 addEventListener(
   "message",
   async function (e) {
     const data = await decodeHeic(e.data.url);
-    e.ports[0].postMessage({ data: data });
+    e.ports[0].postMessage({ data: data }, [data.buffer]);
   },
   false
 );
