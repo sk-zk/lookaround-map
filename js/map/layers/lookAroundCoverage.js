@@ -73,20 +73,21 @@ class LookAroundCoverageSource extends XYZ {
   }
 
   #drawLastModifiedText(lastModified, tileSize, ctx) {
-    const textCenterX = tileSize[0] * 0.5;
-    const textTopY = tileSize[1] * 0.8;
+    const [width, height] = tileSize;
+    const textCenterX = width * 0.5;
+    const textTopY = height * 0.8;
 
     let fontSize;
-    if (tileSize[0] <= 128) {
+    if (width <= 128) {
       fontSize = 12;
     }
-    else if (tileSize[0] === 256) {
+    else if (width === 256) {
       fontSize = 18;
     }
-    else if (tileSize[0] >= 512) {
+    else if (width >= 512) {
       fontSize = 24;
     }
-    ctx.font = "bold " + fontSize + "px Inter";
+    ctx.font = `bold ${fontSize}px Inter`;
 
     const date = new Date(lastModified * 1000);
     let formattedDate = new Intl.DateTimeFormat("sv-SE", {
