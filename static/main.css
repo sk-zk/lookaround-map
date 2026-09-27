@@ -49,24 +49,6 @@ body {
   color: var(--map-ui-text-color);
 }
 
-:root.dark .geolocate button {
-  background-image: url("/static/icons/gps-dark.svg");
-}
-
-:root.dark .ol-control.ol-search > button {
-  background-image: url("/static/icons/search-dark.svg");
-  background-position: center;
-  background-repeat: none;
-  background-size: contain;
-}
-
-:root.dark .ctx-copy {
-  background-image: url("/static/icons/copy-dark.svg");
-}
-:root.dark .ctx-copy:hover{
-  background-image: url("/static/icons/copy-light.svg");
-}
-
 :root.dark .ol-ctx-menu-container li:not(.ol-ctx-menu-separator):hover{
   cursor: pointer;
   background-color: #ddd;
@@ -349,33 +331,12 @@ a:visited {
 .ol-touch .geolocate {
   top: 80px;
 }
-.geolocate button {
-  background-image: url("/static/icons/gps-light.svg");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 95%;
-}
 
 .ol-control.ol-search > button::after {
   all: initial;
 }
 .ol-control.ol-search > button::before {
   all: initial;
-}
-.ol-control.ol-search > button {
-  background-image: url("/static/icons/search-light.svg");
-  background-position: center;
-  background-repeat: none;
-  background-size: contain;
-}
-
-.ctx-copy {
-  background-image: url("/static/icons/copy-light.svg");
-  background-repeat: none;
-  background-size: contain;
-}
-.ctx-copy:hover{
-  background-image: url("/static/icons/copy-dark.svg");
 }
 
 .ol-ctx-menu-container li:not(.ol-ctx-menu-separator):hover{
