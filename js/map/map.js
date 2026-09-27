@@ -165,10 +165,19 @@ class MapManager {
     cartoPositron.set("settingsName", "cartoPositron");
     cartoDarkMatter.set("settingsName", "cartoDarkMatter");
 
+    const noBaseLayer = new TileLayer({
+      type: "base",
+      title: "None"
+    });
+    noBaseLayer.set("settingsName", "none");
+
     this.#baseLayers = new LayerGroup({
       title: "Base layer",
-      layers: [this.#appleRoad, this.#appleRoadDark, this.#appleSatellite, 
-        this.#googleRoadLayer, openStreetMap, cartoVoyager, cartoPositron, cartoDarkMatter]
+      layers: [
+        this.#appleRoad, this.#appleRoadDark, this.#appleSatellite, 
+        this.#googleRoadLayer, openStreetMap, cartoVoyager, cartoPositron, cartoDarkMatter,
+        noBaseLayer
+      ],
     });
 
     const lastBaseLayer = settings.get("lastBaseLayer");
