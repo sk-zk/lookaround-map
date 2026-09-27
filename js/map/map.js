@@ -15,6 +15,7 @@ import { ColorLegendControl } from "../ui/ColorLegendControl.js";
 import { ExtendedSearchControl } from "./ui/ExtendedSearchControl.js";
 import { FilterControl } from "../ui/FilterControl.js";
 import { HistoricalControl } from "../ui/HistoricalControl.js";
+import TileDebug from "./layers/TileDebug.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
@@ -26,6 +27,7 @@ import Icon from "ol/style/Icon.js";
 import Feature from "ol/Feature.js";
 import VectorSource from "ol/source/Vector.js";
 import VectorLayer from "ol/layer/Vector.js";
+import TileLayer from "ol/layer/Tile.js";
 
 import LayerSwitcher from "../external/ol-layerswitcher/ol-layerswitcher.js";
 import ContextMenu from "ol-contextmenu";
@@ -199,9 +201,16 @@ class MapManager {
     });
     this.#updateActiveCachedBlueLineLayer();
 
+    const tileDebugLayer = new TileLayer({
+      source: new TileDebug(),
+      title: "Debug: Tile coordinates",
+      visible: false,
+      zIndex: Constants.LABELS_ZINDEX+10,
+    });
+
     this.#overlays = new LayerGroup({
       title: "Overlays",
-      layers: [lookAroundCoverage, this.#coverageOverlaysGroup, googleStreetView]
+      layers: [lookAroundCoverage, this.#coverageOverlaysGroup, googleStreetView, tileDebugLayer]
     });
   }
 
