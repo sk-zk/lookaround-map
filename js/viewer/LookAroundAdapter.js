@@ -9,6 +9,10 @@ import { isHeicSupported } from "../util/media.js";
 
 const NUM_FACES = 6;
 
+// Check once at the time the application loads.
+// This is done outside the class so it persists after a viewer is closed.
+const hasNativeHeicSupport = await isHeicSupported();
+
 /**
  * @summary Adapter for Look Around panoramas.
  * @memberof PSV.adapters
@@ -45,7 +49,6 @@ export class LookAroundAdapter extends AbstractAdapter {
 
     this.timestamp = 0;
 
-    this.hasNativeHeicSupport = null;
     this.heicWorker = new Worker("/static/dist/heicWorker.js");
   }
 
@@ -91,16 +94,12 @@ export class LookAroundAdapter extends AbstractAdapter {
   }
 
   async #loadOneTexture(zoom, faceIdx, progress = null) {
-    if (this.hasNativeHeicSupport === null) {
-      this.hasNativeHeicSupport = await isHeicSupported();
-    }
-
     let faceUrl = `${this.apiBaseUrl}${this.url}${zoom}/${faceIdx}/`;
-    if (this.imageFormat === ImageFormat.HEIC || this.hasNativeHeicSupport) {
+    if (this.imageFormat === ImageFormat.HEIC || hasNativeHeicSupport) {
       faceUrl += "?format=heic";
     }
 
-    if (this.imageFormat === ImageFormat.JPEG || this.hasNativeHeicSupport) {
+    if (this.imageFormat === ImageFormat.JPEG || hasNativeHeicSupport) {
       return this.psv.textureLoader
         .loadFile(faceUrl, (p) => {
           if (progress) {
