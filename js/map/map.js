@@ -28,6 +28,7 @@ import Feature from "ol/Feature.js";
 import VectorSource from "ol/source/Vector.js";
 import VectorLayer from "ol/layer/Vector.js";
 import TileLayer from "ol/layer/Tile.js";
+import { Point } from "ol/geom.js";
 
 import LayerSwitcher from "../external/ol-layerswitcher/ol-layerswitcher.js";
 import ContextMenu from "ol-contextmenu";
@@ -50,6 +51,8 @@ class MapManager {
 
   #coverageOverlaysGroup;
   #overlays;
+
+  #markerFeature;
 
   constructor(config, onAppleMapsLinkPasted) {
     useGeographic();
@@ -167,9 +170,10 @@ class MapManager {
 
     const noBaseLayer = new TileLayer({
       type: "base",
-      title: "None"
+      title: "None",
+      visible: false,
     });
-    noBaseLayer.set("settingsName", "none");
+    noBaseLayer.set("settingsName", "nothing");
 
     this.#baseLayers = new LayerGroup({
       title: "Base layer",
@@ -254,24 +258,30 @@ class MapManager {
   }
 
   #createGeolocationButton() {
-    const geolocationButton = new GeolocationButton();
+    const geolocationButton = new GeolocationButton(this);
     this.#map.addControl(geolocationButton);
   }
 
   #createSearch(onAppleMapsLinkPasted) {
     const searchControl = new ExtendedSearchControl({}, onAppleMapsLinkPasted);
     searchControl.addEventListener("select", (e) => {
+      const view = this.#map.getView();
       try {
-        const bounds = e.search.boundingbox;
-        const minY = Math.min(bounds[0], bounds[1]);
-        const maxY = Math.max(bounds[0], bounds[1]);
-        const minX = Math.min(bounds[2], bounds[3]);
-        const maxX = Math.max(bounds[2], bounds[3]);
-        const extent = [minX, minY, maxX, maxY];
-        this.#map.getView().fit(extent);
+        if (e.search.class == "point" || e.search.osm_type == "node") {
+          this.setMarkerPosition([e.search.lon, e.search.lat])
+          view.setCenter([e.search.lon, e.search.lat]);
+          view.setZoom(17);
+        } else {
+          const bounds = e.search.boundingbox;
+          const minY = Math.min(bounds[0], bounds[1]);
+          const maxY = Math.max(bounds[0], bounds[1]);
+          const minX = Math.min(bounds[2], bounds[3]);
+          const maxX = Math.max(bounds[2], bounds[3]);
+          const extent = [minX, minY, maxX, maxY];
+          view.fit(extent);
+        }
       } catch (error) {
         console.error(error);
-        const view = this.#map.getView();
         view.setCenter([e.search.lon, e.search.lat]);
         view.setZoom(17);
       }
@@ -460,14 +470,13 @@ class MapManager {
       }),
     });
   
-    const markerFeature = new Feature({
+    this.#markerFeature = new Feature({
       geometry: null,
     });
-  
-    markerFeature.setStyle(markerStyle);
+    this.#markerFeature.setStyle(markerStyle);
   
     const mapMarkerSource = new VectorSource({
-      features: [markerFeature],
+      features: [this.#markerFeature],
     });
   
     const mapMarkerLayer = new VectorLayer({
@@ -477,6 +486,10 @@ class MapManager {
     mapMarkerLayer.set("name", "panoMarker");
   
     this.#map.addLayer(mapMarkerLayer);
+  }
+
+  setMarkerPosition(coordinate) {
+    this.#markerFeature.setGeometry(new Point(coordinate));
   }
 }
 

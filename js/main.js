@@ -13,7 +13,6 @@ import { settings } from "./settings.js";
 import { AddressController } from "./geo/AddressController.js";
 import { generateReportString } from "./util/virtualStreets.js";
 
-import Point from "ol/geom/Point.js";
 import tinyDebounce from "tiny-debounce";
 
 import "ol/ol.css";
@@ -26,6 +25,7 @@ class Application {
   appTitle = "Apple Look Around Viewer";
 
   map;
+  mapMgr;
   panoViewer;
   currentPano;
   api;
@@ -139,7 +139,7 @@ class Application {
   }
 
   #initMap(params) {
-    const mapMgr = new MapManager({
+    this.mapMgr = new MapManager({
         center: params.center,
         auth: this.auth,
       },
@@ -147,7 +147,7 @@ class Application {
         this.#onAppleMapsLinkPasted(params);
       }
     );
-    this.map = mapMgr.getMap();
+    this.map = this.mapMgr.getMap();
     this.map.on("moveend", (_) => {
       updateFragmentParams(
         this.map,
@@ -348,15 +348,7 @@ class Application {
   }
 
   async #updateMapMarker(pano) {
-    this.map.getLayers().forEach((layer) => {
-      if (layer.get("name") === "panoMarker") {
-        layer
-          .getSource()
-          .getFeatures()[0]
-          .setGeometry(new Point([pano.lon, pano.lat]));
-      }
-    });
-
+    this.mapMgr.setMarkerPosition([pano.lon, pano.lat]);
     this.map.getView().animate({
       center: [pano.lon, pano.lat],
       duration: 100,
