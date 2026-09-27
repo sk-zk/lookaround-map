@@ -389,6 +389,7 @@ class MapManager {
         {
           text: "Center map here",
           icon: "image:()",
+          classname: "ctx-center",
           callback: (e) => {
             this.#map.getView().animate({
               duration: 300,
