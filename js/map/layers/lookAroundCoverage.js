@@ -293,7 +293,7 @@ const lookAroundCoverage20 = new LookAroundCoverageLayer({
   tileOverlap: 16,
 });
 const lookAroundCoverage = new LayerGroup({
-  title: "Apple Look Around (z≥16)",
+  title: "Look Around: Live data (z≥16)",
   visible: true,
   combine: "true",
   layers: [

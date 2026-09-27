@@ -161,10 +161,6 @@ const vectorBlueLineLayer = new VectorCoverageLayer({
   visible: true,
   minZoom: Constants.MIN_ZOOM-1,
   maxZoom: 15,
-  title: `Apple Look Around cached blue lines<br>
-      <span class="layer-explanation">
-        (<a class='layer-link' href='https://gist.github.com/sk-zk/53dfc36fa70dae7f4848ce812002fd16' target='_blank'>what is this?</a>)
-      </span>`,
 });
 
 class HistoricalVectorCoverageLayer extends VectorCoverageLayer {

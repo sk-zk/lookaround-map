@@ -193,8 +193,10 @@ class MapManager {
     this.#coverageOverlaysGroup = new LayerGroup({
       visible: true,
       title: `
-      Apple Look Around cached blue lines<br>
-      <span class="layer-explanation">(<a class='layer-link' href='https://gist.github.com/sk-zk/53dfc36fa70dae7f4848ce812002fd16' target='_blank'>what is this?</a>)</span>
+      Look Around: Cached blue lines<br>
+      <span class="layer-explanation">
+        <a class='layer-link' href='https://gist.github.com/sk-zk/53dfc36fa70dae7f4848ce812002fd16' target='_blank'>(what is this?)</a>
+      </span>
       `,
       combine: "true",
       layers: [rasterBlueLineLayer, vectorBlueLineLayer, historicalBlueLineLayer, historicalRasterBlueLineLayer, diffingCoverageLayer],
