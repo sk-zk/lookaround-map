@@ -1,4 +1,4 @@
-importScripts("https://cdn.jsdelivr.net/npm/libheif-js@1.19.8/libheif-wasm/libheif-bundle.js");
+importScripts("https://cdn.jsdelivr.net/npm/libheif-js@1.23.2/libheif-wasm/libheif-bundle.js");
 
 const { HeifDecoder } = libheif();
 const heifDecoder = new HeifDecoder();
@@ -7,7 +7,7 @@ async function decodeHeic(url) {
   let req = await fetch(url);
   let heicBuffer = await req.arrayBuffer();
   let data = heifDecoder.decode(heicBuffer);
-  
+
   heicBuffer = undefined;
   req = undefined;
 
