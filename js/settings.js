@@ -6,8 +6,6 @@ class Settings {
   constructor() {
     if ("settings" in localStorage) {
       this.#settings = JSON.parse(localStorage.getItem("settings"));
-    } else {
-      this.#getLegacySettings();
     }
     this.#setDefaultsForMissingFields();
     this.#save();
@@ -37,14 +35,6 @@ class Settings {
     this.#settings[key] = value;
     this.#save();
     document.dispatchEvent(new SettingChangedEvent(key, value));
-  }
-
-  #getLegacySettings() {
-    this.#settings.addressSource = localStorage.getItem("addrSource");
-    this.#settings.labelsOnTop = JSON.parse(
-      localStorage.getItem("labelsOnTop")
-    );
-    this.#settings.theme = localStorage.getItem("theme");
   }
 
   #save() {
