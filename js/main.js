@@ -147,19 +147,17 @@ class Application {
         this.#onAppleMapsLinkPasted(params);
       }
     );
-    this.map = this.mapMgr.getMap();
+
+    this.mapMgr.mapClicked = (lat, lon) => {
+      this.#fetchAndDisplayPanoAt(lat, lon);
+    }
+
+    this.map = this.mapMgr.getMap(); 
     this.map.on("moveend", (_) => {
       updateFragmentParams(
         this.map,
         this.currentPano,
         this.panoViewer?.getPosition()
-      );
-    });
-    this.map.on("click", async (e) => {
-      const coordinate = e.coordinate;
-      await this.#fetchAndDisplayPanoAt(
-        coordinate[1],
-        wrapLon(coordinate[0])
       );
     });
   }
@@ -349,6 +347,7 @@ class Application {
 
   async #updateMapMarker(pano) {
     this.mapMgr.setMarkerPosition([pano.lon, pano.lat]);
+    this.mapMgr.setIsMarkerDeletable(false);
     this.map.getView().animate({
       center: [pano.lon, pano.lat],
       duration: 100,

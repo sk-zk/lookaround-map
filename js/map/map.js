@@ -29,11 +29,15 @@ import VectorSource from "ol/source/Vector.js";
 import VectorLayer from "ol/layer/Vector.js";
 import TileLayer from "ol/layer/Tile.js";
 import { Point } from "ol/geom.js";
+import { Select } from "ol/interaction.js"
+import { pointerMove, click } from "ol/events/condition.js";
 
 import LayerSwitcher from "../external/ol-layerswitcher/ol-layerswitcher.js";
 import ContextMenu from "ol-contextmenu";
 
 class MapManager {
+  mapClicked = () => {};
+
   #map;
 
   #filterControl;
@@ -53,6 +57,9 @@ class MapManager {
   #overlays;
 
   #markerFeature;
+  #markerHoverInteraction;
+  #markerDeleteInteraction;
+  #ignoreClick;
 
   constructor(config, onAppleMapsLinkPasted) {
     useGeographic();
@@ -114,7 +121,12 @@ class MapManager {
           }
         });
       }
-    })
+    });
+
+    this.#map.on("click", async (e) => {
+      if (this.#ignoreClick) return;
+      this.mapClicked(e.coordinate[1], wrapLon(e.coordinate[0]));
+    });
   }
 
   getMap() {
@@ -268,7 +280,8 @@ class MapManager {
       const view = this.#map.getView();
       try {
         if (e.search.class == "point" || e.search.osm_type == "node") {
-          this.setMarkerPosition([e.search.lon, e.search.lat])
+          this.setMarkerPosition([e.search.lon, e.search.lat]);
+          this.setIsMarkerDeletable(true);
           view.setCenter([e.search.lon, e.search.lat]);
           view.setZoom(17);
         } else {
@@ -469,6 +482,15 @@ class MapManager {
         src: "/static/marker-icon.png",
       }),
     });
+
+    const hoverStyle = new Style({
+      image: new Icon({
+        anchor: [0.5, 1],
+        anchorXUnits: "fraction",
+        anchorYUnits: "fraction",
+        src: "/static/marker-icon-remove.png",
+      }),
+    });
   
     this.#markerFeature = new Feature({
       geometry: null,
@@ -486,10 +508,45 @@ class MapManager {
     mapMarkerLayer.set("name", "panoMarker");
   
     this.#map.addLayer(mapMarkerLayer);
+
+    this.#markerHoverInteraction = new Select({
+      condition: pointerMove,
+      style: hoverStyle,
+      layers: [mapMarkerLayer],
+    });
+    this.#markerHoverInteraction.on("select", (e) => {
+      this.#ignoreClick = (e.selected.length > 0);
+    });
+
+    this.#markerDeleteInteraction = new Select({
+      condition: click,
+      layers: [mapMarkerLayer],
+      style: markerStyle,
+    });
+    this.#markerDeleteInteraction.on("select", (e) => {
+      this.#markerDeleteInteraction.clearSelection();
+      this.setMarkerPosition(null);
+      this.#ignoreClick = false;
+    });
+
+    this.#map.addInteraction(this.#markerHoverInteraction);
+    this.#map.addInteraction(this.#markerDeleteInteraction);
   }
 
   setMarkerPosition(coordinate) {
-    this.#markerFeature.setGeometry(new Point(coordinate));
+    if (coordinate) {
+      this.#markerFeature.setGeometry(new Point(coordinate));
+    } else {
+      this.#markerFeature.setGeometry(null);
+    }
+  }
+
+  setIsMarkerDeletable(deletable) {
+    this.#markerHoverInteraction.setActive(deletable);
+    this.#markerDeleteInteraction.setActive(deletable);
+    if (!deletable) {
+      this.#ignoreClick = false;
+    }
   }
 }
 
