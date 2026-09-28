@@ -10,5 +10,7 @@ const Constants = Object.freeze({
   LINE_OPACITY: 0.8,
 
   VECTOR_TRANSITION_LEVEL: 8,
+
+  TILE_TRANSITION: 100,
 });
 export { Constants };

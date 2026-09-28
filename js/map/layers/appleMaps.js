@@ -1,5 +1,6 @@
 import { Authenticator } from "../../util/Authenticator.js";
 import { getDevicePixelRatioAsInt } from "../../util/misc.js";
+import { Constants } from "../Constants.js";
 
 import TileLayer from "ol/layer/Tile.js";
 import XYZ from "ol/source/XYZ.js";
@@ -68,6 +69,7 @@ class AppleTileSource extends XYZ {
       tilePixelRatio: pixelRatio,
       tileLoadFunction: tileLoadFunction,
       crossOrigin: "",
+      transition: Constants.TILE_TRANSITION,
     });
 
     this.opts = opts;

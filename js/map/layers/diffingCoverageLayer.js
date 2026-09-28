@@ -19,7 +19,9 @@ class DiffingCoverageLayer extends TileLayer {
       source: new XYZ({
         minZoom: Constants.MIN_ZOOM-1,
         maxZoom: Constants.MAX_ZOOM,
-        tilePixelRatio: Math.min(2, pixelRatio)
+        tilePixelRatio: Math.min(2, pixelRatio),
+        transition: Constants.TILE_TRANSITION,
+        crossOrigin: "anonymous",
       }),
       minZoom: Constants.MIN_ZOOM-1,
       maxZoom: Constants.MAX_ZOOM,

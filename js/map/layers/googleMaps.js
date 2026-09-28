@@ -28,6 +28,7 @@ class GoogleRoadLayerLabels extends TileLayer {
         attributions: "© Google",
         url: generateRoadLabelsTileUrl(languageTag),
         tilePixelRatio: Math.min(2, pixelRatio),
+        transition: Constants.TILE_TRANSITION,
       }),
       zIndex: Constants.LABELS_ZINDEX,
     });
@@ -47,6 +48,7 @@ class GoogleRoadLayer extends LayerGroup {
     const styleParam = 1105;
     const base = new TileLayer({
       source: new XYZ({
+        transition: Constants.TILE_TRANSITION,
         maxZoom: Constants.MAX_ZOOM,
         attributions: "© Google",
         url:
@@ -90,6 +92,7 @@ const googleStreetView = new TileLayer({
   className: "gsv-coverage",
   visible: false,
   source: new XYZ({
+    transition: Constants.TILE_TRANSITION,
     maxZoom: Constants.MAX_ZOOM,
     attributions: "© Google",
     url:

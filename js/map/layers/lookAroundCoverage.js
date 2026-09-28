@@ -34,6 +34,7 @@ class LookAroundCoverageSource extends XYZ {
     const pixelRatio = getDevicePixelRatioAsInt();
 
     super({
+      transition: Constants.TILE_TRANSITION,
       opaque: false,
       projection: options.projection,
       wrapX: true,

@@ -93,6 +93,7 @@ class VectorCoverageSource extends VectorTile {
 
     super({
       crossOrigin: "anonymous",
+      transition: Constants.TILE_TRANSITION,
       opaque: false,
       projection: options.projection,
       wrapX: options.wrapX !== undefined ? options.wrapX : true,
@@ -198,7 +199,8 @@ class RasterCoverageLayer extends TileLayer {
         url: `https://boskop.skzk.dev/raster${pixelRatio > 1 ? "_2x" : ""}/{z}/{x}/{y}/`,
         minZoom: Constants.MIN_ZOOM,
         maxZoom: 7,
-        tilePixelRatio: Math.min(2, pixelRatio)
+        tilePixelRatio: Math.min(2, pixelRatio),
+        transition: Constants.TILE_TRANSITION,
       }),
       minZoom: Constants.MIN_ZOOM-1,
       maxZoom: 7,

@@ -15,6 +15,7 @@ const openStreetMap = new TileLayer({
     url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     attributions: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>',
     maxZoom: 19,
+    transition: Constants.TILE_TRANSITION,
   }),
 });
 
@@ -26,6 +27,7 @@ class CartoLayer extends TileLayer {
         attributions: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>, <a href="https://carto.com/attributions">CARTO</a>',
         tilePixelRatio: Math.min(2, pixelRatio),
         maxZoom: 20,
+        transition: Constants.TILE_TRANSITION,
       })
     };
     if (zIndex !== null) {

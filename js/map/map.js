@@ -509,6 +509,7 @@ class MapManager {
     this.#markerFeature.setStyle(markerStyle);
   
     const mapMarkerSource = new VectorSource({
+      transition: Constants.TILE_TRANSITION,
       features: [this.#markerFeature],
     });
   

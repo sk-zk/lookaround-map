@@ -2,6 +2,8 @@
 // https://github.com/openlayers/openlayers/blob/v10.10.0/src/ol/source/TileDebug.js
 // BSD 2-Clause License
 
+import { Constants } from "../Constants.js";
+
 import { createCanvasContext2D } from "ol/dom.js";
 import EventType from "ol/events/EventType.js";
 import { get as getProjection } from "ol/proj.js";
@@ -46,7 +48,7 @@ class TileDebug extends ImageTileSource {
     const source = options.source;
 
     super({
-      transition: 0,
+      transition: Constants.TILE_TRANSITION,
       wrapX:
         options.wrapX !== undefined
           ? options.wrapX
