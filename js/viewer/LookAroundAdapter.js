@@ -127,7 +127,12 @@ export class LookAroundAdapter extends AbstractAdapter {
       const texture = utils.createTexture(canvas);
       texture.userData = { zoom: zoom, url: this.url };
 
-      this.psv.loader.setProgress(1); // TODO
+      if (progress) {
+        progress[faceIdx] = 1;
+        this.psv.loader.setProgress(
+          (utils.sum(progress) / 6) * 100
+        );
+      }
       return texture;
     }
   }
