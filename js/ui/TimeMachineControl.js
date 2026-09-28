@@ -89,18 +89,18 @@ export class TimeMachineControl {
     switch (type) {
       default:
       case CameraType.BigCam:
-        icon = "/static/icons/bigcam.png";
+        icon = "bigcam";
         break;
       case CameraType.SmallCam:
-        icon = "/static/icons/smallcam.png";
+        icon = "smallcam";
         break;
       case CameraType.LowCam:
-        icon = "/static/icons/lowcam.png";
+        icon = "lowcam";
         break;
       case CameraType.Backpack:
-        icon = "/static/icons/backpack.png";
+        icon = "backpack";
         break;
     }
-    return `&nbsp;&nbsp;&nbsp;<img src="${icon}" class="pano-info-camera-icon">`;
+    return `&nbsp;&nbsp;&nbsp;<div class="pano-info-camera-icon"><span class="sprites sprites-${icon}"></span></div>`;
   }
 }

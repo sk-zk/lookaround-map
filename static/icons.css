@@ -94,3 +94,48 @@
   background-repeat: none;
   background-size: contain;
 }
+
+
+/* Camera icons */
+
+.pano-info-camera-icon {
+  width: 16px;
+  height: 1.2em;
+  vertical-align: center;
+  display: inline-block;
+}
+
+.sprites {
+  background-image: url('/static/sprites.png');
+  background-repeat: no-repeat;
+  display: inline-block;
+  transform-origin: top left;
+}
+
+.sprites-backpack {
+  width: 62px;
+  height: 80px;
+  background-position: -133px -0px;
+  transform: scale(calc(15 / 80));
+}
+
+.sprites-bigcam {
+  width: 50px;
+  height: 57px;
+  background-position: -0px -133px;
+  transform: scale(calc(15 / 57));
+}
+
+.sprites-smallcam {
+  width: 50px;
+  height: 42px;
+  background-position: -55px -133px;
+  transform: scale(calc(15 / 42));
+}
+
+.sprites-lowcam {
+  width: 50px;
+  height: 36px;
+  background-position: -46px -195px;
+  transform: scale(calc(15 / 36));
+}

@@ -16,6 +16,7 @@ import { ExtendedSearchControl } from "./ui/ExtendedSearchControl.js";
 import { FilterControl } from "../ui/FilterControl.js";
 import { HistoricalControl } from "../ui/HistoricalControl.js";
 import TileDebug from "./layers/TileDebug.js";
+import { spriteSheet } from "../ui/SpriteSheet.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
@@ -479,7 +480,12 @@ class MapManager {
         anchor: [0.5, 1],
         anchorXUnits: "fraction",
         anchorYUnits: "fraction",
-        src: "/static/marker-icon.png",
+        src: spriteSheet.url,
+        width: spriteSheet.mapMarker.size[0],
+        height: spriteSheet.mapMarker.size[1],
+        size: spriteSheet.mapMarker.size,
+        offset: spriteSheet.mapMarker.offset,
+        offsetOrigin: "top-left",
       }),
     });
 
@@ -488,7 +494,12 @@ class MapManager {
         anchor: [0.5, 1],
         anchorXUnits: "fraction",
         anchorYUnits: "fraction",
-        src: "/static/marker-icon-remove.png",
+        src: spriteSheet.url,
+        width: spriteSheet.mapMarkerRemove.size[0],
+        height: spriteSheet.mapMarkerRemove.size[1],
+        size: spriteSheet.mapMarkerRemove.size,
+        offset: spriteSheet.mapMarkerRemove.offset,
+        offsetOrigin: "top-left",
       }),
     });
   
