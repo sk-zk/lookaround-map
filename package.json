@@ -20,7 +20,7 @@
     "ol-layerswitcher": "^4.1.2",
     "rollup": "^4.63.5",
     "rollup-plugin-import-css": "^4.2.1",
-    "three": "^0.177.0",
+    "three": "^0.186.1",
     "tiny-debounce": "^0.1.1",
     "tslib": "^2.8.1",
     "typescript": "^6.0.3"
