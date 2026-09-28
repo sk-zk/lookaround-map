@@ -85,22 +85,28 @@ export class TimeMachineControl {
   }
 
   #getCameraTypeHtml(type) {
-    let icon;
+    let icon, titleText;
     switch (type) {
       default:
       case CameraType.BigCam:
         icon = "bigcam";
+        titleText = "Gen 1 car camera";
         break;
       case CameraType.SmallCam:
         icon = "smallcam";
+        titleText = "Gen 2 car camera";
         break;
       case CameraType.LowCam:
+        titleText = "Gen 1 car camera; CH variant";
         icon = "lowcam";
         break;
       case CameraType.Backpack:
+        titleText = "Backpack camera";
         icon = "backpack";
         break;
     }
-    return `&nbsp;&nbsp;&nbsp;<div class="pano-info-camera-icon"><span class="sprites sprites-${icon}"></span></div>`;
+    return `&nbsp;&nbsp;&nbsp;<div class="pano-info-camera-icon" title="${titleText}">
+              <span class="sprites sprites-${icon}"></span>
+            </div>`;
   }
 }
