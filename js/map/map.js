@@ -16,7 +16,7 @@ import { ExtendedSearchControl } from "./ui/ExtendedSearchControl.js";
 import { FilterControl } from "../ui/FilterControl.js";
 import { HistoricalControl } from "../ui/HistoricalControl.js";
 import TileDebug from "./layers/TileDebug.js";
-import { spriteSheet } from "../ui/SpriteSheet.js";
+import { spriteSheet } from "../ui/spriteSheet.js";
 
 import { useGeographic } from "ol/proj.js";
 import LayerGroup from "ol/layer/Group.js";
