@@ -116,18 +116,17 @@ export class LookAroundAdapter extends AbstractAdapter {
           return texture;
         });
     } else {
-      const data = await this.#fetchHeicAsRgbArray(faceUrl);
-      const array = new Uint8ClampedArray(data.buffer);
+      const response = await this.#fetchHeicAsRgbArray(faceUrl);
   
       const canvas = document.createElement("canvas");
-      canvas.width = data.width;
-      canvas.height = data.height;
+      canvas.width = response.imageData.width;
+      canvas.height = response.imageData.height;
       const context = canvas.getContext("2d");
-      const imageData = new ImageData(array, canvas.width, canvas.height);
-      context.putImageData(imageData, 0, 0);
+      context.putImageData(response.imageData, 0, 0);
   
       const texture = utils.createTexture(canvas);
       texture.userData = { zoom: zoom, url: this.url };
+
       this.psv.loader.setProgress(1); // TODO
       return texture;
     }

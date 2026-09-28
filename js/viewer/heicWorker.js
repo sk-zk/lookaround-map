@@ -24,14 +24,15 @@ async function decodeHeic(url) {
     ); 
   });
 
-  return { buffer: array.buffer, width: width, height: height };
+  const imageData = new ImageData(array, width, height)
+  return { imageData: imageData };
 }
 
 addEventListener(
   "message",
   async function (e) {
-    const data = await decodeHeic(e.data.url);
-    e.ports[0].postMessage({ data: data }, [data.buffer]);
+    const response = await decodeHeic(e.data.url);
+    e.ports[0].postMessage({ data: response }, [response.imageData.data.buffer]);
   },
   false
 );
