@@ -91,14 +91,21 @@ export function inferCameraType(pano) {
   if (approxEqual(pano.cameraMetadata[0].cy, 0.27488935)) {
     return CameraType.BigCam;
   }
-  else if (approxEqual(pano.cameraMetadata[0].cy, 0.30543262)
-  ) {
+  else if (approxEqual(pano.cameraMetadata[0].cy, 0.30543262)) {
     // Small cam (2024-)
     if (pano.timestamp > 1704067200000) {
       return CameraType.SmallCam;
     }
     // Switzerland low cam (2022) published 2026-04-09 
-    else if (pano.timezone == "Europe/Zurich") {
+    else if (pano.timezone === "Europe/Zurich") {
+      return CameraType.LowCam;
+    }
+    // Büsingen enclave, also low cam
+    else if (pano.timezone === "Europe/Busingen") {
+      return CameraType.LowCam;
+    }
+    // Campione enclave, also low cam
+    else if (pano.timezone === "Europe/Rome") {
       return CameraType.LowCam;
     }
     // Unknown type; fall back to small cam
