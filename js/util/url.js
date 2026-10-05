@@ -95,7 +95,7 @@ function getMuninViewStateString(lat, lon, position) {
   cameraFrame.setPitch(-position.pitch * RAD2DEG);
   message.setCameraframe(cameraFrame);
   const mvsParameter = Base64.fromUint8Array(message.serializeBinary());
-  return mvsParameter;
+  return encodeURIComponent(mvsParameter);
 }
 
 export function encodeShareLinkPayload(lat, lon, yaw, pitch) {
