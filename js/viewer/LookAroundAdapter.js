@@ -235,6 +235,7 @@ export class LookAroundAdapter extends AbstractAdapter {
 
     for (let i = 0; i < NUM_FACES; i++) {
       if (textureData.texture[i]) {
+        mesh.material[i].uniforms.texture1.value?.dispose();
         mesh.material[i].uniforms.texture1.value = textureData.texture[i];
       }
     }
@@ -341,6 +342,7 @@ export class LookAroundAdapter extends AbstractAdapter {
   #blendTexture(mat, newTexture) {
     mat.uniforms.mixAmount.value = 1;
     mat.uniforms.mixAmount.active = true;
+    mat.uniforms.texture2.value?.dispose();
     mat.uniforms.texture2.value = mat.uniforms.texture1.value;
     mat.uniforms.texture1.value = newTexture;
     mat.uniforms.texture1.userData.refreshing = false;
