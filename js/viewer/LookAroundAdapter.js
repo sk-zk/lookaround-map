@@ -117,10 +117,8 @@ export class LookAroundAdapter extends AbstractAdapter {
         });
     } else {
       const response = await this.#fetchHeicAsRgbArray(faceUrl);
-  
-      const canvas = document.createElement("canvas");
-      canvas.width = response.imageData.width;
-      canvas.height = response.imageData.height;
+
+      const canvas = new OffscreenCanvas(response.imageData.width, response.imageData.height)
       const context = canvas.getContext("2d");
       context.putImageData(response.imageData, 0, 0);
   
