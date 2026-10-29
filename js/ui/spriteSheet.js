@@ -8,4 +8,8 @@ export const spriteSheet = Object.freeze({
     size: [25, 42],
     offset: [140, 133],
   },
+  mapMarkerShadow: {
+    size: [41, 41],
+    offset: [0, 195],
+  },
 });
