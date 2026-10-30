@@ -101,14 +101,14 @@
 .pano-info-camera-icon {
   width: 16px;
   height: 1.2em;
-  vertical-align: center;
+  vertical-align: middle;
   display: inline-block;
 }
 
 .sprites {
   background-image: url('/static/sprites.png');
   background-repeat: no-repeat;
-  display: inline-block;
+  display: block;
   transform-origin: top left;
 }
 
