@@ -479,7 +479,8 @@ class MapManager {
       image: new Icon({
         anchor: [0.5, 1],
         anchorXUnits: "fraction",
-        anchorYUnits: "fraction",
+        anchorYUnits: "pixels",
+        anchorOrigin: "bottom-left",
         src: spriteSheet.url,
         width: spriteSheet.mapMarker.size[0],
         height: spriteSheet.mapMarker.size[1],
@@ -493,7 +494,8 @@ class MapManager {
       image: new Icon({
         anchor: [0.5, 1],
         anchorXUnits: "fraction",
-        anchorYUnits: "fraction",
+        anchorYUnits: "pixels",
+        anchorOrigin: "bottom-left",
         src: spriteSheet.url,
         width: spriteSheet.mapMarkerRemove.size[0],
         height: spriteSheet.mapMarkerRemove.size[1],

@@ -44,7 +44,7 @@ function generateTileUrl(opts, pixelRatio) {
       opts.poi ??= true;
       opts.style ??= 0;
       return `https://cdn{1-4}.apple-mapkit.com/ti/tile?` +
-        `style=${opts.style}&size=1&x={x}&y={y}&z={z}&v=2609233&scale=${pixelRatio}` +
+        `style=${opts.style}&size=1&x={x}&y={y}&z={z}&v=2611183&scale=${pixelRatio}` +
         `&lang=${opts.lang}` +
         `&poi=${(opts.poi && opts.labels) ? "1" : "0"}` +
         `&tint=${opts.tint}` +
